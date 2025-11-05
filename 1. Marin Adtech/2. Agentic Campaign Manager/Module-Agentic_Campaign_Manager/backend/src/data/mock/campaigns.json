@@ -1,0 +1,94 @@
+{
+  "campaigns": [
+    {
+      "id": "campaign-001",
+      "name": "Motorcycle Sales Campaign",
+      "status": "ACTIVE",
+      "adGroups": [
+        {
+          "id": "adgroup-001",
+          "name": "Triumph Motorcycles",
+          "keywords": [
+            {
+              "text": "triumph motorcycle",
+              "matchType": "BROAD",
+              "impressions": 15000,
+              "clicks": 450,
+              "ctr": 3.0,
+              "conversions": 12,
+              "cost": 1350.00,
+              "roas": 3.2
+            },
+            {
+              "text": "triumph bonneville",
+              "matchType": "PHRASE",
+              "impressions": 8500,
+              "clicks": 340,
+              "ctr": 4.0,
+              "conversions": 18,
+              "cost": 1020.00,
+              "roas": 4.5
+            }
+          ],
+          "ads": [
+            {
+              "id": "ad-001",
+              "type": "RESPONSIVE_SEARCH_AD",
+              "headlines": [
+                "Triumph Motorcycles - Classic Style",
+                "Shop Triumph Motorcycles Today",
+                "Premium Motorcycle Experience"
+              ],
+              "descriptions": [
+                "Discover the perfect motorcycle for your ride. Quality craftsmanship meets modern performance.",
+                "Find your dream bike. Browse our selection of premium motorcycles."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "adgroup-002",
+          "name": "Harley-Davidson Motorcycles",
+          "keywords": [
+            {
+              "text": "harley davidson",
+              "matchType": "BROAD",
+              "impressions": 22000,
+              "clicks": 660,
+              "ctr": 3.0,
+              "conversions": 25,
+              "cost": 1980.00,
+              "roas": 3.8
+            },
+            {
+              "text": "harley sportster",
+              "matchType": "PHRASE",
+              "impressions": 12000,
+              "clicks": 480,
+              "ctr": 4.0,
+              "conversions": 22,
+              "cost": 1440.00,
+              "roas": 4.2
+            }
+          ],
+          "ads": [
+            {
+              "id": "ad-002",
+              "type": "RESPONSIVE_SEARCH_AD",
+              "headlines": [
+                "Harley-Davidson Motorcycles",
+                "Shop Harley-Davidson Now",
+                "American Icon Motorcycles"
+              ],
+              "descriptions": [
+                "Experience the freedom of the open road. Iconic American motorcycles.",
+                "Join the Harley-Davidson family. Find your perfect ride today."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

@@ -1,0 +1,65 @@
+{
+  "ads": [
+    {
+      "id": "ad-001",
+      "adGroupId": "adgroup-001",
+      "type": "RESPONSIVE_SEARCH_AD",
+      "headlines": [
+        "Triumph Motorcycles - Classic Style",
+        "Shop Triumph Motorcycles Today",
+        "Premium Motorcycle Experience",
+        "Triumph Bonneville T120",
+        "Classic British Motorcycles",
+        "Find Your Perfect Triumph",
+        "Triumph Motorcycles for Sale",
+        "Quality Craftsmanship",
+        "Modern Performance",
+        "Triumph Motorcycle Dealer",
+        "Browse Triumph Collection",
+        "Iconic Motorcycle Brand",
+        "Triumph Motorcycle Shop",
+        "Premium Motorcycle Brand",
+        "Triumph Motorcycle Experience"
+      ],
+      "descriptions": [
+        "Discover the perfect motorcycle for your ride. Quality craftsmanship meets modern performance.",
+        "Find your dream bike. Browse our selection of premium motorcycles.",
+        "Experience classic British engineering. Shop our full range of Triumph motorcycles today.",
+        "Triumph motorcycles combine timeless design with cutting-edge technology. Visit us today!"
+      ],
+      "finalUrl": "https://example.com/triumph-motorcycles",
+      "displayUrl": "example.com"
+    },
+    {
+      "id": "ad-002",
+      "adGroupId": "adgroup-002",
+      "type": "RESPONSIVE_SEARCH_AD",
+      "headlines": [
+        "Harley-Davidson Motorcycles",
+        "Shop Harley-Davidson Now",
+        "American Icon Motorcycles",
+        "Harley-Davidson Sportster",
+        "Legendary Motorcycle Brand",
+        "Find Your Harley-Davidson",
+        "Harley-Davidson for Sale",
+        "Freedom on Two Wheels",
+        "Harley-Davidson Experience",
+        "Premium American Motorcycles",
+        "Browse Harley-Davidson",
+        "Iconic Motorcycle Heritage",
+        "Harley-Davidson Dealer",
+        "American Motorcycle Culture",
+        "Harley-Davidson Motorcycle Shop"
+      ],
+      "descriptions": [
+        "Experience the freedom of the open road. Iconic American motorcycles.",
+        "Join the Harley-Davidson family. Find your perfect ride today.",
+        "Discover the legend. Shop our selection of Harley-Davidson motorcycles.",
+        "Harley-Davidson: More than a motorcycle, it's a way of life. Visit us today!"
+      ],
+      "finalUrl": "https://example.com/harley-davidson",
+      "displayUrl": "example.com"
+    }
+  ]
+}
+
