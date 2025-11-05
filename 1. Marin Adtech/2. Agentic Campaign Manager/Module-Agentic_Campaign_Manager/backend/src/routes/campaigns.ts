@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { CampaignController } from '../controllers/campaignController';
 import { CampaignCreationController } from '../controllers/campaignCreationController';
 import { StatusController } from '../controllers/statusController';
+import { PerformanceController } from '../controllers/performanceController';
 
 /**
  * Campaign Routes
@@ -11,6 +12,7 @@ const router = Router();
 const campaignController = new CampaignController();
 const campaignCreationController = new CampaignCreationController();
 const statusController = new StatusController();
+const performanceController = new PerformanceController();
 
 // Campaign creation endpoints
 router.post('/create', campaignCreationController.createCampaign);
@@ -19,6 +21,9 @@ router.post('/create-with-progress', campaignCreationController.createCampaignWi
 // Campaign status endpoints
 router.get('/:id/status', statusController.getCampaignStatus);
 router.get('/:id/status/history', statusController.getCampaignStatusHistory);
+
+// Campaign performance endpoints
+router.get('/:id/performance', performanceController.getCampaignPerformance);
 
 // Campaign CRUD operations
 router.get('/', campaignController.getAllCampaigns);

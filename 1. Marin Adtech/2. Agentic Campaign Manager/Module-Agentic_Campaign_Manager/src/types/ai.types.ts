@@ -76,6 +76,7 @@ export interface GoalUnderstandingResponse {
   clarifyingQuestions?: ClarifyingQuestion[];
   confidence: number; // 0-1
   needsClarification: boolean;
+  isMockData?: boolean; // Flag to indicate if this is mock/fabricated data
 }
 
 /**

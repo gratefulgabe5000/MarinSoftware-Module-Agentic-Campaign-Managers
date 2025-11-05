@@ -10,6 +10,21 @@ import aiRoutes from './ai';
  */
 const router = Router();
 
+// API root endpoint
+router.get('/', (req, res) => {
+  res.json({
+    message: 'Agentic Campaign Manager API',
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health',
+      campaigns: '/api/campaigns',
+      chat: '/api/chat',
+      auth: '/api/auth',
+      ai: '/api/ai',
+    },
+  });
+});
+
 // API health check
 router.get('/health', (req, res) => {
   res.json({ 

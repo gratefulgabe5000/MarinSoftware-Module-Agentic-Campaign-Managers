@@ -1,5 +1,6 @@
 import React from 'react';
 import { Message } from '../types/message.types';
+import CampaignPlanActions from './CampaignPlanActions';
 
 /**
  * MessageList Component Props
@@ -39,7 +40,20 @@ const MessageList: React.FC<MessageListProps> = ({ messages }) => {
                 <span className="loading-text">Thinking...</span>
               </div>
             ) : (
-              <div className="message-text">{message.content}</div>
+              <>
+                {message.isMockData && (
+                  <div className="mock-data-badge">
+                    <span className="badge-icon">⚠️</span>
+                    <span className="badge-text">Mock Data - Simulated Response</span>
+                  </div>
+                )}
+                <div className="message-text">{message.content}</div>
+                {(message as any).hasCampaignPlan && (
+                  <div className="message-actions">
+                    <CampaignPlanActions />
+                  </div>
+                )}
+              </>
             )}
           </div>
           <div className="message-timestamp">

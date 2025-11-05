@@ -3,6 +3,9 @@ import AgenticCampaignManagerModule from '../AgenticCampaignManagerModule';
 import CampaignDashboard from '../components/CampaignDashboard';
 import CampaignCreation from '../components/CampaignCreation';
 import CampaignDetail from '../components/CampaignDetail';
+import CampaignManagerToolbarButton from '../components/CampaignManagerToolbarButton';
+import CampaignManagerSidebar from '../components/CampaignManagerSidebar';
+import PerformanceDashboard from '../components/PerformanceDashboard';
 
 /**
  * Module Routes Configuration
@@ -32,6 +35,14 @@ export const moduleRoutes: RouteConfig[] = [
     meta: {
       title: 'Campaign Details',
       description: 'View campaign details and performance',
+    },
+  },
+  {
+    path: '/campaign/:id/performance',
+    component: PerformanceDashboard,
+    meta: {
+      title: 'Performance Dashboard',
+      description: 'View campaign performance metrics and analytics',
     },
   },
 ];
@@ -67,6 +78,8 @@ export const moduleConfig: Partial<ADEModule> = {
   category: 'campaign-management',
   
   getUIComponents: () => ({
+    toolbar: CampaignManagerToolbarButton,
+    sidebar: CampaignManagerSidebar,
     mainPanel: AgenticCampaignManagerModule,
     routes: moduleRoutes,
     menus: moduleMenuItems,

@@ -9,6 +9,7 @@ export interface Message {
   content: string;
   timestamp: Date;
   isLoading?: boolean;
+  isMockData?: boolean; // Flag to indicate if this message contains mock data
 }
 
 export interface ConversationState {

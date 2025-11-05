@@ -13,6 +13,7 @@ import CampaignActionButtons from './CampaignActionButtons';
  */
 const CampaignPreview: React.FC = () => {
   const campaignPlan = useCampaignStore((state) => state.currentCampaignPlan);
+  const isMockData = useCampaignStore((state) => state.currentCampaignPlanIsMock);
   const isLoading = useCampaignStore((state) => state.isLoading);
   const error = useCampaignStore((state) => state.error);
 
@@ -48,7 +49,15 @@ const CampaignPreview: React.FC = () => {
   return (
     <div className="campaign-preview">
       <div className="campaign-preview-header">
-        <h2>Campaign Preview</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+          <h2>Campaign Preview</h2>
+          {isMockData && (
+            <div className="mock-data-badge">
+              <span className="badge-icon">⚠️</span>
+              <span className="badge-text">Mock Data - Simulated Response</span>
+            </div>
+          )}
+        </div>
         <p>Review your campaign plan before creating it</p>
       </div>
 

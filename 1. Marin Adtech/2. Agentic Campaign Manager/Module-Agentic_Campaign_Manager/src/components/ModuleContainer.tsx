@@ -4,6 +4,7 @@ import CampaignDashboard from './CampaignDashboard';
 import CampaignCreation from './CampaignCreation';
 import CampaignPreview from './CampaignPreview';
 import CampaignDetail from './CampaignDetail';
+import PerformanceDashboard from './PerformanceDashboard';
 
 /**
  * Module Container Component
@@ -17,6 +18,7 @@ const ModuleContainer: React.FC = () => {
         <Route path="/create" element={<CampaignCreation />} />
         <Route path="/preview" element={<CampaignPreview />} />
         <Route path="/campaign/:id" element={<CampaignDetail />} />
+        <Route path="/campaign/:id/performance" element={<PerformanceDashboard />} />
       </Routes>
     </div>
   );

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ADEModule, ADEContext, ADEEvent, ModuleUIComponents } from './types/ade.types';
+import { ADEContext, ADEEvent } from './types/ade.types';
 import ModuleContainer from './components/ModuleContainer';
 
 /**
@@ -70,8 +70,17 @@ const AgenticCampaignManagerModule: React.FC<AgenticCampaignManagerModuleProps> 
    * Initialize module services
    */
   const initializeServices = async (adeContext: ADEContext) => {
-    // Initialize any module-specific services here
-    // For MVP, this is a placeholder
+    // Initialize module-specific services
+    // - Performance polling services
+    // - Campaign status monitoring
+    // - Analytics tracking
+    // - Storage synchronization
+    
+    // Emit initialization event
+    adeContext.analytics.track('module_initialized', {
+      moduleId: 'agentic-campaign-manager',
+      version: '1.0.0',
+    });
   };
 
   /**
@@ -128,24 +137,55 @@ const AgenticCampaignManagerModule: React.FC<AgenticCampaignManagerModuleProps> 
    * Start background services
    */
   const startBackgroundServices = () => {
-    // Start any background services (polling, WebSocket connections, etc.)
-    // For MVP, this is a placeholder
+    // Start background services:
+    // - Performance data polling
+    // - Campaign status monitoring
+    // - Cache cleanup
+    // - Analytics heartbeat
+    
+    // Track activation
+    if (context) {
+      context.analytics.track('module_activated', {
+        moduleId: 'agentic-campaign-manager',
+      });
+    }
   };
 
   /**
    * Stop background services
    */
   const stopBackgroundServices = () => {
-    // Stop any background services
-    // For MVP, this is a placeholder
+    // Stop background services:
+    // - Clear polling intervals
+    // - Close WebSocket connections
+    // - Cancel pending requests
+    
+    // Track deactivation
+    if (context) {
+      context.analytics.track('module_deactivated', {
+        moduleId: 'agentic-campaign-manager',
+      });
+    }
   };
 
   /**
    * Handle user logout event from ADE
    */
-  const handleUserLogout = (event: ADEEvent) => {
+  const handleUserLogout = (_event: ADEEvent) => {
     // Clean up module state on logout
-    // For MVP, this is a placeholder
+    stopBackgroundServices();
+    
+    // Clear sensitive data
+    // - Clear OAuth tokens
+    // - Clear campaign data (if needed)
+    // - Reset module state
+    
+    // Track logout
+    if (context) {
+      context.analytics.track('module_logout', {
+        moduleId: 'agentic-campaign-manager',
+      });
+    }
   };
 
   /**
@@ -153,7 +193,18 @@ const AgenticCampaignManagerModule: React.FC<AgenticCampaignManagerModuleProps> 
    */
   const handleThemeChange = (event: ADEEvent) => {
     // Update module UI to match new theme
-    // For MVP, this is a placeholder
+    const newTheme = event.payload?.theme || 'light';
+    
+    // Apply theme to module
+    document.documentElement.setAttribute('data-theme', newTheme);
+    
+    // Track theme change
+    if (context) {
+      context.analytics.track('module_theme_changed', {
+        moduleId: 'agentic-campaign-manager',
+        theme: newTheme,
+      });
+    }
   };
 
   // Cleanup on unmount

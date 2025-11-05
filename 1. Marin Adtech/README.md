@@ -1,123 +1,278 @@
-# Marin Software Revival: 6-Week Workflow Files
+# Agentic Campaign Manager Module
 
-This directory contains the complete 6-week workflow breakdown for each division and team within Marin Software's revival plan.
+AI-powered campaign creation and management for performance marketers. This module provides an intuitive conversational interface for creating, managing, and monitoring advertising campaigns across multiple platforms.
 
-## Workflow Files
+## Features
 
-### 01. C-Suite & Executive Leadership
-**File:** `01-C-Suite-Executive-6-Week-Workflow.md`
-- Strategic leadership and coordination
-- Fundraising and investor relations
-- Major customer and partner relationships
-- Team: 10 executives
+### Core Functionality
+- **Conversational Campaign Creation**: Natural language interface with intelligent AI response extraction
+- **Multi-Platform Support**: Google Ads, Meta, Microsoft Advertising
+- **Campaign Management**: Create, view, edit, pause, resume, and delete campaigns
+- **Campaign Plan Editing**: Full editor for modifying campaign plans before creation
+- **Performance Dashboard**: Real-time metrics, time series analysis, and goal tracking
+- **Offline Support**: Cached data with offline viewing capabilities
+- **Export Functionality**: CSV export for metrics and time series data
+- **Mock Data Indicators**: Clear badges showing when data is simulated vs. from API
 
-### 02. Product & Engineering Division
-**File:** `02-Product-Engineering-6-Week-Workflow.md`
-- Core platform development
-- AI/ML engineering
-- Integrations engineering
-- Data engineering
-- Quality assurance
-- Team: 60-75 engineers
+### Technical Features
+- **TypeScript**: Full type safety across the codebase
+- **React 18**: Modern React with hooks and functional components
+- **Responsive Design**: Mobile-first design with breakpoints for all screen sizes
+- **Error Handling**: Comprehensive error boundaries, toast notifications, and user feedback
+- **Performance Optimized**: Code splitting, tree shaking, and lazy loading
+- **ADE Integration**: Ready for Ad Development Environment integration with toolbar, sidebar, and lifecycle hooks
+- **Mock Data Support**: Intelligent mock data extraction with clear indicators
+- **Offline Support**: IndexedDB caching with sync queue for offline requests
 
-### 03. Product Management Division
-**File:** `03-Product-Management-6-Week-Workflow.md`
-- Product roadmap and specifications
-- Design and UX/UI
-- Team: 10-12 professionals
+## Getting Started
 
-### 04. Sales & Business Development Division
-**File:** `04-Sales-Business-Development-6-Week-Workflow.md`
-- Sales team and customer acquisition
-- Business development and partnerships
-- Team: 15-19 professionals
+### Prerequisites
+- Node.js 18+ and npm
+- Backend API server running on port 3001
 
-### 05. Marketing & Growth Division
-**File:** `05-Marketing-Growth-6-Week-Workflow.md`
-- Marketing and brand strategy
-- Growth experiments and optimization
-- Team: 12-15 professionals
+### Installation
 
-### 06. Customer Success & Support Division
-**File:** `06-Customer-Success-Support-6-Week-Workflow.md`
-- Customer success and onboarding
-- Customer support and technical assistance
-- Team: 14-18 professionals
+```bash
+# Install dependencies
+npm install
 
-### 07. Partnerships & Alliances Division
-**File:** `07-Partnerships-Alliances-6-Week-Workflow.md`
-- Platform partnerships (Google, Meta, Microsoft, Amazon)
-- Technology partnerships
-- Agency partnerships
-- Team: 4-5 professionals
+# Start development server
+npm run dev
 
-### 08. Operations & Infrastructure Division
-**File:** `08-Operations-Infrastructure-6-Week-Workflow.md`
-- Infrastructure and DevOps
-- IT and business systems
-- Team: 8-11 professionals
+# Build for production
+npm run build
 
-### 09. Security & Compliance Division
-**File:** `09-Security-Compliance-6-Week-Workflow.md`
-- Security architecture and implementation
-- SOC 2 and ISO 27001 certification
-- Privacy compliance (GDPR, CCPA)
-- Team: 4-5 professionals
+# Preview production build
+npm run preview
+```
 
-### 10. Data Science & Analytics Division
-**File:** `10-Data-Science-Analytics-6-Week-Workflow.md`
-- Business intelligence and reporting
-- Advanced analytics and insights
-- Predictive analytics
-- Team: 4-6 professionals
+### Development
 
-### 11. Finance & Legal Division
-**File:** `11-Finance-Legal-6-Week-Workflow.md`
-- Financial planning and analysis
-- Legal strategy and compliance
-- Contract negotiations
-- Team: 6-8 professionals
+```bash
+# Start dev server (frontend on port 3000)
+npm run dev
 
-### 12. Human Resources Division
-**File:** `12-Human-Resources-6-Week-Workflow.md`
-- Talent acquisition and hiring
-- Employee relations and culture
-- HR operations
-- Team: 4-5 professionals
+# Type checking
+npm run type-check
 
----
+# Run tests
+npm test
 
-## Total Organization Size
+# Run tests in watch mode
+npm run test:watch
 
-By Week 6, the organization should have:
-- **Total Headcount:** 150-200 employees
-- **All Divisions:** Fully operational
-- **MVP:** Production-ready and launched
-- **Customers:** 15-25 paying customers
-- **Pipeline:** 80-120 active opportunities
+# Run tests with coverage
+npm run test:coverage
+```
 
----
+## Project Structure
 
-## How to Use These Workflows
+```
+Module-Agentic_Campaign_Manager/
+├── src/
+│   ├── components/          # React components
+│   │   ├── CampaignDashboard.tsx
+│   │   ├── CampaignCreation.tsx
+│   │   ├── CampaignDetail.tsx
+│   │   ├── PerformanceDashboard.tsx
+│   │   ├── ErrorBoundary.tsx
+│   │   ├── ToastContainer.tsx
+│   │   └── ...
+│   ├── services/            # API services
+│   │   ├── campaignService.ts
+│   │   ├── performanceService.ts
+│   │   └── ...
+│   ├── store/               # Zustand state management
+│   │   └── campaignStore.ts
+│   ├── utils/               # Utility functions
+│   │   ├── indexedDB.ts
+│   │   ├── toastService.ts
+│   │   └── ...
+│   ├── types/               # TypeScript type definitions
+│   │   ├── campaign.types.ts
+│   │   ├── performance.types.ts
+│   │   └── ade.types.ts
+│   ├── config/              # Configuration
+│   │   └── module.config.ts
+│   ├── styles/              # CSS styles
+│   │   └── responsive.css
+│   ├── App.tsx              # Main app component
+│   ├── AgenticCampaignManagerModule.tsx
+│   └── main.tsx             # Entry point
+├── backend/                 # Backend API
+│   ├── src/
+│   │   ├── controllers/
+│   │   ├── routes/
+│   │   ├── services/
+│   │   └── ...
+│   └── package.json
+├── public/                  # Static assets
+├── dist/                    # Production build output
+├── package.json
+├── tsconfig.json
+├── vite.config.ts
+└── README.md
+```
 
-1. **Weekly Planning:** Review each division's weekly tasks at the start of each week
-2. **Daily Standups:** Use daily standups to track progress against weekly goals
-3. **Cross-Functional Coordination:** Coordinate with other divisions for dependencies
-4. **Success Metrics:** Track success metrics and KPIs for each division
-5. **Weekly Reviews:** Conduct weekly reviews to assess progress and adjust plans
+## API Endpoints
 
----
+### Campaign Endpoints
+- `GET /api/campaigns` - Get all campaigns
+- `GET /api/campaigns/:id` - Get campaign by ID
+- `POST /api/campaigns` - Create new campaign
+- `PUT /api/campaigns/:id` - Update campaign
+- `DELETE /api/campaigns/:id` - Delete campaign
+- `POST /api/campaigns/:id/launch` - Launch campaign
+- `POST /api/campaigns/:id/pause` - Pause campaign
+- `POST /api/campaigns/:id/resume` - Resume campaign
 
-## Key Principles
+### Performance Endpoints
+- `GET /api/campaigns/:id/performance` - Get campaign performance metrics
+  - Query params: `timeRange` (today|7d|30d|90d|custom), `startDate`, `endDate`, `includeTimeSeries`
 
-1. **Parallel Execution:** All workstreams run simultaneously
-2. **Rapid Decision-Making:** Empowered teams make decisions quickly
-3. **Customer Focus:** Get customer feedback early and often
-4. **Financial Discipline:** Maintain unit economics and capital efficiency
-5. **Clear Differentiation:** AI-first, privacy-first, superior UX
+### OAuth Endpoints
+- `GET /api/oauth/:platform/auth` - Initiate OAuth flow
+- `GET /api/oauth/:platform/callback` - OAuth callback handler
+- `GET /api/oauth/:platform/status` - Check OAuth connection status
+- `POST /api/oauth/:platform/disconnect` - Disconnect OAuth account
 
----
+## Usage
 
-*Document Created: January 2025*  
-*For: Marin Software Revival Execution*
+### Creating a Campaign
 
+1. Navigate to the Campaign Dashboard
+2. Click "Create Campaign"
+3. Use the conversational interface to describe your campaign:
+   - Campaign objective
+   - Target audience
+   - Budget and timeline
+   - Platforms (Google Ads, Meta, Microsoft)
+4. Review the generated campaign plan
+5. Launch the campaign
+
+### Viewing Performance
+
+1. Navigate to a campaign's detail page
+2. Click "View Performance" or navigate to the Performance Dashboard
+3. Select a time range (Today, 7 days, 30 days, 90 days, or Custom)
+4. View metrics, charts, and goal comparisons
+5. Export data as CSV if needed
+
+### Managing Campaigns
+
+- **Create**: Create new campaigns via conversational interface
+- **Edit Plan**: Modify campaign plans before creation using the editor
+- **View**: View campaign details and performance metrics
+- **Pause**: Temporarily stop a campaign
+- **Resume**: Restart a paused campaign
+- **Delete**: Remove a campaign from the dashboard (with confirmation)
+
+## Configuration
+
+### Environment Variables
+
+Create a `.env` file in the root directory:
+
+```env
+VITE_API_URL=http://localhost:3001
+VITE_OPENAI_API_KEY=your_openai_api_key
+```
+
+### Module Configuration
+
+The module can be configured in `src/config/module.config.ts`:
+
+```typescript
+export const moduleConfig: Partial<ADEModule> = {
+  id: 'agentic-campaign-manager',
+  name: 'Agentic Campaign Manager',
+  version: '1.0.0',
+  // ...
+};
+```
+
+## Testing
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Generate coverage report
+npm run test:coverage
+```
+
+## Building for Production
+
+```bash
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+
+# Analyze bundle size
+npm run build:analyze
+```
+
+## Browser Support
+
+- Chrome (latest)
+- Firefox (latest)
+- Safari (latest)
+- Edge (latest)
+
+## Mock Data Mode
+
+When no OpenAI API key is configured, the module operates in **Mock Data Mode**:
+- Intelligent extraction of campaign details from user input
+- Always uses USD currency (regardless of mentioned currency)
+- Clear "Mock Data" badges displayed in UI
+- Simulated responses for demonstration purposes
+
+**Note:** Mock data is clearly labeled with warning badges to distinguish it from real API responses.
+
+## Performance
+
+- **Code Splitting**: Automatic chunk splitting for optimal loading
+- **Tree Shaking**: Unused code elimination
+- **Lazy Loading**: Route-based code splitting
+- **Caching**: IndexedDB caching for offline support
+- **Optimization**: Minified and compressed production builds
+
+## Contributing
+
+1. Create a feature branch
+2. Make your changes
+3. Add tests for new functionality
+4. Ensure all tests pass
+5. Submit a pull request
+
+## License
+
+ISC
+
+## Recent Updates (November 5, 2025)
+
+### Enhancements
+- ✅ Intelligent AI response extraction (parses budget, duration, platforms, objectives from user input)
+- ✅ Campaign plan editor with full editing capabilities
+- ✅ Delete campaigns from dashboard
+- ✅ Mock data badges for transparency
+- ✅ Always USD for mock responses
+- ✅ Action buttons (View Preview, Create Campaign) after AI responses
+- ✅ Improved error handling and user feedback
+- ✅ Complete responsive design
+- ✅ Production build optimization
+
+### Bug Fixes
+- ✅ Fixed duplicate "Create Campaign" button
+- ✅ Fixed budget extraction ($4,000 now correctly parsed)
+- ✅ Fixed duration extraction (weeks to days conversion)
+- ✅ Improved objective detection for events/conferences
+
+## Support
+
+For issues and questions, please contact the development team or create an issue in the repository.

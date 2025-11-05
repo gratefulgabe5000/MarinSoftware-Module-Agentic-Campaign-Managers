@@ -7,17 +7,19 @@ import { Campaign, CampaignPlan, CampaignStatus, CampaignCreationRequest } from 
 interface CampaignStore {
   // State
   currentCampaignPlan: CampaignPlan | null;
+  currentCampaignPlanIsMock: boolean; // Flag to track if current plan is from mock data
   currentCampaign: Campaign | null;
   campaigns: Campaign[];
   isLoading: boolean;
   error: string | null;
 
   // Actions
-  setCampaignPlan: (plan: CampaignPlan) => void;
+  setCampaignPlan: (plan: CampaignPlan, isMockData?: boolean) => void;
   updateCampaignPlan: (updates: Partial<CampaignPlan>) => void;
   setCampaign: (campaign: Campaign) => void;
   addCampaign: (campaign: Campaign) => void;
   updateCampaign: (id: string, updates: Partial<Campaign>) => void;
+  removeCampaign: (id: string) => void;
   setCampaigns: (campaigns: Campaign[]) => void;
   setLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
@@ -52,14 +54,15 @@ const validateCampaignPlan = (plan: CampaignPlan): boolean => {
 export const useCampaignStore = create<CampaignStore>((set, get) => ({
   // Initial state
   currentCampaignPlan: null,
+  currentCampaignPlanIsMock: false,
   currentCampaign: null,
   campaigns: [],
   isLoading: false,
   error: null,
 
   // Actions
-  setCampaignPlan: (plan: CampaignPlan) => {
-    set({ currentCampaignPlan: plan, error: null });
+  setCampaignPlan: (plan: CampaignPlan, isMockData: boolean = false) => {
+    set({ currentCampaignPlan: plan, currentCampaignPlanIsMock: isMockData, error: null });
   },
 
   updateCampaignPlan: (updates: Partial<CampaignPlan>) => {
@@ -96,6 +99,15 @@ export const useCampaignStore = create<CampaignStore>((set, get) => ({
     }));
   },
 
+  removeCampaign: (id: string) => {
+    set((state) => ({
+      campaigns: state.campaigns.filter((campaign) => campaign.id !== id),
+      currentCampaign:
+        state.currentCampaign?.id === id ? null : state.currentCampaign,
+      error: null,
+    }));
+  },
+
   setCampaigns: (campaigns: Campaign[]) => {
     set({ campaigns, error: null });
   },
@@ -109,7 +121,7 @@ export const useCampaignStore = create<CampaignStore>((set, get) => ({
   },
 
   clearCampaignPlan: () => {
-    set({ currentCampaignPlan: null, error: null });
+    set({ currentCampaignPlan: null, currentCampaignPlanIsMock: false, error: null });
   },
 
   clearCampaign: () => {

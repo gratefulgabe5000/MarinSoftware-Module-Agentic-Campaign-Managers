@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { CampaignPlan } from '../types/ai.types';
 import { useCampaignStore } from '../store/campaignStore';
 import { campaignService } from '../services/campaignService';
+import CampaignPlanEditor from './CampaignPlanEditor';
 
 /**
  * CampaignActionButtons Component Props
@@ -22,6 +23,7 @@ const CampaignActionButtons: React.FC<CampaignActionButtonsProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [requestedAction, setRequestedAction] = useState<'approve' | 'edit' | null>(null);
+  const [showEditor, setShowEditor] = useState(false);
 
   const setCampaignPlan = useCampaignStore((state) => state.setCampaignPlan);
   const setLoading = useCampaignStore((state) => state.setLoading);
@@ -113,12 +115,27 @@ const CampaignActionButtons: React.FC<CampaignActionButtonsProps> = ({
    */
   const confirmEdit = () => {
     setShowConfirmDialog(false);
+    setShowEditor(true);
     setIsEditing(true);
-    // TODO: Navigate to edit mode or show edit form
-    // For MVP, this is a placeholder
-    console.log('Edit campaign plan:', campaignPlan);
-    alert('Edit functionality will be implemented in Phase 4.');
+  };
+
+  /**
+   * Handle save edited plan
+   */
+  const handleSaveEditedPlan = (updatedPlan: CampaignPlan) => {
+    setCampaignPlan(updatedPlan);
+    setShowEditor(false);
     setIsEditing(false);
+    setRequestedAction(null);
+  };
+
+  /**
+   * Handle cancel edit
+   */
+  const handleCancelEdit = () => {
+    setShowEditor(false);
+    setIsEditing(false);
+    setRequestedAction(null);
   };
 
   /**
@@ -139,6 +156,19 @@ const CampaignActionButtons: React.FC<CampaignActionButtonsProps> = ({
     setRequestedAction(null);
   };
 
+  // If editing, show the editor
+  if (showEditor) {
+    return (
+      <div className="campaign-action-buttons card">
+        <CampaignPlanEditor
+          campaignPlan={campaignPlan}
+          onSave={handleSaveEditedPlan}
+          onCancel={handleCancelEdit}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="campaign-action-buttons card">
       <div className="card-header">
@@ -157,7 +187,7 @@ const CampaignActionButtons: React.FC<CampaignActionButtonsProps> = ({
           <button
             className="action-btn action-btn-secondary"
             onClick={handleEdit}
-            disabled={isEditing}
+            disabled={isEditing || isApproving}
           >
             {isEditing ? 'Editing...' : 'Edit Plan'}
           </button>

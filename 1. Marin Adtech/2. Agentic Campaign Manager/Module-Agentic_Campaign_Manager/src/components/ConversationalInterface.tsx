@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import ExamplePrompts from './ExamplePrompts';
+import CampaignPlanActions from './CampaignPlanActions';
 import { Message } from '../types/message.types';
 import { useConversationStore } from '../store/conversationStore';
 import { useCampaignStore } from '../store/campaignStore';
@@ -93,7 +94,14 @@ const ConversationalInterface: React.FC = () => {
       });
 
       // Build response message
-      let responseContent = `I've analyzed your campaign goal. Here's what I understand:\n\n`;
+      let responseContent = '';
+      
+      // Add mock data badge if this is mock data
+      if (response.isMockData) {
+        responseContent += `⚠️ **Mock Data** - This is a simulated response for demonstration purposes.\n\n`;
+      }
+      
+      responseContent += `I've analyzed your campaign goal. Here's what I understand:\n\n`;
       responseContent += `**Objective:** ${response.campaignPlan.objective}\n\n`;
       
       if (response.campaignPlan.targetAudience.demographics || response.campaignPlan.targetAudience.psychographics) {
@@ -127,10 +135,10 @@ const ConversationalInterface: React.FC = () => {
         });
         responseContent += `\nPlease answer these questions so I can create a more accurate campaign plan.`;
       } else {
-        responseContent += `Great! I've created a campaign plan for you. Would you like to review it? You can view the preview to see all the details and approve it to create the campaign.`;
+        responseContent += `Great! I've created a campaign plan for you. Use the buttons below to view the preview or create the campaign.`;
         
-        // Store campaign plan in store
-        setCampaignPlan(response.campaignPlan);
+        // Store campaign plan in store with mock data flag
+        setCampaignPlan(response.campaignPlan, response.isMockData || false);
       }
 
       // Get current messages from store and update assistant message
@@ -140,6 +148,8 @@ const ConversationalInterface: React.FC = () => {
               ...msg,
               content: responseContent,
               isLoading: false,
+              hasCampaignPlan: !response.clarifyingQuestions || response.clarifyingQuestions.length === 0,
+              isMockData: response.isMockData || false,
             }
           : msg
       );

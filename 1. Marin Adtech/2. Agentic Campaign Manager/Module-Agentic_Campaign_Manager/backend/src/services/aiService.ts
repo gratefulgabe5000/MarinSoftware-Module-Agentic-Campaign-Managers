@@ -30,7 +30,7 @@ class AIService {
       const prompt = this.buildGoalUnderstandingPrompt(request);
 
       // Call OpenAI API
-      const response = await this.callOpenAI(prompt);
+      const response = await this.callOpenAI(prompt, request);
 
       // Parse and validate response
       const campaignPlan = this.parseCampaignPlan(response);
@@ -45,6 +45,7 @@ class AIService {
         clarifyingQuestions: needsClarification
           ? this.generateClarifyingQuestions(campaignPlan)
           : undefined,
+        isMockData: !this.apiKey, // Mark as mock data if no API key is configured
       };
     } catch (error) {
       console.error('Error understanding goal:', error);
@@ -104,10 +105,10 @@ Return JSON in this exact format:
   /**
    * Call OpenAI API
    */
-  private async callOpenAI(prompt: string): Promise<string> {
+  private async callOpenAI(prompt: string, request?: GoalUnderstandingRequest): Promise<string> {
     if (!this.apiKey) {
       // For MVP, return mock response if API key is not configured
-      return this.getMockResponse();
+      return this.getMockResponse(request);
     }
 
     try {
@@ -143,37 +144,192 @@ Return JSON in this exact format:
     } catch (error) {
       console.error('OpenAI API error:', error);
       // Fallback to mock response on error
-      return this.getMockResponse();
+      return this.getMockResponse(request);
     }
   }
 
   /**
    * Get mock response for MVP (when API key is not configured)
+   * This extracts basic information from the user's message
    */
-  private getMockResponse(): string {
+  private getMockResponse(request?: GoalUnderstandingRequest): string {
+    // Combine message and conversation history for better extraction
+    const message = request?.message?.toLowerCase() || '';
+    const conversationHistory = request?.conversationHistory || [];
+    const fullText = [message, ...conversationHistory.map(m => m.content)].join(' ').toLowerCase();
+    
+    // Extract budget - improved pattern to match $4,000, $4000, 4000, etc.
+    // Look for patterns like: $4,000, $4000, 4000 dollars, budget is 4000, etc.
+    const budgetPatterns = [
+      /\$\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)/i,  // $4,000 or $4000
+      /budget\s*(?:is|of|:)?\s*\$?\s*(\d{1,3}(?:,\d{3})*)/i,  // budget is 4000 or budget: $4,000
+      /(\d{1,3}(?:,\d{3})*)\s*(?:dollar|usd|us\s*\$)/i,  // 4000 dollars or 4000 USD
+      /(\d{1,3}(?:,\d{3})*)\s*(?:for|spend|spending)/i,  // 4000 for campaign
+    ];
+    
+    let budget = 5000; // default
+    for (const pattern of budgetPatterns) {
+      const match = fullText.match(pattern);
+      if (match && match[1]) {
+        const extracted = parseFloat(match[1].replace(/,/g, ''));
+        if (extracted > 0 && extracted < 10000000) { // reasonable range
+          budget = extracted;
+          break;
+        }
+      }
+    }
+    
+    // For mock data, always use USD (even if other currencies are mentioned)
+    // This ensures consistency in mock responses while real API can handle any currency
+    const currency = 'USD';
+    
+    // Extract duration/days - improved patterns
+    const durationPatterns = [
+      /(\d+)\s*(?:week|weeks)/i,  // 6 weeks
+      /(\d+)\s*(?:day|days)/i,     // 30 days
+      /campaign\s*(?:duration|length|for|of)?\s*(\d+)/i,  // campaign duration 30
+      /for\s*(\d+)\s*(?:week|day)/i,  // for 6 weeks
+    ];
+    
+    let duration = 30; // default
+    for (const pattern of durationPatterns) {
+      const match = fullText.match(pattern);
+      if (match && match[1]) {
+        const extracted = parseInt(match[1], 10);
+        if (match[0].includes('week')) {
+          duration = extracted * 7; // convert weeks to days
+        } else if (extracted > 0 && extracted <= 365) {
+          duration = extracted;
+        }
+        if (duration > 0) break;
+      }
+    }
+    
+    // Extract platforms - improved detection
+    const platforms: string[] = [];
+    const platformKeywords = {
+      'Google Ads': ['google', 'google ads', 'adwords'],
+      'Meta': ['meta', 'facebook', 'instagram', 'fb', 'fb ads'],
+      'Microsoft Ads': ['microsoft', 'bing', 'microsoft ads', 'bing ads'],
+    };
+    
+    for (const [platform, keywords] of Object.entries(platformKeywords)) {
+      if (keywords.some(keyword => fullText.includes(keyword))) {
+        platforms.push(platform);
+      }
+    }
+    if (platforms.length === 0) platforms.push('Google Ads', 'Meta');
+    
+    // Extract objective - improved detection
+    let objective = 'Drive conversions';
+    const objectiveKeywords = {
+      'Drive product sign-ups': ['sign', 'signup', 'sign-up', 'register', 'registration'],
+      'Drive sales': ['sale', 'purchase', 'buy', 'revenue', 'sell'],
+      'Generate leads': ['lead', 'inquiry', 'inquiries', 'contact'],
+      'Increase brand awareness': ['awareness', 'brand', 'visibility', 'exposure'],
+      'Drive website traffic': ['traffic', 'visit', 'visitor', 'clicks', 'ctr'],
+      'Promote event': ['event', 'conference', 'webinar', 'meetup', 'promote', 'promotion'],
+      'Drive registrations': ['register', 'registration', 'attend', 'attendance'],
+    };
+    
+    for (const [obj, keywords] of Object.entries(objectiveKeywords)) {
+      if (keywords.some(keyword => fullText.includes(keyword))) {
+        objective = obj;
+        break;
+      }
+    }
+    
+    // Extract target audience - improved patterns
+    let targetAge = '25-45';
+    let targetLocation = 'US';
+    let targetInterests: string[] = [];
+    
+    // Age range
+    const ageMatch = fullText.match(/(\d+)[-\s]+(\d+)\s*(?:year|age|yr)/i);
+    if (ageMatch) {
+      targetAge = `${ageMatch[1]}-${ageMatch[2]}`;
+    }
+    
+    // Location
+    const locationMatch = fullText.match(/\b(us|usa|united states|uk|united kingdom|canada|australia|europe|global|worldwide)\b/i);
+    if (locationMatch) {
+      const loc = locationMatch[1].toLowerCase();
+      if (loc === 'us' || loc === 'usa' || loc === 'united states') {
+        targetLocation = 'US';
+      } else if (loc === 'uk' || loc === 'united kingdom') {
+        targetLocation = 'UK';
+      } else {
+        targetLocation = locationMatch[1].toUpperCase();
+      }
+    }
+    
+    // Professional/industry keywords
+    const professionalKeywords = ['professional', 'marketing', 'business', 'executive', 'manager'];
+    const industryKeywords = ['marketing', 'technology', 'software', 'finance', 'healthcare', 'education'];
+    
+    if (professionalKeywords.some(kw => fullText.includes(kw))) {
+      targetInterests.push('professional');
+    }
+    
+    for (const industry of industryKeywords) {
+      if (fullText.includes(industry)) {
+        targetInterests.push(industry);
+      }
+    }
+    
+    if (targetInterests.length === 0) {
+      targetInterests = ['general'];
+    }
+    
+    // Extract KPI - improved detection
+    let primaryKPI = 'Conversions';
+    const kpiKeywords = {
+      'Sign-ups': ['sign', 'signup', 'sign-up', 'register'],
+      'Sales': ['sale', 'revenue', 'purchase'],
+      'Leads': ['lead', 'inquiry'],
+      'Clicks': ['click', 'ctr'],
+      'Registrations': ['register', 'registration', 'attend'],
+      'Impressions': ['impression', 'reach'],
+    };
+    
+    for (const [kpi, keywords] of Object.entries(kpiKeywords)) {
+      if (keywords.some(keyword => fullText.includes(keyword))) {
+        primaryKPI = kpi;
+        break;
+      }
+    }
+    
+    // Calculate daily budget
+    const dailyBudget = Math.round(budget / duration);
+    
+    // Calculate start date (today or tomorrow)
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() + 1);
+    const startDateStr = startDate.toISOString().split('T')[0];
+    
     return JSON.stringify({
-      objective: 'Drive product sign-ups',
+      objective,
       targetAudience: {
         demographics: {
-          age: '25-45',
-          location: 'US',
+          age: targetAge,
+          location: targetLocation,
         },
         psychographics: {
-          interests: ['technology', 'software'],
+          interests: targetInterests,
         },
       },
       budget: {
-        total: 5000,
-        daily: 167,
-        currency: 'USD',
+        total: budget,
+        daily: dailyBudget,
+        currency,
       },
       timeline: {
-        startDate: new Date().toISOString().split('T')[0],
-        duration: 30,
+        startDate: startDateStr,
+        duration,
       },
-      platforms: ['Google Ads', 'Meta'],
+      platforms,
       kpis: {
-        primary: 'Sign-ups',
+        primary: primaryKPI,
         secondary: ['CTR', 'CPA'],
       },
       adGroups: [],

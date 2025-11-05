@@ -1,6 +1,8 @@
 import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import AgenticCampaignManagerModule from './AgenticCampaignManagerModule';
+import ErrorBoundary from './components/ErrorBoundary';
+import ToastContainer from './components/ToastContainer';
 
 /**
  * Main App Component
@@ -13,14 +15,17 @@ const App: React.FC = () => {
   const mockContext = undefined;
 
   return (
-    <BrowserRouter>
-      <div className="app">
-        <AgenticCampaignManagerModule 
-          context={mockContext}
-          isActive={true}
-        />
-      </div>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <div className="app">
+          <AgenticCampaignManagerModule 
+            context={mockContext}
+            isActive={true}
+          />
+          <ToastContainer />
+        </div>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 };
 
