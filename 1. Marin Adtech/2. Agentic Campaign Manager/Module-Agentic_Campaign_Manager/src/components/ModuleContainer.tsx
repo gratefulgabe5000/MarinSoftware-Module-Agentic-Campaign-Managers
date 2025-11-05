@@ -5,6 +5,8 @@ import CampaignCreation from './CampaignCreation';
 import CampaignPreview from './CampaignPreview';
 import CampaignDetail from './CampaignDetail';
 import PerformanceDashboard from './PerformanceDashboard';
+import CSVUploadScreen from './csv-upload/CSVUploadScreen';
+import PatternLearningScreen from './pattern-learning/PatternLearningScreen';
 
 /**
  * Module Container Component
@@ -17,6 +19,8 @@ const ModuleContainer: React.FC = () => {
         <Route path="/" element={<CampaignDashboard />} />
         <Route path="/create" element={<CampaignCreation />} />
         <Route path="/preview" element={<CampaignPreview />} />
+        <Route path="/campaigns/csv-upload" element={<CSVUploadScreen />} />
+        <Route path="/campaigns/pattern-learning" element={<PatternLearningScreen />} />
         <Route path="/campaign/:id" element={<CampaignDetail />} />
         <Route path="/campaign/:id/performance" element={<PerformanceDashboard />} />
       </Routes>

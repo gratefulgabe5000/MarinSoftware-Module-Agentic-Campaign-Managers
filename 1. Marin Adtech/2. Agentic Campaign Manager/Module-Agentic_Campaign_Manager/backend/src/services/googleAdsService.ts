@@ -159,5 +159,222 @@ export class GoogleAdsService extends BasePlatformAPI implements IPlatformAPI {
     // For MVP, just check if token exists
     return !!this.accessToken;
   }
+
+  /**
+   * Query all campaigns for an account
+   */
+  async queryCampaigns(
+    accountId: string,
+    dateRange?: { startDate: string; endDate: string }
+  ): Promise<any[]> {
+    try {
+      if (!this.accessToken) {
+        throw new Error('Google Ads access token not found');
+      }
+
+      // For MVP, return mock data
+      // In production, this would use the Google Ads API Query Language
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      // Mock campaign data
+      return [
+        {
+          id: 'campaign_1',
+          name: 'Sample Campaign 1',
+          status: 'ENABLED',
+          budget: 1000,
+          startDate: '2024-01-01',
+          endDate: null,
+        },
+        {
+          id: 'campaign_2',
+          name: 'Sample Campaign 2',
+          status: 'ENABLED',
+          budget: 2000,
+          startDate: '2024-01-01',
+          endDate: null,
+        },
+      ];
+    } catch (error) {
+      console.error('Error querying campaigns:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Query ad groups for campaigns
+   */
+  async queryAdGroups(
+    accountId: string,
+    campaignIds?: string[]
+  ): Promise<any[]> {
+    try {
+      if (!this.accessToken) {
+        throw new Error('Google Ads access token not found');
+      }
+
+      // For MVP, return mock data
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      // Mock ad group data
+      return [
+        {
+          id: 'adgroup_1',
+          campaignId: 'campaign_1',
+          name: 'Brand - Product Category',
+          status: 'ENABLED',
+          cpcBid: 1.50,
+        },
+        {
+          id: 'adgroup_2',
+          campaignId: 'campaign_1',
+          name: 'Product Type - Model',
+          status: 'ENABLED',
+          cpcBid: 2.00,
+        },
+        {
+          id: 'adgroup_3',
+          campaignId: 'campaign_2',
+          name: 'Brand + Feature',
+          status: 'ENABLED',
+          cpcBid: 1.75,
+        },
+      ];
+    } catch (error) {
+      console.error('Error querying ad groups:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Query keywords with performance metrics
+   */
+  async queryKeywords(
+    accountId: string,
+    campaignIds?: string[],
+    dateRange?: { startDate: string; endDate: string }
+  ): Promise<any[]> {
+    try {
+      if (!this.accessToken) {
+        throw new Error('Google Ads access token not found');
+      }
+
+      // For MVP, return mock data with performance metrics
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      // Mock keyword data with performance
+      return [
+        {
+          id: 'keyword_1',
+          adGroupId: 'adgroup_1',
+          text: 'buy product online',
+          matchType: 'BROAD',
+          status: 'ENABLED',
+          cpcBid: 1.50,
+          impressions: 10000,
+          clicks: 500,
+          conversions: 25,
+          cost: 750,
+          ctr: 5.0,
+          averageCpc: 1.50,
+          conversionsValue: 2500,
+        },
+        {
+          id: 'keyword_2',
+          adGroupId: 'adgroup_1',
+          text: 'product reviews',
+          matchType: 'PHRASE',
+          status: 'ENABLED',
+          cpcBid: 1.25,
+          impressions: 8000,
+          clicks: 320,
+          conversions: 16,
+          cost: 400,
+          ctr: 4.0,
+          averageCpc: 1.25,
+          conversionsValue: 1600,
+        },
+        {
+          id: 'keyword_3',
+          adGroupId: 'adgroup_2',
+          text: '[best product]',
+          matchType: 'EXACT',
+          status: 'ENABLED',
+          cpcBid: 2.00,
+          impressions: 5000,
+          clicks: 350,
+          conversions: 20,
+          cost: 700,
+          ctr: 7.0,
+          averageCpc: 2.00,
+          conversionsValue: 2000,
+        },
+      ];
+    } catch (error) {
+      console.error('Error querying keywords:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Query responsive search ads (RSAs)
+   */
+  async queryAds(
+    accountId: string,
+    campaignIds?: string[],
+    dateRange?: { startDate: string; endDate: string }
+  ): Promise<any[]> {
+    try {
+      if (!this.accessToken) {
+        throw new Error('Google Ads access token not found');
+      }
+
+      // For MVP, return mock data
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      // Mock RSA data
+      return [
+        {
+          id: 'ad_1',
+          adGroupId: 'adgroup_1',
+          type: 'RESPONSIVE_SEARCH_AD',
+          headlines: [
+            'Buy Our Amazing Product',
+            'Best Product Online',
+            'Quality Product Guaranteed',
+            'Shop Now - Free Shipping',
+            'Premium Product Selection',
+          ],
+          descriptions: [
+            'Discover our amazing product with free shipping and returns.',
+            'Shop the best selection of products online today.',
+          ],
+          finalUrls: ['https://example.com/product'],
+          status: 'ENABLED',
+        },
+        {
+          id: 'ad_2',
+          adGroupId: 'adgroup_2',
+          type: 'RESPONSIVE_SEARCH_AD',
+          headlines: [
+            'Top Rated Product',
+            'Best Deals Online',
+            'Shop Quality Products',
+            'Customer Favorite',
+            'Premium Selection',
+          ],
+          descriptions: [
+            'Get the best deals on quality products with fast shipping.',
+            'Join thousands of satisfied customers shopping today.',
+          ],
+          finalUrls: ['https://example.com/products'],
+          status: 'ENABLED',
+        },
+      ];
+    } catch (error) {
+      console.error('Error querying ads:', error);
+      throw error;
+    }
+  }
 }
 

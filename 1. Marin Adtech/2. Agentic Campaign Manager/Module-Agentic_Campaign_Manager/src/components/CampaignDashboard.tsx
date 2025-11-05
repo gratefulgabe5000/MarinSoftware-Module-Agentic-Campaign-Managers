@@ -139,6 +139,13 @@ const CampaignDashboard: React.FC = () => {
         <h2 className="dashboard-title">Campaign Dashboard</h2>
         <div className="dashboard-actions">
           <button
+            className="btn btn-secondary"
+            onClick={() => navigate('/campaigns/csv-upload')}
+            type="button"
+          >
+            📊 Bulk Generate from CSV/URLs
+          </button>
+          <button
             className="btn btn-primary"
             onClick={() => navigate('/create')}
             type="button"

@@ -25,7 +25,13 @@ const config: Config = {
       tsconfig: {
         jsx: 'react-jsx',
       },
+      esmInterop: true,
     }],
+  },
+  globals: {
+    'ts-jest': {
+      isolatedModules: true,
+    },
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
 };

@@ -3,6 +3,7 @@ import campaignRoutes from './campaigns';
 import chatRoutes from './chat';
 import authRoutes from './auth';
 import aiRoutes from './ai';
+import productsRoutes from './products';
 
 /**
  * API Router
@@ -21,6 +22,7 @@ router.get('/', (req, res) => {
       chat: '/api/chat',
       auth: '/api/auth',
       ai: '/api/ai',
+      products: '/api/products',
     },
   });
 });
@@ -39,6 +41,7 @@ router.use('/campaigns', campaignRoutes);
 router.use('/chat', chatRoutes);
 router.use('/auth', authRoutes);
 router.use('/ai', aiRoutes);
+router.use('/products', productsRoutes);
 
 export default router;
 

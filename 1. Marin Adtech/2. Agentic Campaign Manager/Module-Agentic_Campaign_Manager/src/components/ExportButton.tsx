@@ -43,7 +43,7 @@ const ExportButton: React.FC<ExportButtonProps> = ({
       setIsExporting(true);
       setExportError(null);
 
-      performanceService.exportToCSV(metrics, generateFilename('metrics'));
+      await performanceService.exportToCSV(metrics, generateFilename('metrics'));
     } catch (error) {
       console.error('Error exporting metrics:', error);
       setExportError(
@@ -66,7 +66,7 @@ const ExportButton: React.FC<ExportButtonProps> = ({
       setIsExporting(true);
       setExportError(null);
 
-      performanceService.exportToCSV(
+      await performanceService.exportToCSV(
         timeSeries.dataPoints,
         generateFilename('timeseries')
       );

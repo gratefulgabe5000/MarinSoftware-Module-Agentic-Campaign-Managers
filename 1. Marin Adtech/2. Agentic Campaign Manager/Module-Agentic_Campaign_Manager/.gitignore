@@ -7,14 +7,65 @@ dist/
 build/
 backend/dist/
 
-# Environment variables
+# Environment variables and API keys
 .env
+.env.*
+!.env.example
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+.env.development
+.env.production
+.env.test
 backend/.env
+backend/.env.*
+!backend/.env.example
 backend/.env.local
+*.env
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+*.cer
+*.keystore
+*.jks
+
+# API Keys and Secrets
+**/secrets/
+**/credentials/
+**/*secret*
+**/*key*
+**/*credential*
+**/*token*
+**/api-keys.*
+**/config/secrets.*
+**/config/credentials.*
+
+# OAuth tokens and refresh tokens
+**/tokens/
+**/oauth-tokens.*
+**/refresh-tokens.*
+**/*.token
+
+# Google Ads credentials
+**/google-ads-credentials.*
+**/google-ads-client-secret.*
+**/google-ads-oauth.*
+
+# Meta/Facebook credentials
+**/meta-credentials.*
+**/facebook-credentials.*
+**/meta-app-secret.*
+
+# Microsoft Ads credentials
+**/microsoft-ads-credentials.*
+**/microsoft-oauth.*
+
+# OpenAI API keys
+**/openai-key.*
+**/openai-credentials.*
 
 # Logs
 npm-debug.log*

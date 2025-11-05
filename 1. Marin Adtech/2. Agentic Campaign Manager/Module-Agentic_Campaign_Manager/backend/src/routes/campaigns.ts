@@ -3,6 +3,7 @@ import { CampaignController } from '../controllers/campaignController';
 import { CampaignCreationController } from '../controllers/campaignCreationController';
 import { StatusController } from '../controllers/statusController';
 import { PerformanceController } from '../controllers/performanceController';
+import { PatternExtractionController } from '../controllers/patternExtractionController';
 
 /**
  * Campaign Routes
@@ -13,6 +14,7 @@ const campaignController = new CampaignController();
 const campaignCreationController = new CampaignCreationController();
 const statusController = new StatusController();
 const performanceController = new PerformanceController();
+const patternExtractionController = new PatternExtractionController();
 
 // Campaign creation endpoints
 router.post('/create', campaignCreationController.createCampaign);
@@ -36,6 +38,11 @@ router.delete('/:id', campaignController.deleteCampaign);
 router.post('/:id/launch', campaignController.launchCampaign);
 router.post('/:id/pause', campaignController.pauseCampaign);
 router.post('/:id/resume', campaignController.resumeCampaign);
+
+// Pattern extraction endpoints
+router.get('/query-patterns', patternExtractionController.queryPatterns);
+router.get('/high-performing-keywords', patternExtractionController.getHighPerformingKeywords);
+router.get('/ad-copy-patterns', patternExtractionController.getAdCopyPatterns);
 
 export default router;
 
