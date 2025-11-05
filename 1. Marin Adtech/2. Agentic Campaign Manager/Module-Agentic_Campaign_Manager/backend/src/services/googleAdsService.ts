@@ -159,7 +159,6 @@ export class GoogleAdsService extends BasePlatformAPI implements IPlatformAPI {
     // For MVP, just check if token exists
     return !!this.accessToken;
   }
-<<<<<<< HEAD
 
   /**
    * Query all campaigns for an account
@@ -377,7 +376,5 @@ export class GoogleAdsService extends BasePlatformAPI implements IPlatformAPI {
       throw error;
     }
   }
-=======
->>>>>>> c75a29246aa4d3b02efa0ae3553d6040d682d314
 }
 

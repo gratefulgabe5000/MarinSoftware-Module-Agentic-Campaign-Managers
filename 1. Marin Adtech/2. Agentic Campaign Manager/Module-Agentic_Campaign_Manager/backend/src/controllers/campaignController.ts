@@ -12,14 +12,18 @@ export class CampaignController {
    */
   getAllCampaigns = async (req: Request, res: Response): Promise<void> => {
     try {
-      // Placeholder - will be implemented in Phase 3
+      // For MVP, return empty array (campaigns are stored in frontend store)
+      // In production, this would load from database
       res.json({
         campaigns: [],
         total: 0,
-        message: 'Campaign retrieval not yet implemented',
       });
     } catch (error) {
-      res.status(500).json({ error: 'Failed to retrieve campaigns' });
+      console.error('Error in getAllCampaigns:', error);
+      res.status(500).json({ 
+        error: 'Failed to retrieve campaigns',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      });
     }
   };
 

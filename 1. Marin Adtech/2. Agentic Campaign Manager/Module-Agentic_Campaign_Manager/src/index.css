@@ -2687,7 +2687,6 @@ code {
   cursor: not-allowed;
 }
 
-<<<<<<< HEAD
 /* CSV Upload Screen Styles */
 .csv-upload-screen {
   max-width: 1200px;
@@ -2979,8 +2978,6 @@ code {
   overflow-x: auto;
 }
 
-=======
->>>>>>> c75a29246aa4d3b02efa0ae3553d6040d682d314
 /* Campaign Plan Actions */
 .campaign-plan-actions {
   display: flex;

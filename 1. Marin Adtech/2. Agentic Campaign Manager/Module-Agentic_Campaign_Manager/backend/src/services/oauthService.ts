@@ -306,7 +306,6 @@ class OAuthService {
   }
 
   /**
-<<<<<<< HEAD
    * Remove token
    */
   removeToken(platform: string): void {
@@ -314,8 +313,6 @@ class OAuthService {
   }
 
   /**
-=======
->>>>>>> c75a29246aa4d3b02efa0ae3553d6040d682d314
    * Check if token is expired
    */
   isTokenExpired(token: OAuthToken): boolean {

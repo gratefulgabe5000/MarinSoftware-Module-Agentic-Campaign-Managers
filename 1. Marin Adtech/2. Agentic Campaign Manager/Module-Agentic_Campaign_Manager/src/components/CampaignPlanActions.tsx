@@ -49,7 +49,6 @@ const CampaignPlanActions: React.FC<CampaignPlanActionsProps> = () => {
       setLoading(true);
       setError(null);
 
-<<<<<<< HEAD
       // Generate campaign name from plan
       const campaignName = `Campaign - ${campaignPlan.objective.substring(0, 50)}`;
 
@@ -72,21 +71,10 @@ const CampaignPlanActions: React.FC<CampaignPlanActionsProps> = () => {
         updatedAt: new Date(),
       };
 
-=======
-      // Create campaign from plan
-      const campaign = await campaignService.createCampaign({
-        name: `Campaign - ${campaignPlan.objective.substring(0, 50)}`,
-        description: `Campaign for ${campaignPlan.objective}`,
-        objective: campaignPlan.objective,
-        campaignPlan,
-      });
-
->>>>>>> c75a29246aa4d3b02efa0ae3553d6040d682d314
       // Add to store
       addCampaign(campaign);
       setCampaign(campaign);
 
-<<<<<<< HEAD
       // Show success message if there are errors
       if (response.errors && response.errors.length > 0) {
         const errorMessage = response.errors
@@ -99,13 +87,6 @@ const CampaignPlanActions: React.FC<CampaignPlanActionsProps> = () => {
 
       // Navigate to campaign detail page
       navigate(`/campaign/${response.campaignId}`);
-=======
-      // Show success message
-      toastService.success('Campaign created successfully!');
-
-      // Navigate to campaign detail page
-      navigate(`/campaign/${campaign.id}`);
->>>>>>> c75a29246aa4d3b02efa0ae3553d6040d682d314
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to create campaign';
       setError(errorMessage);

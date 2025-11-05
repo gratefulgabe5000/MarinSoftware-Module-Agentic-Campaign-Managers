@@ -5,11 +5,13 @@ import { resolve } from 'path';
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 3000,
+    port: 5173, // Use port 5173 to avoid conflict with backend (3001)
+    strictPort: false, // Allow Vite to use next available port if 5173 is in use
     proxy: {
       '/api': {
         target: 'http://localhost:3001',
         changeOrigin: true,
+        secure: false,
       },
     },
   },

@@ -4,17 +4,9 @@ import {
   GoalUnderstandingResponse,
   CampaignPlan,
 } from '../types/ai.types';
-<<<<<<< HEAD
 import { getApiBaseUrl } from '../config/environment';
 
 const API_BASE_URL = getApiBaseUrl('AI_');
-=======
-
-const API_BASE_URL = 
-  typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE_URL
-    ? import.meta.env.VITE_API_BASE_URL
-    : 'http://localhost:3001/api';
->>>>>>> c75a29246aa4d3b02efa0ae3553d6040d682d314
 
 /**
  * AI Service
