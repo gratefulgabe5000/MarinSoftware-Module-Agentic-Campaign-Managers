@@ -24,12 +24,17 @@ const CampaignActions: React.FC<CampaignActionsProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+<<<<<<< HEAD
   const [actionType, setActionType] = useState<'activate' | 'pause' | 'resume' | 'delete' | null>(null);
+=======
+  const [actionType, setActionType] = useState<'pause' | 'resume' | 'delete' | null>(null);
+>>>>>>> c75a29246aa4d3b02efa0ae3553d6040d682d314
 
   const updateCampaign = useCampaignStore((state) => state.updateCampaign);
   const setCampaign = useCampaignStore((state) => state.setCampaign);
 
   /**
+<<<<<<< HEAD
    * Handle activate action
    */
   const handleActivate = () => {
@@ -38,6 +43,8 @@ const CampaignActions: React.FC<CampaignActionsProps> = ({
   };
 
   /**
+=======
+>>>>>>> c75a29246aa4d3b02efa0ae3553d6040d682d314
    * Handle pause action
    */
   const handlePause = () => {
@@ -72,6 +79,7 @@ const CampaignActions: React.FC<CampaignActionsProps> = ({
     setShowConfirmDialog(false);
 
     try {
+<<<<<<< HEAD
       if (actionType === 'activate') {
         // Activate campaign (update status to active)
         const updatedCampaign = await campaignService.updateCampaign(campaign.id, {
@@ -89,6 +97,9 @@ const CampaignActions: React.FC<CampaignActionsProps> = ({
           onUpdate(updatedCampaign);
         }
       } else if (actionType === 'pause') {
+=======
+      if (actionType === 'pause') {
+>>>>>>> c75a29246aa4d3b02efa0ae3553d6040d682d314
         // Pause campaign
         await campaignService.pauseCampaign(campaign.id);
 
@@ -149,8 +160,11 @@ const CampaignActions: React.FC<CampaignActionsProps> = ({
    */
   const getConfirmMessage = (): string => {
     switch (actionType) {
+<<<<<<< HEAD
       case 'activate':
         return `Are you sure you want to activate "${campaign.name}"? This will publish the campaign and start serving ads.`;
+=======
+>>>>>>> c75a29246aa4d3b02efa0ae3553d6040d682d314
       case 'pause':
         return `Are you sure you want to pause "${campaign.name}"?`;
       case 'resume':
@@ -163,6 +177,7 @@ const CampaignActions: React.FC<CampaignActionsProps> = ({
   };
 
   /**
+<<<<<<< HEAD
    * Check if activate is available
    */
   const canActivate = (): boolean => {
@@ -170,6 +185,8 @@ const CampaignActions: React.FC<CampaignActionsProps> = ({
   };
 
   /**
+=======
+>>>>>>> c75a29246aa4d3b02efa0ae3553d6040d682d314
    * Check if pause is available
    */
   const canPause = (): boolean => {
@@ -199,6 +216,7 @@ const CampaignActions: React.FC<CampaignActionsProps> = ({
       )}
 
       <div className="actions-buttons">
+<<<<<<< HEAD
         {canActivate() && (
           <button
             className="action-btn activate-btn"
@@ -209,6 +227,8 @@ const CampaignActions: React.FC<CampaignActionsProps> = ({
           </button>
         )}
 
+=======
+>>>>>>> c75a29246aa4d3b02efa0ae3553d6040d682d314
         {canPause() && (
           <button
             className="action-btn pause-btn"

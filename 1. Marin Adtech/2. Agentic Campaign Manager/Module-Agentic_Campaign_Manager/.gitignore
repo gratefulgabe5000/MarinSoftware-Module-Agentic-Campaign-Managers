@@ -7,14 +7,20 @@ dist/
 build/
 backend/dist/
 
+<<<<<<< HEAD
 # Environment variables and API keys
 .env
 .env.*
 !.env.example
+=======
+# Environment variables
+.env
+>>>>>>> c75a29246aa4d3b02efa0ae3553d6040d682d314
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+<<<<<<< HEAD
 .env.development
 .env.production
 .env.test
@@ -66,6 +72,10 @@ backend/.env.local
 # OpenAI API keys
 **/openai-key.*
 **/openai-credentials.*
+=======
+backend/.env
+backend/.env.local
+>>>>>>> c75a29246aa4d3b02efa0ae3553d6040d682d314
 
 # Logs
 npm-debug.log*

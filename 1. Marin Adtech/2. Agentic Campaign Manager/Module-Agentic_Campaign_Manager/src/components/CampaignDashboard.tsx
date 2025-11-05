@@ -25,17 +25,21 @@ const CampaignDashboard: React.FC = () => {
     loadCampaigns();
   }, []);
 
+<<<<<<< HEAD
   // Update campaigns when store changes
   useEffect(() => {
     // Always sync with store campaigns (even if empty or when individual campaigns update)
     setCampaigns(storeCampaigns);
   }, [storeCampaigns]);
 
+=======
+>>>>>>> c75a29246aa4d3b02efa0ae3553d6040d682d314
   const loadCampaigns = async () => {
     try {
       setIsLoading(true);
       setError(null);
 
+<<<<<<< HEAD
       // Always use store campaigns if available (they're the source of truth)
       // Only fetch from API if store is empty
       if (storeCampaigns.length > 0) {
@@ -54,6 +58,16 @@ const CampaignDashboard: React.FC = () => {
       }
 
       // Load from API if store is empty
+=======
+      // Try to load from store first
+      if (storeCampaigns.length > 0) {
+        setCampaigns(storeCampaigns);
+        setIsLoading(false);
+        return;
+      }
+
+      // Load from API
+>>>>>>> c75a29246aa4d3b02efa0ae3553d6040d682d314
       const campaignsData = await campaignService.getAllCampaigns();
       setCampaigns(campaignsData);
       setCampaignsStore(campaignsData);
@@ -155,6 +169,7 @@ const CampaignDashboard: React.FC = () => {
         <h2 className="dashboard-title">Campaign Dashboard</h2>
         <div className="dashboard-actions">
           <button
+<<<<<<< HEAD
             className="btn btn-secondary"
             onClick={() => navigate('/campaigns/csv-upload')}
             type="button"
@@ -162,6 +177,8 @@ const CampaignDashboard: React.FC = () => {
             📊 Bulk Generate from CSV/URLs
           </button>
           <button
+=======
+>>>>>>> c75a29246aa4d3b02efa0ae3553d6040d682d314
             className="btn btn-primary"
             onClick={() => navigate('/create')}
             type="button"

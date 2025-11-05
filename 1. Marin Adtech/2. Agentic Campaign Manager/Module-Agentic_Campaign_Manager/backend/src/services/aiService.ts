@@ -140,8 +140,12 @@ Return JSON in this exact format:
         }
       );
 
+<<<<<<< HEAD
       const responseData = response.data as any;
       return responseData.choices[0]?.message?.content || '';
+=======
+      return response.data.choices[0]?.message?.content || '';
+>>>>>>> c75a29246aa4d3b02efa0ae3553d6040d682d314
     } catch (error) {
       console.error('OpenAI API error:', error);
       // Fallback to mock response on error

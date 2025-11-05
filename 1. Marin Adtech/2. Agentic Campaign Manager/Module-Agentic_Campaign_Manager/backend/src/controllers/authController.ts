@@ -232,6 +232,7 @@ export class AuthController {
       });
     }
   };
+<<<<<<< HEAD
 
   /**
    * Get Google Ads OAuth connection status
@@ -280,4 +281,6 @@ export class AuthController {
       });
     }
   };
+=======
+>>>>>>> c75a29246aa4d3b02efa0ae3553d6040d682d314
 }

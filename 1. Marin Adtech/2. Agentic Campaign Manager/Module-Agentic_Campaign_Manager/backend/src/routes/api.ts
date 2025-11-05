@@ -3,7 +3,10 @@ import campaignRoutes from './campaigns';
 import chatRoutes from './chat';
 import authRoutes from './auth';
 import aiRoutes from './ai';
+<<<<<<< HEAD
 import productsRoutes from './products';
+=======
+>>>>>>> c75a29246aa4d3b02efa0ae3553d6040d682d314
 
 /**
  * API Router
@@ -22,7 +25,10 @@ router.get('/', (req, res) => {
       chat: '/api/chat',
       auth: '/api/auth',
       ai: '/api/ai',
+<<<<<<< HEAD
       products: '/api/products',
+=======
+>>>>>>> c75a29246aa4d3b02efa0ae3553d6040d682d314
     },
   });
 });
@@ -41,7 +47,10 @@ router.use('/campaigns', campaignRoutes);
 router.use('/chat', chatRoutes);
 router.use('/auth', authRoutes);
 router.use('/ai', aiRoutes);
+<<<<<<< HEAD
 router.use('/products', productsRoutes);
+=======
+>>>>>>> c75a29246aa4d3b02efa0ae3553d6040d682d314
 
 export default router;
 

@@ -1,0 +1,10 @@
+# Environment variables
+.env*
+.env
+.env.local
+
+.env._copy-with-first-key
+.env._copy-with-second-key
+.env.local_copy-with-first-key
+.env.local_copy-with-second-key
+!.env.example
