@@ -25,11 +25,9 @@ const CampaignDashboard: React.FC = () => {
     loadCampaigns();
   }, []);
 
-  // Update campaigns when store changes
+  // Update campaigns when store changes - always sync with store
   useEffect(() => {
-    if (storeCampaigns.length > 0) {
-      setCampaigns(storeCampaigns);
-    }
+    setCampaigns(storeCampaigns);
   }, [storeCampaigns]);
 
   const loadCampaigns = async () => {
@@ -37,14 +35,16 @@ const CampaignDashboard: React.FC = () => {
       setIsLoading(true);
       setError(null);
 
-      // Try to load from store first
+      // Always sync with store first (store is source of truth)
       if (storeCampaigns.length > 0) {
         setCampaigns(storeCampaigns);
         setIsLoading(false);
+        // Optionally refresh from API in background (commented out for now)
+        // campaignService.getAllCampaigns().then(setCampaignsStore).catch(console.error);
         return;
       }
 
-      // Load from API
+      // Load from API if store is empty
       const campaignsData = await campaignService.getAllCampaigns();
       setCampaigns(campaignsData);
       setCampaignsStore(campaignsData);
