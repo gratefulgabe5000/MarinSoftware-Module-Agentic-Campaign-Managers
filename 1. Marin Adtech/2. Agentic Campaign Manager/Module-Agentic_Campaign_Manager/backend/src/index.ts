@@ -13,10 +13,27 @@ import apiRoutes from './routes/api';
 const app: Application = express();
 
 // Middleware
-app.use(cors({
-  origin: config.corsOrigin,
+// CORS configuration: Allow all localhost ports in development, specific origin in production
+const isDevelopment = process.env.NODE_ENV !== 'production';
+const corsOptions = {
+  origin: isDevelopment 
+    ? (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+        // Allow requests with no origin (mobile apps, curl, Postman, etc.)
+        if (!origin) return callback(null, true);
+        // Allow all localhost ports in development
+        if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+          return callback(null, true);
+        }
+        // Allow the configured origin
+        if (origin === config.corsOrigin) {
+          return callback(null, true);
+        }
+        callback(new Error('Not allowed by CORS'));
+      }
+    : config.corsOrigin,
   credentials: true,
-}));
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
