@@ -32,6 +32,9 @@ export class PatternExtractionController {
       const accessToken = req.headers.authorization?.replace('Bearer ', '') || 'mock-token';
       const googleAdsService = new GoogleAdsService(accessToken, accountId);
 
+      // Check if using mock token (indicates mock data will be used)
+      const isMockToken = !accessToken || accessToken === 'mock-token';
+
       // Parse date range
       const dateRange =
         startDate && endDate
@@ -53,6 +56,7 @@ export class PatternExtractionController {
       let adGroups: any[] = [];
       let keywords: any[] = [];
       let ads: any[] = [];
+      let isMockData = isMockToken; // Track if mock data is being used
 
       try {
         campaigns = await googleAdsService.queryCampaigns(
@@ -76,6 +80,7 @@ export class PatternExtractionController {
       } catch (error) {
         // If API fails, use mock data
         console.log('Using mock data for pattern extraction (API unavailable)');
+        isMockData = true;
         const { loadMockCampaigns, loadMockKeywords, loadMockAds } = await import('../utils/mockDataLoader');
         const mockCampaigns = loadMockCampaigns();
         campaigns = mockCampaigns.campaigns || [];
@@ -106,6 +111,7 @@ export class PatternExtractionController {
         extractedAt: new Date(),
         sourceCampaigns: campaigns.map((c) => c.id),
         dateRange: dateRange || undefined,
+        isMockData, // Flag indicating if mock data was used
       });
     } catch (error: any) {
       console.error('Error querying patterns:', error);
