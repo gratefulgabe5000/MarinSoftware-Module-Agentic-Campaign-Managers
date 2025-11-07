@@ -205,39 +205,30 @@ export function extractAdCopyPatterns(ads: any[]): AdCopyPatterns {
 
 /**
  * Extract templates from text array
- * Finds common patterns and structures
+ * Returns actual ad copy examples (deduplicated and sorted by frequency)
  */
 function extractTemplates(texts: string[], maxTemplates: number): string[] {
   if (texts.length === 0) {
     return [];
   }
 
-  // For MVP, return sample templates based on common patterns
-  // In production, this could use NLP to identify actual templates
-  const templates: string[] = [];
-  const seen = new Set<string>();
+  // Count frequency of each text
+  const textFrequency: { [key: string]: number } = {};
 
   texts.forEach((text) => {
-    // Simple template extraction: replace specific words with placeholders
-    let template = text
-      .replace(/\b(our|the|this|these|that|those)\b/gi, '{determiner}')
-      .replace(/\b(amazing|great|best|premium|quality|top)\b/gi, '{quality}')
-      .replace(/\b(product|products|item|items)\b/gi, '{product}')
-      .replace(/\b(buy|shop|order|get|purchase)\b/gi, '{action}')
-      .replace(/\b(now|today|here)\b/gi, '{urgency}')
-      .replace(/\b(free|fast|easy|guaranteed)\b/gi, '{benefit}');
-
-    // Clean up multiple spaces
-    template = template.replace(/\s+/g, ' ').trim();
-
-    if (template.length > 10 && template.length < 100 && !seen.has(template)) {
-      templates.push(template);
-      seen.add(template);
+    const cleaned = text.trim();
+    if (cleaned.length > 0) {
+      textFrequency[cleaned] = (textFrequency[cleaned] || 0) + 1;
     }
   });
 
-  // Return unique templates, up to maxTemplates
-  return Array.from(seen).slice(0, maxTemplates);
+  // Sort by frequency (most common first) and return unique texts
+  const sortedTexts = Object.entries(textFrequency)
+    .sort((a, b) => b[1] - a[1]) // Sort by frequency descending
+    .map(([text]) => text)
+    .slice(0, maxTemplates);
+
+  return sortedTexts;
 }
 
 /**
