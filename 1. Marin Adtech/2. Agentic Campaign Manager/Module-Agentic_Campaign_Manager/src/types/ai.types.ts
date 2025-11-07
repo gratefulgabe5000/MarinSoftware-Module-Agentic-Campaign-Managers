@@ -73,8 +73,18 @@ export interface AdGroupPlan {
     demographics?: Record<string, any>;
     interests?: string[];
     behaviors?: string[];
+    keywords?: string[];
   };
   adFormats?: string[];
+  ads?: Array<{
+    id: string;
+    adGroupId: string;
+    headlines: Array<{ text: string; pinned?: boolean; position?: number }>;
+    descriptions: Array<{ text: string }>;
+    finalUrl: string;
+    displayUrl?: string;
+    paths?: string[];
+  }>;
 }
 
 /**
