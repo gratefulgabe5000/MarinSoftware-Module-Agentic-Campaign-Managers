@@ -1,7 +1,9 @@
 /**
  * Toast Notification Service
- * Manages toast notifications throughout the application
+ * Manages toast notifications throughout the application using Sonner
  */
+
+import { toast as sonnerToast } from 'sonner';
 
 /**
  * Toast Type
@@ -14,7 +16,7 @@ export type ToastType = 'success' | 'error' | 'warning' | 'info';
 export type ToastTypeEnum = ToastType;
 
 /**
- * Toast Interface
+ * Toast Interface (kept for backward compatibility)
  */
 export interface Toast {
   id: string;
@@ -25,41 +27,20 @@ export interface Toast {
 }
 
 /**
- * Toast Listener
- */
-type ToastListener = (toasts: Toast[]) => void;
-
-/**
  * Toast Service
  */
 class ToastService {
-  private toasts: Toast[] = [];
-  private listeners: ToastListener[] = [];
   private defaultDuration = 5000; // 5 seconds
 
   /**
    * Show a toast notification
    */
   show(message: string, type: ToastType = 'info', duration?: number): string {
-    const toast: Toast = {
-      id: `toast-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      message,
-      type,
-      duration: duration !== undefined ? duration : this.defaultDuration,
-      timestamp: new Date(),
-    };
-
-    this.toasts.push(toast);
-    this.notifyListeners();
-
-    // Auto-dismiss if duration is set
-    if (toast.duration && toast.duration > 0) {
-      setTimeout(() => {
-        this.dismiss(toast.id);
-      }, toast.duration);
-    }
-
-    return toast.id;
+    const durationMs = duration !== undefined ? duration : this.defaultDuration;
+    const id = sonnerToast[type](message, {
+      duration: durationMs,
+    });
+    return String(id);
   }
 
   /**
@@ -94,45 +75,28 @@ class ToastService {
    * Dismiss a toast
    */
   dismiss(id: string): void {
-    this.toasts = this.toasts.filter((toast) => toast.id !== id);
-    this.notifyListeners();
+    sonnerToast.dismiss(Number(id));
   }
 
   /**
    * Dismiss all toasts
    */
   dismissAll(): void {
-    this.toasts = [];
-    this.notifyListeners();
+    sonnerToast.dismiss();
   }
 
   /**
-   * Get all toasts
+   * Get all toasts (deprecated - sonner manages its own state)
    */
   getToasts(): Toast[] {
-    return [...this.toasts];
+    return [];
   }
 
   /**
-   * Add listener
+   * Add listener (deprecated - sonner manages its own state)
    */
-  addListener(listener: ToastListener): () => void {
-    this.listeners.push(listener);
-    return () => {
-      const index = this.listeners.indexOf(listener);
-      if (index > -1) {
-        this.listeners.splice(index, 1);
-      }
-    };
-  }
-
-  /**
-   * Notify all listeners
-   */
-  private notifyListeners(): void {
-    this.listeners.forEach((listener) => {
-      listener(this.getToasts());
-    });
+  addListener(): () => void {
+    return () => {};
   }
 }
 
