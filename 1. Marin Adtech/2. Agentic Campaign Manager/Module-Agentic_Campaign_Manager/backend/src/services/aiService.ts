@@ -68,8 +68,7 @@ class AIService {
 ${conversationContext ? `Conversation History:\n${conversationContext}\n\n` : ''}User Goal: ${request.message}
 
 Extract the following information and return it as valid JSON:
-- objective: Clear campaign objective
-- targetAudience: Demographics and psychographics
+- objective: Campaign objective (must be one of: "Drive product sign-ups", "Drive sales", "Generate leads", "Increase brand awareness", "Drive website traffic", "Promote event", "Drive registrations", or "Drive conversions")- targetAudience: Demographics and psychographics
 - budget: Total budget and daily budget (if specified), currency (default to USD)
 - timeline: Start date, end date (if specified), duration in days
 - platforms: Advertising platforms (Google Ads, Meta, Microsoft Ads, etc.)
