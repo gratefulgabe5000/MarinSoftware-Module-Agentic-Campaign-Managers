@@ -35,11 +35,6 @@ const CampaignDashboard: React.FC = () => {
 
   // Update campaigns when store changes - always sync with store
   useEffect(() => {
-    console.log('📊 [CampaignDashboard] Store campaigns updated:', {
-      count: storeCampaigns.length,
-      campaigns: storeCampaigns,
-      isInitialized
-    });
     setCampaigns(storeCampaigns);
   }, [storeCampaigns]);
 
@@ -48,27 +43,16 @@ const CampaignDashboard: React.FC = () => {
       setIsLoading(true);
       setError(null);
 
-      console.log('🔄 [CampaignDashboard] Loading campaigns...', {
-        isInitialized,
-        storeCampaigns: storeCampaigns.length
-      });
-
       // Initialize campaigns from IndexedDB if not already done
       if (!isInitialized) {
-        console.log('🔄 [CampaignDashboard] Initializing from IndexedDB...');
         await initializeCampaigns();
       }
-
-      console.log('✅ [CampaignDashboard] Campaigns loaded:', {
-        count: storeCampaigns.length,
-        campaigns: storeCampaigns
-      });
 
       // Campaigns are now loaded from IndexedDB into the store
       // The useEffect above will sync them to local state
       setIsLoading(false);
     } catch (error) {
-      console.error('❌ [CampaignDashboard] Error loading campaigns:', error);
+      console.error('Error loading campaigns:', error);
       setError(
         error instanceof Error
           ? error.message
@@ -143,14 +127,6 @@ const CampaignDashboard: React.FC = () => {
   const handleCancelDelete = () => {
     setShowDeleteConfirm(null);
   };
-
-  console.log('🎨 [CampaignDashboard] Render state:', {
-    isLoading,
-    campaignsCount: campaigns.length,
-    campaigns,
-    storeCampaignsCount: storeCampaigns.length,
-    isInitialized
-  });
 
   if (isLoading) {
     return (

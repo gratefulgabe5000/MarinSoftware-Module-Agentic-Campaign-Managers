@@ -372,19 +372,13 @@ export const clearAllPerformanceCache = async (): Promise<void> => {
  */
 export const saveCampaign = async (campaign: Campaign): Promise<void> => {
   try {
-    console.log('💾 [IndexedDB] Saving campaign:', {
-      id: campaign.id,
-      name: campaign.name,
-      status: campaign.status
-    });
     const db = await initDB();
     const transaction = db.transaction([CAMPAIGNS_STORE], 'readwrite');
     const store = transaction.objectStore(CAMPAIGNS_STORE);
 
     await store.put(campaign);
-    console.log('✅ [IndexedDB] Campaign saved successfully:', campaign.id);
   } catch (error) {
-    console.error('❌ [IndexedDB] Failed to save campaign:', error);
+    console.error('Failed to save campaign:', error);
     throw error;
   }
 };
@@ -438,7 +432,6 @@ export const loadCampaign = async (campaignId: string): Promise<Campaign | null>
  */
 export const loadAllCampaigns = async (): Promise<Campaign[]> => {
   try {
-    console.log('📂 [IndexedDB] loadAllCampaigns called');
     const db = await initDB();
     const transaction = db.transaction([CAMPAIGNS_STORE], 'readonly');
     const store = transaction.objectStore(CAMPAIGNS_STORE);
@@ -448,20 +441,16 @@ export const loadAllCampaigns = async (): Promise<Campaign[]> => {
 
       request.onsuccess = () => {
         const campaigns = request.result || [];
-        console.log('✅ [IndexedDB] Campaigns loaded from IndexedDB:', {
-          count: campaigns.length,
-          campaigns
-        });
         resolve(campaigns);
       };
 
       request.onerror = () => {
-        console.error('❌ [IndexedDB] Error loading campaigns:', request.error);
+        console.error('Error loading campaigns:', request.error);
         reject(request.error);
       };
     });
   } catch (error) {
-    console.error('❌ [IndexedDB] Failed to load campaigns:', error);
+    console.error('Failed to load campaigns:', error);
     return [];
   }
 };

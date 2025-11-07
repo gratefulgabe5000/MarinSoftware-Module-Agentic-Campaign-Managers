@@ -72,26 +72,15 @@ export const useCampaignStore = create<CampaignStore>((set, get) => ({
 
   // Actions
   initializeCampaigns: async () => {
-    console.log('🔄 [CampaignStore] initializeCampaigns called', {
-      isInitialized: get().isInitialized,
-      currentCampaigns: get().campaigns.length
-    });
-
     if (get().isInitialized) {
-      console.log('⏭️ [CampaignStore] Already initialized, skipping');
       return; // Already initialized
     }
 
     try {
-      console.log('📂 [CampaignStore] Loading campaigns from IndexedDB...');
       const campaigns = await loadAllCampaigns();
-      console.log('✅ [CampaignStore] Loaded campaigns from IndexedDB:', {
-        count: campaigns.length,
-        campaigns
-      });
       set({ campaigns, isInitialized: true, error: null });
     } catch (error) {
-      console.error('❌ [CampaignStore] Failed to initialize campaigns from IndexedDB:', error);
+      console.error('Failed to initialize campaigns from IndexedDB:', error);
       set({ isInitialized: true, error: 'Failed to load campaigns' });
     }
   },
@@ -115,23 +104,14 @@ export const useCampaignStore = create<CampaignStore>((set, get) => ({
   },
 
   addCampaign: (campaign: Campaign) => {
-    console.log('➕ [CampaignStore] Adding campaign:', {
-      campaign,
-      currentCount: get().campaigns.length
-    });
     set((state) => ({
       campaigns: [...state.campaigns, campaign],
       error: null,
     }));
-    console.log('✅ [CampaignStore] Campaign added to state, new count:', get().campaigns.length);
     // Persist to IndexedDB
-    saveCampaign(campaign)
-      .then(() => {
-        console.log('💾 [CampaignStore] Campaign saved to IndexedDB:', campaign.id);
-      })
-      .catch((error) => {
-        console.error('❌ [CampaignStore] Failed to save campaign to IndexedDB:', error);
-      });
+    saveCampaign(campaign).catch((error) => {
+      console.error('Failed to save campaign to IndexedDB:', error);
+    });
   },
 
   updateCampaign: (id: string, updates: Partial<Campaign>) => {
