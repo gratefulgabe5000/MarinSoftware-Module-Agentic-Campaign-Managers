@@ -9,7 +9,21 @@ import * as path from 'path';
 const MOCK_DATA_DIR = path.join(__dirname, '../data/mock');
 
 /**
- * Load campaigns mock data
+ * Map product names to their corresponding mock data files
+ */
+const PRODUCT_FILE_MAP: { [key: string]: string } = {
+  'yamaha sr400': 'yamaha-sr400.json',
+  'honda cb350': 'honda-cb350.json',
+  'triumph thruxton': 'triumph-thruxton.json',
+  'triumph street twin': 'triumph-street-twin.json',
+  'harley-davidson dyna': 'harley-davidson-dyna.json',
+  'harley davidson dyna': 'harley-davidson-dyna.json',
+  'harley-davidson low rider': 'harley-davidson-low-rider.json',
+  'harley davidson low rider': 'harley-davidson-low-rider.json',
+};
+
+/**
+ * Load campaigns mock data (general aggregated data)
  */
 export function loadMockCampaigns(): any {
   try {
@@ -19,6 +33,28 @@ export function loadMockCampaigns(): any {
   } catch (error) {
     console.error('Error loading mock campaigns:', error);
     return { campaigns: [] };
+  }
+}
+
+/**
+ * Load product-specific campaigns mock data
+ */
+export function loadProductMockCampaigns(productName: string): any {
+  try {
+    const normalizedName = productName.toLowerCase().trim();
+    const fileName = PRODUCT_FILE_MAP[normalizedName];
+
+    if (!fileName) {
+      console.warn(`No mock data file found for product: ${productName}, falling back to general data`);
+      return loadMockCampaigns();
+    }
+
+    const filePath = path.join(MOCK_DATA_DIR, 'products', fileName);
+    const fileContent = fs.readFileSync(filePath, 'utf-8');
+    return JSON.parse(fileContent);
+  } catch (error) {
+    console.error(`Error loading mock campaigns for product ${productName}:`, error);
+    return loadMockCampaigns(); // Fallback to general data
   }
 }
 
