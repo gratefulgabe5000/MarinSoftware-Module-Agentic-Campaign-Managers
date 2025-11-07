@@ -12,6 +12,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { PerformanceTimeSeries, PerformanceDataPoint } from '../types/performance.types';
+import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
 
 /**
  * Performance Charts Props
@@ -45,35 +46,39 @@ const SpendOverTimeChart: React.FC<SpendOverTimeChartProps> = ({ dataPoints }) =
   }));
 
   return (
-    <div className="performance-chart-container">
-      <h3 className="chart-title">Spend & Revenue Over Time</h3>
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={chartData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="date" />
-          <YAxis />
-          <Tooltip
-            formatter={(value: number) => `$${value.toFixed(2)}`}
-            labelFormatter={(label) => `Date: ${label}`}
-          />
-          <Legend />
-          <Line
-            type="monotone"
-            dataKey="spend"
-            stroke="#FF8042"
-            strokeWidth={2}
-            name="Spend"
-          />
-          <Line
-            type="monotone"
-            dataKey="revenue"
-            stroke="#00C49F"
-            strokeWidth={2}
-            name="Revenue"
-          />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>Spend & Revenue Over Time</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={chartData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="date" />
+            <YAxis />
+            <Tooltip
+              formatter={(value: number) => `$${value.toFixed(2)}`}
+              labelFormatter={(label) => `Date: ${label}`}
+            />
+            <Legend />
+            <Line
+              type="monotone"
+              dataKey="spend"
+              stroke="#FF8042"
+              strokeWidth={2}
+              name="Spend"
+            />
+            <Line
+              type="monotone"
+              dataKey="revenue"
+              stroke="#00C49F"
+              strokeWidth={2}
+              name="Revenue"
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </CardContent>
+    </Card>
   );
 };
 
@@ -95,22 +100,26 @@ const PerformanceComparisonChart: React.FC<PerformanceComparisonChartProps> = ({
   }));
 
   return (
-    <div className="performance-chart-container">
-      <h3 className="chart-title">Performance Metrics Comparison</h3>
-      <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={chartData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="date" />
-          <YAxis yAxisId="left" />
-          <YAxis yAxisId="right" orientation="right" />
-          <Tooltip />
-          <Legend />
-          <Bar yAxisId="left" dataKey="impressions" fill="#4285F4" name="Impressions" />
-          <Bar yAxisId="left" dataKey="clicks" fill="#34A853" name="Clicks" />
-          <Bar yAxisId="right" dataKey="conversions" fill="#EA4335" name="Conversions" />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>Performance Metrics Comparison</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={chartData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="date" />
+            <YAxis yAxisId="left" />
+            <YAxis yAxisId="right" orientation="right" />
+            <Tooltip />
+            <Legend />
+            <Bar yAxisId="left" dataKey="impressions" fill="#4285F4" name="Impressions" />
+            <Bar yAxisId="left" dataKey="clicks" fill="#34A853" name="Clicks" />
+            <Bar yAxisId="right" dataKey="conversions" fill="#EA4335" name="Conversions" />
+          </BarChart>
+        </ResponsiveContainer>
+      </CardContent>
+    </Card>
   );
 };
 
@@ -128,28 +137,32 @@ const CTRTrendChart: React.FC<CTRTrendChartProps> = ({ dataPoints }) => {
   }));
 
   return (
-    <div className="performance-chart-container">
-      <h3 className="chart-title">CTR Trend</h3>
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={chartData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="date" />
-          <YAxis />
-          <Tooltip
-            formatter={(value: number) => `${value.toFixed(2)}%`}
-            labelFormatter={(label) => `Date: ${label}`}
-          />
-          <Legend />
-          <Line
-            type="monotone"
-            dataKey="ctr"
-            stroke="#FBBC04"
-            strokeWidth={2}
-            name="CTR (%)"
-          />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>CTR Trend</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={chartData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="date" />
+            <YAxis />
+            <Tooltip
+              formatter={(value: number) => `${value.toFixed(2)}%`}
+              labelFormatter={(label) => `Date: ${label}`}
+            />
+            <Legend />
+            <Line
+              type="monotone"
+              dataKey="ctr"
+              stroke="#FBBC04"
+              strokeWidth={2}
+              name="CTR (%)"
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </CardContent>
+    </Card>
   );
 };
 
@@ -162,19 +175,21 @@ const PerformanceCharts: React.FC<PerformanceChartsProps> = ({ timeSeries }) => 
 
   if (!dataPoints || dataPoints.length === 0) {
     return (
-      <div className="performance-charts-empty">
-        <p>No performance data available for the selected time range.</p>
-      </div>
+      <Card>
+        <CardContent className="py-8 text-center">
+          <p className="text-muted-foreground">
+            No performance data available for the selected time range.
+          </p>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="performance-charts">
-      <div className="charts-grid">
-        <SpendOverTimeChart dataPoints={dataPoints} />
-        <PerformanceComparisonChart dataPoints={dataPoints} />
-        <CTRTrendChart dataPoints={dataPoints} />
-      </div>
+    <div className="space-y-6">
+      <SpendOverTimeChart dataPoints={dataPoints} />
+      <PerformanceComparisonChart dataPoints={dataPoints} />
+      <CTRTrendChart dataPoints={dataPoints} />
     </div>
   );
 };

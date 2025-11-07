@@ -13,6 +13,10 @@ import TimeRangeSelector from './TimeRangeSelector';
 import PerformanceCharts from './PerformanceCharts';
 import PerformanceVsGoals from './PerformanceVsGoals';
 import ExportButton from './ExportButton';
+import { Button } from './ui/button';
+import { Alert, AlertDescription } from './ui/alert';
+import { Badge } from './ui/badge';
+import { Loader2Icon, AlertCircleIcon, WifiOffIcon, HardDriveIcon, PlayIcon, PauseIcon } from 'lucide-react';
 
 /**
  * Performance Dashboard Component
@@ -137,10 +141,10 @@ const PerformanceDashboard: React.FC = () => {
 
   if (isLoading && !metrics) {
     return (
-      <div className="performance-dashboard">
-        <div className="dashboard-loading">
-          <div className="loading-spinner" />
-          <p>Loading performance data...</p>
+      <div className="min-h-screen bg-background p-8">
+        <div className="flex flex-col items-center justify-center gap-4 py-12">
+          <Loader2Icon className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-muted-foreground">Loading performance data...</p>
         </div>
       </div>
     );
@@ -148,17 +152,16 @@ const PerformanceDashboard: React.FC = () => {
 
   if (error && !metrics) {
     return (
-      <div className="performance-dashboard">
-        <div className="dashboard-error">
-          <h3>Error Loading Performance Data</h3>
-          <p>{error}</p>
-          <button
-            className="retry-button"
-            onClick={() => loadPerformanceData()}
-            type="button"
-          >
+      <div className="min-h-screen bg-background p-8">
+        <div className="mx-auto max-w-7xl space-y-4">
+          <h2 className="text-2xl font-bold">Error Loading Performance Data</h2>
+          <Alert variant="destructive">
+            <AlertCircleIcon className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+          <Button onClick={() => loadPerformanceData()} type="button">
             Retry
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -166,87 +169,98 @@ const PerformanceDashboard: React.FC = () => {
 
   if (!metrics) {
     return (
-      <div className="performance-dashboard">
-        <div className="dashboard-empty">
-          <p>No performance data available for this campaign.</p>
+      <div className="min-h-screen bg-background p-8">
+        <div className="mx-auto max-w-7xl">
+          <Alert>
+            <AlertCircleIcon className="h-4 w-4" />
+            <AlertDescription>
+              No performance data available for this campaign.
+            </AlertDescription>
+          </Alert>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="performance-dashboard">
-      <div className="dashboard-header">
-        <h2 className="dashboard-title">Performance Dashboard</h2>
-        <div className="dashboard-controls">
-          <TimeRangeSelector
-            selectedRange={timeRange}
-            onRangeChange={handleTimeRangeChange}
-            showCustom={false} // For MVP, disable custom range
-          />
-          <ExportButton
-            metrics={metrics}
-            timeSeries={timeSeries || undefined}
-            campaignId={id}
-          />
-          <div className="dashboard-status">
-            {isOffline && (
-              <div className="offline-indicator" title="You are currently offline">
-                <span className="offline-icon">📡</span>
-                <span className="offline-text">Offline</span>
-              </div>
-            )}
-            {isCachedData && !isOffline && (
-              <div className="cached-indicator" title="Showing cached data">
-                <span className="cached-icon">💾</span>
-                <span className="cached-text">Cached</span>
-              </div>
-            )}
-            {lastUpdated && (
-              <div className="last-updated">
-                <span className="last-updated-label">Last updated:</span>
-                <span className="last-updated-time">
-                  {lastUpdated.toLocaleTimeString()}
-                </span>
-              </div>
-            )}
-            <button
-              className="polling-toggle"
-              onClick={() => setPollingEnabled(!pollingEnabled)}
-              type="button"
-              title={pollingEnabled ? 'Disable auto-refresh' : 'Enable auto-refresh'}
-            >
-              {pollingEnabled ? '⏸️' : '▶️'}
-            </button>
+    <div className="min-h-screen bg-background p-8">
+      <div className="mx-auto max-w-7xl space-y-6">
+        {/* Header */}
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <h1 className="text-3xl font-bold tracking-tight">Performance Dashboard</h1>
+          <div className="flex flex-wrap items-center gap-3">
+            <TimeRangeSelector
+              selectedRange={timeRange}
+              onRangeChange={handleTimeRangeChange}
+              showCustom={false}
+            />
+            <ExportButton
+              metrics={metrics}
+              timeSeries={timeSeries || undefined}
+              campaignId={id}
+            />
           </div>
         </div>
-      </div>
 
-      <div className="dashboard-content">
+        {/* Status Indicators */}
+        <div className="flex flex-wrap items-center gap-3">
+          {isOffline && (
+            <Badge variant="destructive" className="flex items-center gap-1.5">
+              <WifiOffIcon className="h-3 w-3" />
+              Offline
+            </Badge>
+          )}
+          {isCachedData && !isOffline && (
+            <Badge variant="secondary" className="flex items-center gap-1.5">
+              <HardDriveIcon className="h-3 w-3" />
+              Cached Data
+            </Badge>
+          )}
+          {lastUpdated && (
+            <span className="text-sm text-muted-foreground">
+              Last updated: {lastUpdated.toLocaleTimeString()}
+            </span>
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setPollingEnabled(!pollingEnabled)}
+            type="button"
+            title={pollingEnabled ? 'Disable auto-refresh' : 'Enable auto-refresh'}
+          >
+            {pollingEnabled ? (
+              <PauseIcon className="h-4 w-4" />
+            ) : (
+              <PlayIcon className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
+
         {/* Metrics Summary Cards */}
-        <section className="dashboard-section metrics-section">
+        <section>
           <MetricsSummaryCards metrics={metrics} />
         </section>
 
         {/* Performance Charts */}
         {timeSeries && (
-          <section className="dashboard-section charts-section">
+          <section>
             <PerformanceCharts timeSeries={timeSeries} />
           </section>
         )}
 
         {/* Performance vs Goals */}
-        <section className="dashboard-section goals-section">
+        <section>
           <PerformanceVsGoals metrics={metrics} goals={goals} />
         </section>
-      </div>
 
-      {isLoading && metrics && (
-        <div className="dashboard-refreshing">
-          <div className="loading-spinner small" />
-          <span>Refreshing data...</span>
-        </div>
-      )}
+        {/* Refreshing Indicator */}
+        {isLoading && metrics && (
+          <div className="fixed bottom-4 right-4 flex items-center gap-2 rounded-md border bg-background p-3 shadow-lg">
+            <Loader2Icon className="h-4 w-4 animate-spin" />
+            <span className="text-sm">Refreshing data...</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

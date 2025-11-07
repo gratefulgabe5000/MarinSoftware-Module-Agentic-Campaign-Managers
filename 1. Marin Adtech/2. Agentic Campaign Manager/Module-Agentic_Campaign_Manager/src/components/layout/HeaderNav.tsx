@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LucideIcon, FolderKanban, Plus } from 'lucide-react';
+import { LucideIcon, FolderKanban } from 'lucide-react';
 
 /**
  * Navigation Item Interface
@@ -35,11 +35,6 @@ const defaultNavItems: NavItem[] = [
     label: 'Campaigns',
     path: '/campaigns',
     icon: FolderKanban,
-  },
-  {
-    label: 'Create Campaign',
-    path: '/create',
-    icon: Plus,
   },
 ];
 

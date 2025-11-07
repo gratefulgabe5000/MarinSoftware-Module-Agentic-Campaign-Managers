@@ -5,6 +5,9 @@ import {
   PerformanceTimeSeries,
   PerformanceDataPoint,
 } from '../types/performance.types';
+import { Button } from './ui/button';
+import { Alert, AlertDescription } from './ui/alert';
+import { DownloadIcon, Loader2Icon, AlertCircleIcon } from 'lucide-react';
 
 /**
  * Export Button Props
@@ -108,9 +111,9 @@ const ExportButton: React.FC<ExportButtonProps> = ({
   };
 
   return (
-    <div className="export-button-container">
-      <button
-        className="btn btn-secondary export-button"
+    <div className="flex flex-col gap-2">
+      <Button
+        variant="outline"
         disabled={isExporting}
         onClick={timeSeries && timeSeries.dataPoints.length > 0 ? handleExportBoth : handleExportMetrics}
         type="button"
@@ -122,20 +125,21 @@ const ExportButton: React.FC<ExportButtonProps> = ({
       >
         {isExporting ? (
           <>
-            <span className="export-icon">⏳</span>
+            <Loader2Icon className="h-4 w-4 animate-spin" />
             Exporting...
           </>
         ) : (
           <>
-            <span className="export-icon">📥</span>
+            <DownloadIcon className="h-4 w-4" />
             Export CSV
           </>
         )}
-      </button>
+      </Button>
       {exportError && (
-        <div className="export-error" title={exportError}>
-          <span className="error-icon">⚠️</span>
-        </div>
+        <Alert variant="destructive" className="mt-2">
+          <AlertCircleIcon className="h-4 w-4" />
+          <AlertDescription>{exportError}</AlertDescription>
+        </Alert>
       )}
     </div>
   );

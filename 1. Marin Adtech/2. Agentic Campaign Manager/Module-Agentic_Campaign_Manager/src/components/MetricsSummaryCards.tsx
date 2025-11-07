@@ -1,5 +1,6 @@
 import React from 'react';
 import { PerformanceMetrics } from '../types/performance.types';
+import { EyeIcon, MousePointerClickIcon, BarChart3Icon, CheckCircle2Icon, DollarSignIcon, TrendingUpIcon, CreditCardIcon, BanknoteIcon } from 'lucide-react';
 
 /**
  * Metrics Summary Cards Props
@@ -15,7 +16,7 @@ interface MetricCardProps {
   title: string;
   value: string | number;
   unit?: string;
-  icon?: string;
+  icon?: React.ReactNode;
   trend?: {
     value: number;
     isPositive: boolean;
@@ -46,7 +47,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
   return (
     <div className="flex flex-col border-l-4 p-4 rounded-md bg-card shadow-sm" style={{ borderLeftColor: color }}>
       <div className="flex items-center gap-2 mb-2">
-        {icon && <span className="text-2xl">{icon}</span>}
+        {icon && <div className="text-muted-foreground">{icon}</div>}
         <h4 className="text-sm font-medium text-muted-foreground">{title}</h4>
       </div>
       <div className="flex flex-col">
@@ -75,46 +76,46 @@ const MetricsSummaryCards: React.FC<MetricsSummaryCardsProps> = ({ metrics }) =>
       <MetricCard
         title="Impressions"
         value={metrics.impressions}
-        icon="👁️"
+        icon={<EyeIcon className="h-5 w-5" />}
         color="#4285F4"
       />
       <MetricCard
         title="Clicks"
         value={metrics.clicks}
-        icon="🖱️"
+        icon={<MousePointerClickIcon className="h-5 w-5" />}
         color="#34A853"
       />
       <MetricCard
         title="CTR"
         value={metrics.ctr}
         unit="%"
-        icon="📊"
+        icon={<BarChart3Icon className="h-5 w-5" />}
         color="#FBBC04"
       />
       <MetricCard
         title="Conversions"
         value={metrics.conversions}
-        icon="✅"
+        icon={<CheckCircle2Icon className="h-5 w-5" />}
         color="#EA4335"
       />
       <MetricCard
         title="CPA"
         value={metrics.cpa}
         unit="$"
-        icon="💰"
+        icon={<DollarSignIcon className="h-5 w-5" />}
         color="#9334E6"
       />
       <MetricCard
         title="ROAS"
         value={metrics.roas}
-        icon="📈"
+        icon={<TrendingUpIcon className="h-5 w-5" />}
         color="#00C49F"
       />
       <MetricCard
         title="Spend"
         value={metrics.spend}
         unit="$"
-        icon="💵"
+        icon={<CreditCardIcon className="h-5 w-5" />}
         color="#FF8042"
       />
       {metrics.revenue && (
@@ -122,7 +123,7 @@ const MetricsSummaryCards: React.FC<MetricsSummaryCardsProps> = ({ metrics }) =>
           title="Revenue"
           value={metrics.revenue}
           unit="$"
-          icon="💸"
+          icon={<BanknoteIcon className="h-5 w-5" />}
           color="#0088FE"
         />
       )}

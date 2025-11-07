@@ -1,15 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCampaignStore } from '../store/campaignStore';
 import { campaignService } from '../services/campaignService';
+import { statusService } from '../services/statusService';
 import { toastService } from '../utils/toastService';
-import { Campaign } from '../types/campaign.types';
+import { Campaign, CampaignStatus } from '../types/campaign.types';
+import { CampaignStatus as StatusEnum } from '../types/status.types';
 import { Button } from './ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from './ui/card';
 import { Badge } from './ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './ui/dialog';
 import { Alert, AlertDescription } from './ui/alert';
-import { PlusIcon, UploadIcon, Loader2Icon, TrashIcon, BarChart3Icon, EyeIcon, AlertCircleIcon } from 'lucide-react';
+import { PlusIcon, UploadIcon, Loader2Icon, TrashIcon, BarChart3Icon, EyeIcon, AlertCircleIcon, FilterIcon } from 'lucide-react';
 
 /**
  * Campaign Dashboard Component
@@ -20,10 +22,12 @@ const CampaignDashboard: React.FC = () => {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<CampaignStatus | 'all'>('all');
 
   const storeCampaigns = useCampaignStore((state) => state.campaigns);
   const setCampaignsStore = useCampaignStore((state) => state.setCampaigns);
   const removeCampaign = useCampaignStore((state) => state.removeCampaign);
+  const updateCampaignStore = useCampaignStore((state) => state.updateCampaign);
   const initializeCampaigns = useCampaignStore((state) => state.initializeCampaigns);
   const isInitialized = useCampaignStore((state) => state.isInitialized);
   const [deletingCampaignId, setDeletingCampaignId] = useState<string | null>(null);
@@ -40,17 +44,25 @@ const CampaignDashboard: React.FC = () => {
 
   const loadCampaigns = async () => {
     try {
+      console.log('=== CampaignDashboard: Loading campaigns ===');
       setIsLoading(true);
       setError(null);
 
       // Initialize campaigns from IndexedDB if not already done
       if (!isInitialized) {
+        console.log('Initializing campaigns from IndexedDB...');
         await initializeCampaigns();
       }
+
+      console.log('Campaigns from store:', storeCampaigns);
+      console.log('Campaign count:', storeCampaigns.length);
 
       // Campaigns are now loaded from IndexedDB into the store
       // The useEffect above will sync them to local state
       setIsLoading(false);
+
+      // Sync campaign statuses with backend (don't block on this)
+      syncCampaignStatuses();
     } catch (error) {
       console.error('Error loading campaigns:', error);
       setError(
@@ -61,6 +73,56 @@ const CampaignDashboard: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  /**
+   * Map StatusEnum to CampaignStatus
+   */
+  const mapStatusToCampaignStatus = (status: StatusEnum): CampaignStatus => {
+    const statusMap: Record<StatusEnum, CampaignStatus> = {
+      [StatusEnum.DRAFT]: 'draft',
+      [StatusEnum.CREATING]: 'creating',
+      [StatusEnum.PENDING_APPROVAL]: 'pending_approval',
+      [StatusEnum.APPROVED]: 'approved',
+      [StatusEnum.ACTIVE]: 'active',
+      [StatusEnum.PAUSED]: 'paused',
+      [StatusEnum.COMPLETED]: 'completed',
+      [StatusEnum.ARCHIVED]: 'archived',
+      [StatusEnum.ERROR]: 'error',
+    };
+    return statusMap[status] || 'draft';
+  };
+
+  /**
+   * Sync campaign statuses with backend
+   */
+  const syncCampaignStatuses = async () => {
+    console.log('=== Syncing campaign statuses ===');
+    // Get all campaigns from store
+    const campaignsToSync = storeCampaigns;
+    console.log('Campaigns to sync:', campaignsToSync.length);
+
+    // Fetch status for each campaign
+    for (const campaign of campaignsToSync) {
+      try {
+        console.log(`Fetching status for campaign ${campaign.id} (${campaign.name})...`);
+        const statusUpdate = await statusService.getCampaignStatus(campaign.id);
+        console.log(`Status update for ${campaign.id}:`, statusUpdate);
+
+        const campaignStatus = mapStatusToCampaignStatus(statusUpdate.status);
+        console.log(`Current status: ${campaign.status}, New status: ${campaignStatus}`);
+
+        // Only update if status has changed
+        if (campaign.status !== campaignStatus) {
+          console.log(`Updating campaign ${campaign.id} status from ${campaign.status} to ${campaignStatus}`);
+          updateCampaignStore(campaign.id, { status: campaignStatus });
+        }
+      } catch (error) {
+        console.error(`Failed to sync status for campaign ${campaign.id}:`, error);
+        // Continue with other campaigns even if one fails
+      }
+    }
+    console.log('=== Finished syncing campaign statuses ===');
   };
 
   const getStatusVariant = (status: string): 'default' | 'secondary' | 'destructive' | 'outline' => {
@@ -128,6 +190,26 @@ const CampaignDashboard: React.FC = () => {
     setShowDeleteConfirm(null);
   };
 
+  /**
+   * Filter campaigns by status
+   */
+  const filteredCampaigns = useMemo(() => {
+    if (statusFilter === 'all') {
+      return campaigns;
+    }
+    return campaigns.filter((campaign) => campaign.status === statusFilter);
+  }, [campaigns, statusFilter]);
+
+  /**
+   * Get count of campaigns by status
+   */
+  const getStatusCount = (status: CampaignStatus | 'all') => {
+    if (status === 'all') {
+      return campaigns.length;
+    }
+    return campaigns.filter((campaign) => campaign.status === status).length;
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background p-8">
@@ -187,6 +269,44 @@ const CampaignDashboard: React.FC = () => {
           </Alert>
         )}
 
+        {/* Status Filter */}
+        {campaigns.length > 0 && (
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-2 flex-wrap">
+                <FilterIcon className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium text-muted-foreground">Filter by status:</span>
+                <div className="flex gap-2 flex-wrap">
+                  <Button
+                    variant={statusFilter === 'all' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setStatusFilter('all')}
+                    type="button"
+                  >
+                    All ({getStatusCount('all')})
+                  </Button>
+                  <Button
+                    variant={statusFilter === 'draft' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setStatusFilter('draft')}
+                    type="button"
+                  >
+                    Draft ({getStatusCount('draft')})
+                  </Button>
+                  <Button
+                    variant={statusFilter === 'active' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setStatusFilter('active')}
+                    type="button"
+                  >
+                    Active ({getStatusCount('active')})
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Empty State */}
         {campaigns.length === 0 ? (
           <Card className="py-12">
@@ -206,11 +326,39 @@ const CampaignDashboard: React.FC = () => {
               </Button>
             </CardContent>
           </Card>
+        ) : filteredCampaigns.length === 0 ? (
+          <Card className="py-12">
+            <CardContent className="flex flex-col items-center justify-center gap-4 text-center">
+              <div className="rounded-full bg-muted p-4">
+                <FilterIcon className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold">No campaigns found</h3>
+                <p className="text-muted-foreground mt-1">
+                  No campaigns match the selected filter.
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => setStatusFilter('all')}
+                type="button"
+              >
+                Clear Filter
+              </Button>
+            </CardContent>
+          </Card>
         ) : (
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Your Campaigns</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold">
+                Your Campaigns {statusFilter !== 'all' && `(${getStatusLabel(statusFilter)})`}
+              </h2>
+              <span className="text-sm text-muted-foreground">
+                Showing {filteredCampaigns.length} of {campaigns.length} campaigns
+              </span>
+            </div>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {campaigns.map((campaign) => (
+              {filteredCampaigns.map((campaign) => (
                 <Card key={campaign.id} className="flex flex-col">
                   <CardHeader>
                     <div className="flex items-start justify-between gap-4">

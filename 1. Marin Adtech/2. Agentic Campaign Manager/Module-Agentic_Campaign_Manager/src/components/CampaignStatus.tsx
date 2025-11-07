@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { CampaignStatus as StatusEnum, StatusUpdate } from '../types/status.types';
+import { CampaignStatus as CampaignStatusType } from '../types/campaign.types';
 import { statusService } from '../services/statusService';
 import { notificationService } from '../services/notificationService';
+import { useCampaignStore } from '../store/campaignStore';
+import { Badge } from './ui/badge';
+import { Alert, AlertDescription } from './ui/alert';
+import { Loader2Icon, CheckCircle2Icon, PlayCircleIcon, PauseCircleIcon, XCircleIcon, ClockIcon, AlertCircleIcon } from 'lucide-react';
 
 /**
  * CampaignStatus Component Props
@@ -29,11 +34,55 @@ const CampaignStatus: React.FC<CampaignStatusProps> = ({
   enableNotifications = true,
   campaignName = 'Campaign',
 }) => {
+  console.log('=== CampaignStatus: Component Render ===');
+  console.log('Campaign ID:', campaignId);
+  console.log('Initial Status (prop):', initialStatus);
+
   const [status, setStatus] = useState<StatusEnum | null>(initialStatus || null);
   const [statusUpdate, setStatusUpdate] = useState<StatusUpdate | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [statusHistory, setStatusHistory] = useState<StatusUpdate[]>([]);
+  const updateCampaign = useCampaignStore((state) => state.updateCampaign);
+
+  console.log('Current status (state):', status);
+
+  /**
+   * Map StatusEnum to CampaignStatusType
+   */
+  const mapStatusToCampaignStatus = (status: StatusEnum): CampaignStatusType => {
+    const statusMap: Record<StatusEnum, CampaignStatusType> = {
+      [StatusEnum.DRAFT]: 'draft',
+      [StatusEnum.CREATING]: 'creating',
+      [StatusEnum.PENDING_APPROVAL]: 'pending_approval',
+      [StatusEnum.APPROVED]: 'approved',
+      [StatusEnum.ACTIVE]: 'active',
+      [StatusEnum.PAUSED]: 'paused',
+      [StatusEnum.COMPLETED]: 'completed',
+      [StatusEnum.ARCHIVED]: 'archived',
+      [StatusEnum.ERROR]: 'error',
+    };
+    return statusMap[status] || 'draft';
+  };
+
+  /**
+   * Sync status with initialStatus prop changes
+   */
+  useEffect(() => {
+    console.log('=== CampaignStatus: useEffect [initialStatus] triggered ===');
+    console.log('initialStatus prop:', initialStatus);
+    console.log('Current status state:', status);
+    console.log('Are they different?', initialStatus !== status);
+
+    if (initialStatus && initialStatus !== status) {
+      console.log('>>> Updating status from', status, 'to', initialStatus);
+      setStatus(initialStatus);
+    } else if (!initialStatus) {
+      console.log('>>> initialStatus is null/undefined, not updating');
+    } else {
+      console.log('>>> Status already matches, no update needed');
+    }
+  }, [initialStatus, status]);
 
   /**
    * Load initial status
@@ -42,15 +91,29 @@ const CampaignStatus: React.FC<CampaignStatusProps> = ({
     const loadStatus = async () => {
       if (!campaignId) return;
 
+      console.log('=== CampaignStatus: Loading status ===');
+      console.log('Campaign ID:', campaignId);
+
       setIsLoading(true);
       setError(null);
 
       try {
         const update = await statusService.getCampaignStatus(campaignId);
+        console.log('Status update from API:', update);
+        console.log('Status:', update.status);
+
         setStatus(update.status);
         setStatusUpdate(update);
         setStatusHistory([update]);
+
+        // Update campaign status in store on initial load
+        const campaignStatus = mapStatusToCampaignStatus(update.status);
+        console.log('Mapped campaign status:', campaignStatus);
+        console.log('Updating campaign in store with status:', campaignStatus);
+
+        updateCampaign(campaignId, { status: campaignStatus });
       } catch (err) {
+        console.error('Error loading campaign status:', err);
         setError(err instanceof Error ? err.message : 'Failed to load status');
       } finally {
         setIsLoading(false);
@@ -71,15 +134,22 @@ const CampaignStatus: React.FC<CampaignStatusProps> = ({
       setStatus(update.status);
       setStatusUpdate(update);
 
-      // Add to history
+      // Add to history only if status changed
       setStatusHistory((prev) => {
         const updated = [...prev];
         const lastUpdate = updated[updated.length - 1];
-        if (!lastUpdate || lastUpdate.timestamp.getTime() !== update.timestamp.getTime()) {
+        // Only add if status actually changed, not just timestamp
+        if (!lastUpdate || lastUpdate.status !== update.status) {
           updated.push(update);
         }
         return updated;
       });
+
+      // Update campaign status in store if status changed
+      if (previousStatus && previousStatus !== update.status) {
+        const campaignStatus = mapStatusToCampaignStatus(update.status);
+        updateCampaign(campaignId, { status: campaignStatus });
+      }
 
       // Show notification if status changed and notifications are enabled
       if (enableNotifications && previousStatus && previousStatus !== update.status) {
@@ -113,24 +183,50 @@ const CampaignStatus: React.FC<CampaignStatusProps> = ({
   }, [campaignId, status, pollingInterval, onStatusUpdate]);
 
   /**
-   * Get status display class
+   * Get status badge variant
    */
-  const getStatusClass = (status: StatusEnum | null): string => {
-    if (!status) return 'status-unknown';
-    
-    const statusMap: Record<StatusEnum, string> = {
-      [StatusEnum.DRAFT]: 'status-draft',
-      [StatusEnum.CREATING]: 'status-creating',
-      [StatusEnum.PENDING_APPROVAL]: 'status-pending',
-      [StatusEnum.APPROVED]: 'status-approved',
-      [StatusEnum.ACTIVE]: 'status-active',
-      [StatusEnum.PAUSED]: 'status-paused',
-      [StatusEnum.COMPLETED]: 'status-completed',
-      [StatusEnum.ARCHIVED]: 'status-archived',
-      [StatusEnum.ERROR]: 'status-error',
-    };
+  const getStatusVariant = (status: StatusEnum | null): 'default' | 'secondary' | 'destructive' | 'outline' => {
+    if (!status) return 'outline';
 
-    return statusMap[status] || 'status-unknown';
+    switch (status) {
+      case StatusEnum.ACTIVE:
+        return 'default';
+      case StatusEnum.PAUSED:
+      case StatusEnum.COMPLETED:
+        return 'secondary';
+      case StatusEnum.ERROR:
+        return 'destructive';
+      default:
+        return 'outline';
+    }
+  };
+
+  /**
+   * Get status icon
+   */
+  const getStatusIcon = (status: StatusEnum | null) => {
+    if (!status) return <AlertCircleIcon className="h-4 w-4" />;
+
+    switch (status) {
+      case StatusEnum.ACTIVE:
+        return <PlayCircleIcon className="h-4 w-4" />;
+      case StatusEnum.PAUSED:
+        return <PauseCircleIcon className="h-4 w-4" />;
+      case StatusEnum.CREATING:
+        return <Loader2Icon className="h-4 w-4 animate-spin" />;
+      case StatusEnum.ERROR:
+        return <XCircleIcon className="h-4 w-4" />;
+      case StatusEnum.COMPLETED:
+        return <CheckCircle2Icon className="h-4 w-4" />;
+      case StatusEnum.DRAFT:
+      case StatusEnum.PENDING_APPROVAL:
+      case StatusEnum.APPROVED:
+        return <ClockIcon className="h-4 w-4" />;
+      case StatusEnum.ARCHIVED:
+        return <CheckCircle2Icon className="h-4 w-4" />;
+      default:
+        return <AlertCircleIcon className="h-4 w-4" />;
+    }
   };
 
   /**
@@ -156,77 +252,92 @@ const CampaignStatus: React.FC<CampaignStatusProps> = ({
 
   if (isLoading && !status) {
     return (
-      <div className="campaign-status loading">
-        <div className="loading-spinner">Loading status...</div>
+      <div className="flex items-center justify-center gap-2 py-4">
+        <Loader2Icon className="h-4 w-4 animate-spin text-muted-foreground" />
+        <span className="text-sm text-muted-foreground">Loading status...</span>
       </div>
     );
   }
 
   if (error && !status) {
     return (
-      <div className="campaign-status error">
-        <div className="error-message">
-          <span>⚠️ {error}</span>
-        </div>
-      </div>
+      <Alert variant="destructive">
+        <AlertCircleIcon className="h-4 w-4" />
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
     );
   }
 
   return (
-    <div className="campaign-status">
-      <div className="status-display">
-        <div className={`status-badge ${getStatusClass(status)}`}>
-          <span className="status-icon">
-            {status === StatusEnum.ACTIVE && '▶️'}
-            {status === StatusEnum.PAUSED && '⏸️'}
-            {status === StatusEnum.CREATING && '⏳'}
-            {status === StatusEnum.ERROR && '❌'}
-            {status === StatusEnum.COMPLETED && '✅'}
-            {!status && '❓'}
-          </span>
-          <span className="status-text">{getStatusText(status)}</span>
-        </div>
+    <div className="space-y-4">
+      {/* Debug Info */}
+      <div className="p-3 bg-purple-50 border border-purple-200 rounded text-xs space-y-1">
+        <div className="font-semibold text-purple-900">🔍 Status Component Debug:</div>
+        <div className="font-mono">initialStatus (prop): {initialStatus?.toString() || 'null'}</div>
+        <div className="font-mono">status (state): {status?.toString() || 'null'}</div>
+        <div className="font-mono">Display Text: {getStatusText(status)}</div>
+      </div>
 
-        {statusUpdate && statusUpdate.message && (
-          <div className="status-message">{statusUpdate.message}</div>
-        )}
-
-        {statusUpdate && statusUpdate.error && (
-          <div className="status-error">
-            <span>⚠️ {statusUpdate.error}</span>
-          </div>
-        )}
-
-        {statusUpdate && statusUpdate.platform && (
-          <div className="status-platform">
-            <span className="platform-label">Platform:</span>
-            <span className="platform-value">{statusUpdate.platform}</span>
-            {statusUpdate.platformStatus && (
-              <span className="platform-status">({statusUpdate.platformStatus})</span>
-            )}
-          </div>
-        )}
-
+      {/* Current Status */}
+      <div className="flex items-center gap-3">
+        <Badge variant={getStatusVariant(status)} className="flex items-center gap-1.5 px-3 py-1.5">
+          {getStatusIcon(status)}
+          {getStatusText(status)}
+        </Badge>
         {statusUpdate && statusUpdate.timestamp && (
-          <div className="status-timestamp">
+          <span className="text-xs text-muted-foreground">
             Last updated: {new Date(statusUpdate.timestamp).toLocaleString()}
-          </div>
+          </span>
         )}
       </div>
 
+      {/* Status Message */}
+      {statusUpdate && statusUpdate.message && (
+        <p className="text-sm text-muted-foreground">{statusUpdate.message}</p>
+      )}
+
+      {/* Error Alert */}
+      {statusUpdate && statusUpdate.error && (
+        <Alert variant="destructive">
+          <AlertCircleIcon className="h-4 w-4" />
+          <AlertDescription>{statusUpdate.error}</AlertDescription>
+        </Alert>
+      )}
+
+      {/* Platform Information */}
+      {statusUpdate && statusUpdate.platform && (
+        <div className="flex items-center gap-2 text-sm">
+          <span className="text-muted-foreground">Platform:</span>
+          <span className="font-medium">{statusUpdate.platform}</span>
+          {statusUpdate.platformStatus && (
+            <Badge variant="outline" className="text-xs">
+              {statusUpdate.platformStatus}
+            </Badge>
+          )}
+        </div>
+      )}
+
+      {/* Status History */}
       {showHistory && statusHistory.length > 0 && (
-        <div className="status-history">
-          <h4>Status History</h4>
-          <div className="history-list">
+        <div className="space-y-2 mt-4 pt-4 border-t">
+          <h4 className="text-sm font-semibold">Status History</h4>
+          <div className="space-y-2">
             {statusHistory.map((update, index) => (
-              <div key={index} className="history-item">
-                <span className="history-status">{getStatusText(update.status)}</span>
-                <span className="history-time">
+              <div
+                key={index}
+                className="flex items-start justify-between gap-4 text-xs py-2 px-3 rounded-md bg-muted/50"
+              >
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="text-xs">
+                    {getStatusText(update.status)}
+                  </Badge>
+                  {update.message && (
+                    <span className="text-muted-foreground">{update.message}</span>
+                  )}
+                </div>
+                <span className="text-muted-foreground whitespace-nowrap">
                   {new Date(update.timestamp).toLocaleString()}
                 </span>
-                {update.message && (
-                  <span className="history-message">{update.message}</span>
-                )}
               </div>
             ))}
           </div>

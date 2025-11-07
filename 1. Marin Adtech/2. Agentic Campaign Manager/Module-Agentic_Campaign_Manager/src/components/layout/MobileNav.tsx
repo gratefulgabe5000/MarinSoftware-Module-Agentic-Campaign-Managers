@@ -28,10 +28,6 @@ const defaultNavItems: NavItem[] = [
     label: 'Campaigns',
     path: '/campaigns',
   },
-  {
-    label: 'Create Campaign',
-    path: '/create',
-  },
 ];
 
 /**

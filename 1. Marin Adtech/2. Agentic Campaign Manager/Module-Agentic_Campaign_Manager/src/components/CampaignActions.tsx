@@ -3,6 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { Campaign, CampaignStatus } from '../types/campaign.types';
 import { campaignService } from '../services/campaignService';
 import { useCampaignStore } from '../store/campaignStore';
+import { Button } from './ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './ui/dialog';
+import { Alert, AlertDescription } from './ui/alert';
+import { PlayCircleIcon, PauseCircleIcon, Trash2Icon, Loader2Icon, AlertCircleIcon } from 'lucide-react';
 
 /**
  * CampaignActions Component Props
@@ -41,6 +45,9 @@ const CampaignActions: React.FC<CampaignActionsProps> = ({
    * Handle pause action
    */
   const handlePause = () => {
+    console.log('=== CampaignActions: handlePause clicked ===');
+    console.log('Campaign:', campaign);
+    console.log('Current status:', campaign.status);
     setActionType('pause');
     setShowConfirmDialog(true);
   };
@@ -49,6 +56,9 @@ const CampaignActions: React.FC<CampaignActionsProps> = ({
    * Handle resume action
    */
   const handleResume = () => {
+    console.log('=== CampaignActions: handleResume clicked ===');
+    console.log('Campaign:', campaign);
+    console.log('Current status:', campaign.status);
     setActionType('resume');
     setShowConfirmDialog(true);
   };
@@ -67,25 +77,36 @@ const CampaignActions: React.FC<CampaignActionsProps> = ({
   const confirmAction = async () => {
     if (!actionType) return;
 
+    console.log('=== CampaignActions: confirmAction called ===');
+    console.log('Action Type:', actionType);
+    console.log('Campaign ID:', campaign.id);
+    console.log('Current Campaign Status:', campaign.status);
+
     setIsLoading(true);
     setError(null);
     setShowConfirmDialog(false);
 
     try {
       if (actionType === 'activate') {
+        console.log('Activating campaign...');
         // Activate campaign (update status to active)
         const updatedCampaign = await campaignService.updateCampaign(campaign.id, {
           status: 'active',
         });
+
+        console.log('Campaign activated:', updatedCampaign);
+        console.log('New status:', updatedCampaign.status);
 
         // Update campaign in store
         updateCampaign(campaign.id, updatedCampaign);
         setCampaign(updatedCampaign);
 
         if (onUpdate) {
+          console.log('Calling onUpdate callback with:', updatedCampaign);
           onUpdate(updatedCampaign);
         }
       } else if (actionType === 'pause') {
+        console.log('Pausing campaign...');
         // Pause campaign
         await campaignService.pauseCampaign(campaign.id);
 
@@ -95,13 +116,18 @@ const CampaignActions: React.FC<CampaignActionsProps> = ({
           status: 'paused' as CampaignStatus,
           updatedAt: new Date(),
         };
+        console.log('Campaign paused. Updated campaign:', updatedCampaign);
+        console.log('New status:', updatedCampaign.status);
+
         updateCampaign(campaign.id, updatedCampaign);
         setCampaign(updatedCampaign);
 
         if (onUpdate) {
+          console.log('Calling onUpdate callback with:', updatedCampaign);
           onUpdate(updatedCampaign);
         }
       } else if (actionType === 'resume') {
+        console.log('Resuming campaign...');
         // Resume campaign
         await campaignService.resumeCampaign(campaign.id);
 
@@ -111,20 +137,29 @@ const CampaignActions: React.FC<CampaignActionsProps> = ({
           status: 'active' as CampaignStatus,
           updatedAt: new Date(),
         };
+        console.log('Campaign resumed. Updated campaign:', updatedCampaign);
+        console.log('New status:', updatedCampaign.status);
+
         updateCampaign(campaign.id, updatedCampaign);
         setCampaign(updatedCampaign);
 
         if (onUpdate) {
+          console.log('Calling onUpdate callback with:', updatedCampaign);
           onUpdate(updatedCampaign);
         }
       } else if (actionType === 'delete') {
+        console.log('Deleting campaign...');
         // Delete campaign
         await campaignService.deleteCampaign(campaign.id);
 
+        console.log('Campaign deleted. Navigating to /campaigns');
         // Navigate to dashboard
         navigate('/campaigns');
       }
+      console.log('=== Action completed successfully ===');
     } catch (error) {
+      console.error('=== Action failed ===');
+      console.error('Error:', error);
       setError(error instanceof Error ? error.message : 'Failed to perform action');
       alert(`Failed to ${actionType} campaign: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
@@ -188,83 +223,146 @@ const CampaignActions: React.FC<CampaignActionsProps> = ({
   };
 
   return (
-    <div className="campaign-actions">
+    <div className="space-y-4">
+      {/* Debug Info */}
+      <div className="p-3 bg-blue-50 border border-blue-200 rounded text-xs space-y-1">
+        <div className="font-semibold text-blue-900">🔍 Action Debug:</div>
+        <div className="font-mono">Current Status: {campaign.status}</div>
+        <div className="font-mono">Can Activate: {canActivate().toString()}</div>
+        <div className="font-mono">Can Pause: {canPause().toString()}</div>
+        <div className="font-mono">Can Resume: {canResume().toString()}</div>
+        <div className="font-mono">Can Delete: {canDelete().toString()}</div>
+      </div>
+
+      {/* Error Alert */}
       {error && (
-        <div className="error-message">
-          <span>⚠️ {error}</span>
-        </div>
+        <Alert variant="destructive">
+          <AlertCircleIcon className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
-      <div className="actions-buttons">
+      {/* Action Buttons */}
+      <div className="flex flex-wrap gap-2">
         {canActivate() && (
-          <button
-            className="action-btn activate-btn"
+          <Button
             onClick={handleActivate}
             disabled={isLoading}
+            variant="default"
+            type="button"
           >
-            {isLoading && actionType === 'activate' ? 'Activating...' : '▶️ Activate Campaign'}
-          </button>
+            {isLoading && actionType === 'activate' ? (
+              <>
+                <Loader2Icon className="h-4 w-4 animate-spin" />
+                Activating...
+              </>
+            ) : (
+              <>
+                <PlayCircleIcon className="h-4 w-4" />
+                Activate Campaign
+              </>
+            )}
+          </Button>
         )}
 
         {canPause() && (
-          <button
-            className="action-btn pause-btn"
+          <Button
             onClick={handlePause}
             disabled={isLoading}
+            variant="secondary"
+            type="button"
           >
-            {isLoading && actionType === 'pause' ? 'Pausing...' : '⏸️ Pause Campaign'}
-          </button>
+            {isLoading && actionType === 'pause' ? (
+              <>
+                <Loader2Icon className="h-4 w-4 animate-spin" />
+                Pausing...
+              </>
+            ) : (
+              <>
+                <PauseCircleIcon className="h-4 w-4" />
+                Pause Campaign
+              </>
+            )}
+          </Button>
         )}
 
         {canResume() && (
-          <button
-            className="action-btn resume-btn"
+          <Button
             onClick={handleResume}
             disabled={isLoading}
+            variant="default"
+            type="button"
           >
-            {isLoading && actionType === 'resume' ? 'Resuming...' : '▶️ Resume Campaign'}
-          </button>
+            {isLoading && actionType === 'resume' ? (
+              <>
+                <Loader2Icon className="h-4 w-4 animate-spin" />
+                Resuming...
+              </>
+            ) : (
+              <>
+                <PlayCircleIcon className="h-4 w-4" />
+                Resume Campaign
+              </>
+            )}
+          </Button>
         )}
 
         {canDelete() && (
-          <button
-            className="action-btn delete-btn"
+          <Button
             onClick={handleDelete}
             disabled={isLoading}
+            variant="destructive"
+            type="button"
           >
-            {isLoading && actionType === 'delete' ? 'Deleting...' : '🗑️ Delete Campaign'}
-          </button>
+            {isLoading && actionType === 'delete' ? (
+              <>
+                <Loader2Icon className="h-4 w-4 animate-spin" />
+                Deleting...
+              </>
+            ) : (
+              <>
+                <Trash2Icon className="h-4 w-4" />
+                Delete Campaign
+              </>
+            )}
+          </Button>
         )}
       </div>
 
-      {showConfirmDialog && (
-        <div className="confirm-dialog-overlay">
-          <div className="confirm-dialog">
-            <div className="confirm-dialog-header">
-              <h3>Confirm Action</h3>
-            </div>
-            <div className="confirm-dialog-content">
-              <p>{getConfirmMessage()}</p>
-            </div>
-            <div className="confirm-dialog-actions">
-              <button
-                className="confirm-btn"
-                onClick={confirmAction}
-                disabled={isLoading}
-              >
-                {isLoading ? 'Processing...' : 'Confirm'}
-              </button>
-              <button
-                className="cancel-btn"
-                onClick={cancelAction}
-                disabled={isLoading}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Confirmation Dialog */}
+      <Dialog open={showConfirmDialog} onOpenChange={(open) => !open && cancelAction()}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Action</DialogTitle>
+            <DialogDescription>{getConfirmMessage()}</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={cancelAction}
+              disabled={isLoading}
+              type="button"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant={actionType === 'delete' ? 'destructive' : 'default'}
+              onClick={confirmAction}
+              disabled={isLoading}
+              type="button"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2Icon className="h-4 w-4 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                'Confirm'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
