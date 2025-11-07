@@ -21,6 +21,7 @@ export function useCampaignPatterns(
     minCTR?: number;
     minConversions?: number;
     autoFetch?: boolean;
+    productName?: string; // Optional product name for product-specific patterns
   }
 ) {
   const [patterns, setPatterns] = useState<CampaignPatterns | null>(null);
@@ -67,6 +68,10 @@ export function useCampaignPatterns(
         params.minConversions = options.minConversions;
       }
 
+      if (options?.productName) {
+        params.productName = options.productName;
+      }
+
       const response = await axios.get<{
         success: boolean;
         patterns: CampaignPatterns;
@@ -108,7 +113,7 @@ export function useCampaignPatterns(
       setLoading(false);
       isLoadingRef.current = false;
     }
-  }, [accountId, options?.dateRange, options?.campaignIds, options?.minCTR, options?.minConversions]);
+  }, [accountId, options?.dateRange, options?.campaignIds, options?.minCTR, options?.minConversions, options?.productName]);
 
   const refresh = useCallback(() => {
     hasFetchedRef.current = false;
