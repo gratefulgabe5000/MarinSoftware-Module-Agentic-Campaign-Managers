@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useCampaignPatterns } from '../../hooks/useCampaignPatterns';
 import PatternViewer from './PatternViewer';
-import LoadingSpinner from '../LoadingSpinner';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 import { Alert, AlertDescription } from '../ui/alert';
-import { ArrowLeftIcon, SparklesIcon, AlertCircleIcon, Loader2Icon, BrainCircuitIcon } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
+import { ArrowLeftIcon, SparklesIcon, AlertCircleIcon, Loader2Icon, BrainCircuitIcon, PackageIcon } from 'lucide-react';
+import { CampaignPatterns } from '../../types/campaign-patterns.types';
 
 /**
  * Pattern Learning Screen Component
@@ -17,27 +17,77 @@ const PatternLearningScreen: React.FC = () => {
   const location = useLocation();
   const [accountId] = useState<string>('mock-account-id'); // For MVP, use mock
   const [skipPatternLearning, setSkipPatternLearning] = useState(false);
+  const [activeProductTab, setActiveProductTab] = useState<string>('0');
+  const [productPatterns, setProductPatterns] = useState<CampaignPatterns[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isMockData, setIsMockData] = useState(false);
 
   // Get products from previous step (passed via location state)
   const products = location.state?.products || [];
 
-  const {
-    patterns,
-    loading,
-    error,
-    isMockData,
-    fetchPatterns,
-    refresh,
-  } = useCampaignPatterns(accountId, {
-    autoFetch: true,
-  });
+  // Fetch product-specific patterns for each product
+  useEffect(() => {
+    const fetchAllProductPatterns = async () => {
+      if (products.length === 0) {
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        // Fetch patterns for each product in parallel
+        const axios = (await import('axios')).default;
+        const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || 'http://localhost:3001/api';
+
+        const patternPromises = products.map(async (product: any) => {
+          try {
+            const response = await axios.get(`${API_BASE_URL}/campaigns/query-patterns`, {
+              params: {
+                accountId,
+                productName: product.name,
+              },
+              timeout: 30000,
+            });
+
+            if (response.data.success) {
+              return {
+                ...response.data.patterns,
+                productId: product.id,
+                productName: product.name,
+              };
+            }
+            return null;
+          } catch (err) {
+            console.error(`Error fetching patterns for ${product.name}:`, err);
+            return null;
+          }
+        });
+
+        const results = await Promise.all(patternPromises);
+        const validPatterns = results.filter((p): p is CampaignPatterns => p !== null);
+
+        setProductPatterns(validPatterns);
+        setIsMockData(true); // Using mock data for MVP
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching product patterns:', err);
+        setError('Failed to fetch campaign patterns');
+        setLoading(false);
+      }
+    };
+
+    fetchAllProductPatterns();
+  }, [products, accountId]);
 
   const handleContinue = () => {
-    // Navigate to generation screen with products and patterns
+    // Navigate to generation screen with products and product-specific patterns
     navigate('/campaigns/generate', {
       state: {
         products,
-        patterns: patterns || undefined,
+        productPatterns: productPatterns.length > 0 ? productPatterns : undefined,
       },
     });
   };
@@ -47,9 +97,15 @@ const PatternLearningScreen: React.FC = () => {
     navigate('/campaigns/generate', {
       state: {
         products,
-        patterns: undefined, // Use defaults
+        productPatterns: undefined, // Use defaults
       },
     });
+  };
+
+  const refresh = () => {
+    // Trigger a re-fetch by forcing useEffect to run again
+    setProductPatterns([]);
+    setLoading(true);
   };
 
   if (loading) {
@@ -129,7 +185,7 @@ const PatternLearningScreen: React.FC = () => {
     );
   }
 
-  if (skipPatternLearning || !patterns) {
+  if (skipPatternLearning || productPatterns.length === 0) {
     return (
       <div className="min-h-screen bg-background p-8">
         <div className="mx-auto max-w-5xl space-y-6">
@@ -156,7 +212,7 @@ const PatternLearningScreen: React.FC = () => {
                   variant="outline"
                   onClick={() => {
                     setSkipPatternLearning(false);
-                    fetchPatterns();
+                    refresh();
                   }}
                   type="button"
                 >
@@ -195,20 +251,62 @@ const PatternLearningScreen: React.FC = () => {
         <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">Pattern Learning</h1>
           <p className="text-muted-foreground">
-            We've analyzed your existing campaigns and extracted these patterns
+            We've analyzed your existing campaigns and extracted patterns for each product
           </p>
         </div>
 
-        <PatternViewer patterns={patterns} isMockData={isMockData} onContinue={handleContinue} />
+        {/* Product tabs for segmented patterns */}
+        {products.length > 0 && productPatterns.length > 0 && (
+          <Tabs value={activeProductTab} onValueChange={setActiveProductTab}>
+            <TabsList className="grid w-full" style={{ gridTemplateColumns: `repeat(${products.length}, minmax(0, 1fr))` }}>
+              {products.map((product: any, index: number) => (
+                <TabsTrigger key={product.id} value={String(index)}>
+                  <PackageIcon className="h-4 w-4 mr-2" />
+                  <span className="truncate max-w-[150px]">{product.name}</span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+
+            {productPatterns.map((productPattern: CampaignPatterns, index: number) => (
+              <TabsContent key={products[index].id} value={String(index)} className="space-y-6">
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="space-y-2 mb-4">
+                      <h2 className="text-xl font-semibold">{products[index].name}</h2>
+                      {products[index].category && (
+                        <p className="text-sm text-muted-foreground">Category: {products[index].category}</p>
+                      )}
+                      {products[index].url && (
+                        <p className="text-sm text-muted-foreground truncate">URL: {products[index].url}</p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <PatternViewer
+                  patterns={productPattern}
+                  isMockData={isMockData}
+                />
+              </TabsContent>
+            ))}
+          </Tabs>
+        )}
 
         <Card>
-          <CardContent className="flex justify-center items-center p-4">
+          <CardContent className="flex justify-between items-center p-4">
             <Button
               variant="outline"
               onClick={handleSkip}
               type="button"
             >
               Skip & Use Defaults
+            </Button>
+            <Button
+              onClick={handleContinue}
+              type="button"
+            >
+              <SparklesIcon className="h-4 w-4 mr-2" />
+              Continue to Generation
             </Button>
           </CardContent>
         </Card>
