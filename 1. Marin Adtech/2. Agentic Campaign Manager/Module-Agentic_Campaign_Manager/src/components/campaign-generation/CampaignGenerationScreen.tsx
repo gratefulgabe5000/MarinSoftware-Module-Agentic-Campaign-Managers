@@ -19,6 +19,7 @@ const CampaignGenerationScreen: React.FC = () => {
   const [products, setProducts] = useState<ProductInput[]>([]);
   const [patterns, setPatterns] = useState<CampaignPatterns | undefined>(undefined);
   const [currentStep, setCurrentStep] = useState<'adgroups' | 'keywords' | 'ads' | 'complete'>('adgroups');
+  const [generatedCampaigns, setGeneratedCampaigns] = useState<Campaign[]>([]);
   const [generationProgress, setGenerationProgress] = useState<{
     adGroups: { [key: number]: any };
     keywords: { [key: number]: any };
@@ -221,6 +222,9 @@ const CampaignGenerationScreen: React.FC = () => {
       if (newCampaigns.length > 0) {
         setCampaigns([...currentCampaigns, ...newCampaigns]);
       }
+
+      // Store generated campaigns for navigation to preview
+      setGeneratedCampaigns(campaigns);
     }
   }, [currentStep, products, generationProgress, addCampaign, setCampaigns]);
 
@@ -310,10 +314,19 @@ const CampaignGenerationScreen: React.FC = () => {
             </button>
             <button
               className="btn btn-primary"
+              onClick={() => navigate('/campaigns/preview', { 
+                state: { campaigns: generatedCampaigns } 
+              })}
+              type="button"
+            >
+              Preview & Edit
+            </button>
+            <button
+              className="btn btn-secondary"
               onClick={() => navigate('/')}
               type="button"
             >
-              View Campaigns
+              View Dashboard
             </button>
           </div>
         </div>

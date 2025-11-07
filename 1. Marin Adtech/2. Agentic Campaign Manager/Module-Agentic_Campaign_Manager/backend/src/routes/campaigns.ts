@@ -7,6 +7,7 @@ import { PatternExtractionController } from '../controllers/patternExtractionCon
 import { AdGroupGenerationController } from '../controllers/adGroupGenerationController';
 import { KeywordGenerationController } from '../controllers/keywordGenerationController';
 import { RSAGenerationController } from '../controllers/rsaGenerationController';
+import { CSVExportController } from '../controllers/csvExportController';
 
 /**
  * Campaign Routes
@@ -21,6 +22,7 @@ const patternExtractionController = new PatternExtractionController();
 const adGroupGenerationController = new AdGroupGenerationController();
 const keywordGenerationController = new KeywordGenerationController();
 const rsaGenerationController = new RSAGenerationController();
+const csvExportController = new CSVExportController();
 
 // Pattern extraction endpoints (must come before parameterized routes)
 router.get('/query-patterns', patternExtractionController.queryPatterns);
@@ -63,6 +65,10 @@ router.post('/keywords/validate', keywordGenerationController.validateKeywords);
 // RSA generation endpoints
 router.post('/ads/generate-rsa', rsaGenerationController.generateRSA);
 router.post('/ads/validate', rsaGenerationController.validateAdCopy);
+
+// CSV export endpoints
+router.post('/export', csvExportController.exportCampaign);
+router.post('/export/validate', csvExportController.validateExport);
 
 export default router;
 
