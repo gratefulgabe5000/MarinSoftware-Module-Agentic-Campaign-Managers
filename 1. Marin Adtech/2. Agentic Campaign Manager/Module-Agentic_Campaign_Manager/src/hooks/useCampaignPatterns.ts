@@ -26,6 +26,7 @@ export function useCampaignPatterns(
   const [patterns, setPatterns] = useState<CampaignPatterns | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isMockData, setIsMockData] = useState(false);
   const hasFetchedRef = useRef(false);
   const isLoadingRef = useRef(false);
 
@@ -72,6 +73,7 @@ export function useCampaignPatterns(
         extractedAt: string;
         sourceCampaigns: string[];
         dateRange?: { startDate: string; endDate: string };
+        isMockData?: boolean;
       }>(`${API_BASE_URL}/campaigns/query-patterns`, {
         params,
         timeout: 30000,
@@ -79,6 +81,7 @@ export function useCampaignPatterns(
 
       if (response.data.success) {
         setPatterns(response.data.patterns);
+        setIsMockData(response.data.isMockData || false);
         hasFetchedRef.current = true;
       } else {
         throw new Error('Failed to fetch patterns');
@@ -130,6 +133,7 @@ export function useCampaignPatterns(
     patterns,
     loading,
     error,
+    isMockData,
     fetchPatterns,
     refresh,
   };

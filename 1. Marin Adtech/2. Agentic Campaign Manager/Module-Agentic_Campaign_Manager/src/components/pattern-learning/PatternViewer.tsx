@@ -6,6 +6,7 @@ import { CampaignPatterns } from '../../types/campaign-patterns.types';
  */
 interface PatternViewerProps {
   patterns: CampaignPatterns;
+  isMockData?: boolean;
   onContinue?: () => void;
 }
 
@@ -15,19 +16,34 @@ interface PatternViewerProps {
  */
 const PatternViewer: React.FC<PatternViewerProps> = ({
   patterns,
+  isMockData = false,
   onContinue,
 }) => {
   return (
     <div className="pattern-viewer">
       <div className="pattern-viewer-header">
-        <h2>Extracted Campaign Patterns</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+          <h2>Extracted Campaign Patterns</h2>
+          {isMockData && (
+            <span className="mock-data-warning">
+              ⚠️ Mock Data
+            </span>
+          )}
+        </div>
         <p>These patterns were learned from your existing campaigns</p>
       </div>
 
       <div className="pattern-sections">
         {/* Ad Group Structures */}
         <div className="pattern-section">
-          <h3>Ad Group Structures</h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            <h3>Ad Group Structures</h3>
+            {isMockData && (
+              <span className="mock-data-warning">
+                ⚠️ Mock Data
+              </span>
+            )}
+          </div>
           <div className="pattern-content">
             <div className="pattern-item">
               <label>Naming Convention:</label>
@@ -56,7 +72,14 @@ const PatternViewer: React.FC<PatternViewerProps> = ({
 
         {/* High Performing Keywords */}
         <div className="pattern-section">
-          <h3>High Performing Keywords (Top 20)</h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            <h3>High Performing Keywords (Top 20)</h3>
+            {isMockData && (
+              <span className="mock-data-warning">
+                ⚠️ Mock Data
+              </span>
+            )}
+          </div>
           <div className="pattern-content">
             {patterns.highPerformingKeywords.length > 0 ? (
               <div className="keywords-table">
@@ -93,7 +116,14 @@ const PatternViewer: React.FC<PatternViewerProps> = ({
 
         {/* Ad Copy Patterns */}
         <div className="pattern-section">
-          <h3>Ad Copy Patterns</h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            <h3>Ad Copy Patterns</h3>
+            {isMockData && (
+              <span className="mock-data-warning">
+                ⚠️ Mock Data
+              </span>
+            )}
+          </div>
           <div className="pattern-content">
             <div className="pattern-item">
               <label>Headline Templates ({patterns.adCopyPatterns.headlineTemplates.length}):</label>
@@ -146,7 +176,14 @@ const PatternViewer: React.FC<PatternViewerProps> = ({
 
         {/* Bidding Patterns */}
         <div className="pattern-section">
-          <h3>Bidding Patterns</h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            <h3>Bidding Patterns</h3>
+            {isMockData && (
+              <span className="mock-data-warning">
+                ⚠️ Mock Data
+              </span>
+            )}
+          </div>
           <div className="pattern-content">
             <div className="pattern-item">
               <label>Average CPC:</label>

@@ -88,5 +88,6 @@ export interface PatternExtractionResponse {
     startDate: string;
     endDate: string;
   };
+  isMockData?: boolean; // Flag indicating if mock data was used
 }
 

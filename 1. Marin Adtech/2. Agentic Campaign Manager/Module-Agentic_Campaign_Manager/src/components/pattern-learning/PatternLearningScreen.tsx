@@ -21,6 +21,7 @@ const PatternLearningScreen: React.FC = () => {
     patterns,
     loading,
     error,
+    isMockData,
     fetchPatterns,
     refresh,
   } = useCampaignPatterns(accountId, {
@@ -134,7 +135,7 @@ const PatternLearningScreen: React.FC = () => {
         <p>We've analyzed your existing campaigns and extracted these patterns</p>
       </div>
 
-      <PatternViewer patterns={patterns} onContinue={handleContinue} />
+      <PatternViewer patterns={patterns} isMockData={isMockData} onContinue={handleContinue} />
 
       <div className="pattern-learning-footer">
         <button
