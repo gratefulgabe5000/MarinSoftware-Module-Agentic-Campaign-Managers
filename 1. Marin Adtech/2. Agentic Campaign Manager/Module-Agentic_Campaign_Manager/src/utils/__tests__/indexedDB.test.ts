@@ -6,14 +6,11 @@ import {
 } from '../indexedDB';
 import { PerformanceMetrics, TimeRangeConfig } from '../../types/performance.types';
 
-<<<<<<< HEAD
 // Mock IDBKeyRange
 global.IDBKeyRange = {
   only: jest.fn((value) => ({ value })),
 } as any;
 
-=======
->>>>>>> c75a29246aa4d3b02efa0ae3553d6040d682d314
 // Mock IndexedDB
 const mockDB = {
   transaction: jest.fn(),
@@ -65,7 +62,6 @@ describe('IndexedDB Performance Caching', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-<<<<<<< HEAD
 
     // Mock indexedDB.open to return a promise-like request
     (global.indexedDB.open as jest.Mock).mockImplementation((name, version) => {
@@ -82,39 +78,18 @@ describe('IndexedDB Performance Caching', () => {
           request.onsuccess({ target: { result: mockDB } });
         }
       });
-=======
-    
-    // Mock indexedDB.open
-    (global.indexedDB.open as jest.Mock).mockImplementation((name, version) => {
-      const request = {
-        onsuccess: null,
-        onerror: null,
-        onupgradeneeded: null,
-        result: mockDB,
-      } as any;
-
-      setTimeout(() => {
-        if (request.onsuccess) {
-          request.onsuccess({ target: { result: mockDB } });
-        }
-      }, 0);
->>>>>>> c75a29246aa4d3b02efa0ae3553d6040d682d314
 
       return request;
     });
 
     mockDB.transaction.mockReturnValue(mockTransaction);
-<<<<<<< HEAD
     mockDB.objectStoreNames.contains.mockReturnValue(true);
-=======
->>>>>>> c75a29246aa4d3b02efa0ae3553d6040d682d314
     mockTransaction.objectStore.mockReturnValue(mockStore);
     mockStore.index.mockReturnValue(mockIndex);
   });
 
   describe('cachePerformanceMetrics', () => {
     it('should cache performance metrics', async () => {
-<<<<<<< HEAD
       // Mock store.put to return a promise-like request
       mockStore.put.mockImplementation(() => {
         const request = {
@@ -130,20 +105,6 @@ describe('IndexedDB Performance Caching', () => {
 
         return request;
       });
-=======
-      const putRequest = {
-        onsuccess: null,
-        onerror: null,
-      } as any;
-
-      mockStore.put.mockReturnValue(putRequest);
-
-      setTimeout(() => {
-        if (putRequest.onsuccess) {
-          putRequest.onsuccess({});
-        }
-      }, 0);
->>>>>>> c75a29246aa4d3b02efa0ae3553d6040d682d314
 
       await cachePerformanceMetrics('campaign-123', mockMetrics, mockTimeRange);
 
@@ -151,7 +112,6 @@ describe('IndexedDB Performance Caching', () => {
     });
 
     it('should handle errors gracefully', async () => {
-<<<<<<< HEAD
       // Mock store.put to trigger error
       mockStore.put.mockImplementation(() => {
         const request = {
@@ -168,26 +128,11 @@ describe('IndexedDB Performance Caching', () => {
 
         return request;
       });
-=======
-      const putRequest = {
-        onsuccess: null,
-        onerror: null,
-      } as any;
-
-      mockStore.put.mockReturnValue(putRequest);
-
-      setTimeout(() => {
-        if (putRequest.onerror) {
-          putRequest.onerror({});
-        }
-      }, 0);
->>>>>>> c75a29246aa4d3b02efa0ae3553d6040d682d314
 
       const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
 
       await cachePerformanceMetrics('campaign-123', mockMetrics, mockTimeRange);
 
-<<<<<<< HEAD
       // Give async operations time to complete
       await new Promise(resolve => setImmediate(resolve));
 
@@ -195,16 +140,12 @@ describe('IndexedDB Performance Caching', () => {
         'Failed to cache performance metrics:',
         expect.anything()
       );
-=======
-      expect(consoleErrorSpy).toHaveBeenCalled();
->>>>>>> c75a29246aa4d3b02efa0ae3553d6040d682d314
       consoleErrorSpy.mockRestore();
     });
   });
 
   describe('getCachedPerformanceMetrics', () => {
     it('should return cached metrics if available and not expired', async () => {
-<<<<<<< HEAD
       mockStore.get.mockImplementation(() => {
         const request = {
           onsuccess: null as any,
@@ -223,24 +164,6 @@ describe('IndexedDB Performance Caching', () => {
 
         return request;
       });
-=======
-      const getRequest = {
-        onsuccess: null,
-        onerror: null,
-        result: {
-          metrics: mockMetrics,
-          cachedAt: new Date().toISOString(),
-        },
-      } as any;
-
-      mockStore.get.mockReturnValue(getRequest);
-
-      setTimeout(() => {
-        if (getRequest.onsuccess) {
-          getRequest.onsuccess({});
-        }
-      }, 0);
->>>>>>> c75a29246aa4d3b02efa0ae3553d6040d682d314
 
       const result = await getCachedPerformanceMetrics('campaign-123', mockTimeRange);
 
@@ -251,7 +174,6 @@ describe('IndexedDB Performance Caching', () => {
       const expiredDate = new Date();
       expiredDate.setMinutes(expiredDate.getMinutes() - 20); // 20 minutes ago
 
-<<<<<<< HEAD
       mockStore.get.mockImplementation(() => {
         const request = {
           onsuccess: null as any,
@@ -285,34 +207,6 @@ describe('IndexedDB Performance Caching', () => {
 
         return request;
       });
-=======
-      const getRequest = {
-        onsuccess: null,
-        onerror: null,
-        result: {
-          metrics: mockMetrics,
-          cachedAt: expiredDate.toISOString(),
-        },
-      } as any;
-
-      mockStore.get.mockReturnValue(getRequest);
-
-      const deleteRequest = {
-        onsuccess: null,
-        onerror: null,
-      } as any;
-
-      mockStore.delete.mockReturnValue(deleteRequest);
-
-      setTimeout(() => {
-        if (getRequest.onsuccess) {
-          getRequest.onsuccess({});
-        }
-        if (deleteRequest.onsuccess) {
-          deleteRequest.onsuccess({});
-        }
-      }, 0);
->>>>>>> c75a29246aa4d3b02efa0ae3553d6040d682d314
 
       const result = await getCachedPerformanceMetrics('campaign-123', mockTimeRange);
 
@@ -320,7 +214,6 @@ describe('IndexedDB Performance Caching', () => {
     });
 
     it('should return null if no cache found', async () => {
-<<<<<<< HEAD
       mockStore.get.mockImplementation(() => {
         const request = {
           onsuccess: null as any,
@@ -336,21 +229,6 @@ describe('IndexedDB Performance Caching', () => {
 
         return request;
       });
-=======
-      const getRequest = {
-        onsuccess: null,
-        onerror: null,
-        result: undefined,
-      } as any;
-
-      mockStore.get.mockReturnValue(getRequest);
-
-      setTimeout(() => {
-        if (getRequest.onsuccess) {
-          getRequest.onsuccess({});
-        }
-      }, 0);
->>>>>>> c75a29246aa4d3b02efa0ae3553d6040d682d314
 
       const result = await getCachedPerformanceMetrics('campaign-123', mockTimeRange);
 
@@ -365,7 +243,6 @@ describe('IndexedDB Performance Caching', () => {
         continue: jest.fn(),
       };
 
-<<<<<<< HEAD
       // Set up a one-shot callback to simulate end of cursor
       let hasBeenCalled = false;
 
@@ -396,43 +273,15 @@ describe('IndexedDB Performance Caching', () => {
             request.onsuccess(event);
           }
         });
-=======
-      mockIndex.openCursor.mockImplementation((range) => {
-        const request = {
-          onsuccess: null,
-          onerror: null,
-          result: cursor,
-        } as any;
-
-        setTimeout(() => {
-          if (request.onsuccess) {
-            request.onsuccess({});
-          }
-          // Simulate cursor continue
-          cursor.continue();
-          // Second call returns null (end of cursor)
-          setTimeout(() => {
-            request.result = null;
-            if (request.onsuccess) {
-              request.onsuccess({});
-            }
-          }, 0);
-        }, 0);
->>>>>>> c75a29246aa4d3b02efa0ae3553d6040d682d314
 
         return request;
       });
 
       await clearCachedPerformanceMetrics('campaign-123');
 
-<<<<<<< HEAD
       // Verify the mock was called
       expect(mockIndex.openCursor).toHaveBeenCalled();
     }, 10000);
-=======
-      expect(cursor.delete).toHaveBeenCalled();
-    });
->>>>>>> c75a29246aa4d3b02efa0ae3553d6040d682d314
   });
 
   describe('cleanupExpiredCache', () => {
@@ -448,7 +297,6 @@ describe('IndexedDB Performance Caching', () => {
         continue: jest.fn(),
       };
 
-<<<<<<< HEAD
       let hasBeenCalled = false;
 
       mockIndex.openCursor.mockImplementation(() => {
@@ -478,41 +326,15 @@ describe('IndexedDB Performance Caching', () => {
             request.onsuccess(event);
           }
         });
-=======
-      mockIndex.openCursor.mockImplementation(() => {
-        const request = {
-          onsuccess: null,
-          onerror: null,
-          result: cursor,
-        } as any;
-
-        setTimeout(() => {
-          if (request.onsuccess) {
-            request.onsuccess({});
-          }
-          cursor.continue();
-          setTimeout(() => {
-            request.result = null;
-            if (request.onsuccess) {
-              request.onsuccess({});
-            }
-          }, 0);
-        }, 0);
->>>>>>> c75a29246aa4d3b02efa0ae3553d6040d682d314
 
         return request;
       });
 
       await cleanupExpiredCache();
 
-<<<<<<< HEAD
       // Verify the mock was called
       expect(mockIndex.openCursor).toHaveBeenCalled();
     }, 10000);
-=======
-      expect(cursor.delete).toHaveBeenCalled();
-    });
->>>>>>> c75a29246aa4d3b02efa0ae3553d6040d682d314
   });
 });
 
