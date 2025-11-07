@@ -1842,6 +1842,19 @@ code {
   color: #1976d2;
 }
 
+.mock-data-warning {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background-color: #ffc107;
+  color: #000;
+  border-radius: 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
 .last-updated {
   display: flex;
   align-items: center;
