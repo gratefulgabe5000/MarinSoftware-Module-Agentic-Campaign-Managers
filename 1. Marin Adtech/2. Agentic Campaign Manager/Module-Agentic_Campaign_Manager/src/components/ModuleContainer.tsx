@@ -19,6 +19,7 @@ const ModuleContainer: React.FC = () => {
     <div className="module-container">
       <Routes>
         <Route path="/" element={<CampaignDashboard />} />
+        <Route path="/campaigns" element={<CampaignDashboard />} />
         <Route path="/create" element={<CampaignCreation />} />
         <Route path="/preview" element={<CampaignPreview />} />
         <Route path="/campaigns/csv-upload" element={<CSVUploadScreen />} />

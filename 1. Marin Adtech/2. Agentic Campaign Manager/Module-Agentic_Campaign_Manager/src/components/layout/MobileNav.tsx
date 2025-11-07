@@ -25,16 +25,12 @@ export interface MobileNavProps {
  */
 const defaultNavItems: NavItem[] = [
   {
-    label: 'Dashboard',
-    path: '/',
+    label: 'Campaigns',
+    path: '/campaigns',
   },
   {
     label: 'Create Campaign',
     path: '/create',
-  },
-  {
-    label: 'Performance',
-    path: '/performance',
   },
 ];
 
@@ -133,7 +129,7 @@ const MobileNav: React.FC<MobileNavProps> = ({
                   <NavLink
                     key={item.path}
                     to={item.path}
-                    end={item.path === '/'}
+                    end={item.path === '/' || item.path === '/campaigns'}
                     onClick={onToggle}
                     className={({ isActive }) =>
                       `flex items-center gap-3 rounded-md px-4 py-3 text-base font-medium transition-colors

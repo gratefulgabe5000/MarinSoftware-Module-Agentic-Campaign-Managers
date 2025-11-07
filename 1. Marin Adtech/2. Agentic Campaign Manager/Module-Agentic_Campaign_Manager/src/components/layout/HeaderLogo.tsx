@@ -40,7 +40,7 @@ const HeaderLogo: React.FC<HeaderLogoProps> = ({
     if (onClick) {
       onClick();
     } else {
-      navigate('/');
+      navigate('/campaigns');
     }
   };
 

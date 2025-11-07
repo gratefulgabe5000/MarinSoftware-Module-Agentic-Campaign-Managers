@@ -122,7 +122,7 @@ const CampaignActions: React.FC<CampaignActionsProps> = ({
         await campaignService.deleteCampaign(campaign.id);
 
         // Navigate to dashboard
-        navigate('/');
+        navigate('/campaigns');
       }
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to perform action');

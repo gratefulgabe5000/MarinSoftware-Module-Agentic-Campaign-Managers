@@ -187,13 +187,14 @@ const CampaignGenerationScreen: React.FC = () => {
               primary: 'clicks',
               secondary: ['impressions', 'ctr'],
             },
-            adGroups: adGroups.map((adGroup: any) => ({
+            adGroups: adGroups.map((adGroup: any, adGroupIndex: number) => ({
               name: adGroup.name || `Ad Group ${adGroup.id}`,
               objective: 'drive_traffic',
               budget: 100,
               targeting: {
                 keywords: keywords.map((k: any) => k.text || k.keyword || k),
               },
+              ads: ads[adGroupIndex] ? [ads[adGroupIndex]] : [],
             })),
           },
           status: 'draft',
@@ -345,7 +346,7 @@ const CampaignGenerationScreen: React.FC = () => {
                 <EyeIcon className="h-4 w-4" />
                 Preview & Edit
               </Button>
-              <Button variant="outline" onClick={() => navigate('/')} type="button">
+              <Button variant="outline" onClick={() => navigate('/campaigns')} type="button">
                 <HomeIcon className="h-4 w-4" />
                 View Dashboard
               </Button>

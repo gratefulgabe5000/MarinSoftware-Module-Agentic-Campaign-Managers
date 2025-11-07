@@ -29,7 +29,7 @@ const ConnectedHeader: React.FC<Omit<HeaderProps, 'user' | 'notifications' | 'un
 
   // Navigation handlers
   const handleLogoClick = () => {
-    navigate('/');
+    navigate('/campaigns');
   };
 
   const handleSettingsClick = () => {

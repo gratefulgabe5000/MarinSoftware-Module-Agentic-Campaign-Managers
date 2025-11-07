@@ -71,7 +71,7 @@ const CampaignDetail: React.FC = () => {
         <div className="error-message">
           <span>⚠️ {error}</span>
         </div>
-        <button onClick={() => navigate('/')} className="back-button">
+        <button onClick={() => navigate('/campaigns')} className="back-button">
           Back to Dashboard
         </button>
       </div>
@@ -95,7 +95,7 @@ const CampaignDetail: React.FC = () => {
   return (
     <div className="campaign-detail">
       <div className="campaign-detail-header">
-        <button onClick={() => navigate('/')} className="back-button">
+        <button onClick={() => navigate('/campaigns')} className="back-button">
           ← Back
         </button>
         <div>

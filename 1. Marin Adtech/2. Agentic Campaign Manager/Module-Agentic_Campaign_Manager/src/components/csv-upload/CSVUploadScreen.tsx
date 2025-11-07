@@ -95,7 +95,7 @@ const CSVUploadScreen: React.FC = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/campaigns')}
               type="button"
               className="mb-2"
             >
@@ -178,7 +178,7 @@ const CSVUploadScreen: React.FC = () => {
             <div className="flex gap-2">
               <Button
                 variant="outline"
-                onClick={() => navigate('/')}
+                onClick={() => navigate('/campaigns')}
                 type="button"
               >
                 Cancel

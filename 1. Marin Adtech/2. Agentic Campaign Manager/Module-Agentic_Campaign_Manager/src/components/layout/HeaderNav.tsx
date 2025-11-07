@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LucideIcon, LayoutDashboard, Plus, BarChart3 } from 'lucide-react';
+import { LucideIcon, FolderKanban, Plus } from 'lucide-react';
 
 /**
  * Navigation Item Interface
@@ -32,19 +32,14 @@ export interface HeaderNavProps {
  */
 const defaultNavItems: NavItem[] = [
   {
-    label: 'Dashboard',
-    path: '/',
-    icon: LayoutDashboard,
+    label: 'Campaigns',
+    path: '/campaigns',
+    icon: FolderKanban,
   },
   {
     label: 'Create Campaign',
     path: '/create',
     icon: Plus,
-  },
-  {
-    label: 'Performance',
-    path: '/performance',
-    icon: BarChart3,
   },
 ];
 
@@ -73,7 +68,7 @@ const HeaderNav: React.FC<HeaderNavProps> = ({
           <NavLink
             key={item.path}
             to={item.path}
-            end={item.path === '/'}
+            end={item.path === '/' || item.path === '/campaigns'}
             className={({ isActive }) =>
               `relative flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors
               ${

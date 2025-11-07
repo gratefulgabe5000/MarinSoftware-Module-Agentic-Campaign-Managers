@@ -60,9 +60,8 @@ const CampaignPreviewScreen: React.FC = () => {
         // Get keywords from targeting.keywords (array of strings)
         const keywords = adGroupPlan.targeting?.keywords || [];
         
-        // For MVP, we'll create placeholder ads since ads aren't stored in campaignPlan yet
-        // In the future, ads should be stored in the campaign structure
-        const ads: any[] = []; // TODO: Extract ads from campaign metadata or store
+        // Extract ads from adGroupPlan.ads
+        const ads = adGroupPlan.ads || [];
 
         const adGroupRow: AdGroupPreviewRow = {
           id: `adgroup-${index}`,
@@ -83,12 +82,12 @@ const CampaignPreviewScreen: React.FC = () => {
             },
           })),
           ads: ads.map((ad, adIndex) => ({
-            id: `ad-${index}-${adIndex}`,
-            adGroupId: `adgroup-${index}`,
+            id: ad.id || `ad-${index}-${adIndex}`,
+            adGroupId: ad.adGroupId || `adgroup-${index}`,
             headlines: ad.headlines?.map((h, hIndex) => ({
               text: typeof h === 'string' ? h : h.text || h,
-              pinned: false,
-              position: hIndex,
+              pinned: h.pinned || false,
+              position: h.position ?? hIndex,
             })) || [],
             descriptions: ad.descriptions?.map((d, dIndex) => ({
               text: typeof d === 'string' ? d : d.text || d,
@@ -121,7 +120,7 @@ const CampaignPreviewScreen: React.FC = () => {
 
   // Handle back to dashboard
   const handleBackToDashboard = () => {
-    navigate('/');
+    navigate('/campaigns');
   };
 
   // Handle back to generation
