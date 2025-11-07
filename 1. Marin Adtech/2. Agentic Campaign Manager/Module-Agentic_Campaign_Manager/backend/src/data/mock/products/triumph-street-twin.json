@@ -1,0 +1,134 @@
+{
+  "campaigns": [
+    {
+      "id": "campaign-triumph-street-twin-001",
+      "name": "Triumph Street Twin - Modern Classics",
+      "status": "ACTIVE",
+      "advertising_channel_type": "SEARCH",
+      "adGroups": [
+        {
+          "id": "adgroup-triumph-street-twin-001",
+          "name": "Triumph Street Twin - Urban",
+          "keywords": [
+            {
+              "text": "triumph street twin",
+              "matchType": "EXACT",
+              "impressions": 13500,
+              "clicks": 675,
+              "ctr": 5.0,
+              "conversions": 19,
+              "cost": 2025.00,
+              "roas": 31.0,
+              "average_cpc": 3.00
+            },
+            {
+              "text": "street twin motorcycle",
+              "matchType": "PHRASE",
+              "impressions": 10500,
+              "clicks": 735,
+              "ctr": 7.0,
+              "conversions": 21,
+              "cost": 2205.00,
+              "roas": 34.5,
+              "average_cpc": 3.00
+            },
+            {
+              "text": "triumph urban bike",
+              "matchType": "PHRASE",
+              "impressions": 8500,
+              "clicks": 425,
+              "ctr": 5.0,
+              "conversions": 11,
+              "cost": 1275.00,
+              "roas": 27.5,
+              "average_cpc": 3.00
+            },
+            {
+              "text": "modern classic motorcycle",
+              "matchType": "BROAD",
+              "impressions": 12000,
+              "clicks": 360,
+              "ctr": 3.0,
+              "conversions": 8,
+              "cost": 1080.00,
+              "roas": 24.0,
+              "average_cpc": 3.00
+            }
+          ],
+          "ads": [
+            {
+              "id": "ad-triumph-street-twin-001",
+              "type": "RESPONSIVE_SEARCH_AD",
+              "headlines": [
+                "Triumph Street Twin",
+                "Modern Classic Bikes",
+                "Shop Street Twin Today",
+                "Urban Triumph Style",
+                "Versatile Street Twin",
+                "Everyday Riding Excellence",
+                "Street Twin Deals",
+                "Triumph City Bikes"
+              ],
+              "descriptions": [
+                "The perfect blend of classic style and modern performance. Triumph Street Twin for urban adventures.",
+                "Experience effortless city riding with the Street Twin. Smooth power and timeless design.",
+                "Versatile and stylish Street Twin motorcycles. Test rides and financing options available."
+              ],
+              "final_urls": ["https://www.triumphmotorcycles.com/motorcycles/classic/street-twin"]
+            }
+          ]
+        },
+        {
+          "id": "adgroup-triumph-street-twin-002",
+          "name": "Triumph - Beginner Friendly",
+          "keywords": [
+            {
+              "text": "beginner triumph motorcycle",
+              "matchType": "PHRASE",
+              "impressions": 7000,
+              "clicks": 350,
+              "ctr": 5.0,
+              "conversions": 9,
+              "cost": 1050.00,
+              "roas": 26.0,
+              "average_cpc": 3.00
+            },
+            {
+              "text": "easy to ride triumph",
+              "matchType": "PHRASE",
+              "impressions": 6000,
+              "clicks": 300,
+              "ctr": 5.0,
+              "conversions": 7,
+              "cost": 900.00,
+              "roas": 23.5,
+              "average_cpc": 3.00
+            }
+          ],
+          "ads": [
+            {
+              "id": "ad-triumph-street-twin-002",
+              "type": "RESPONSIVE_SEARCH_AD",
+              "headlines": [
+                "Perfect First Triumph",
+                "Beginner-Friendly Bikes",
+                "Easy Riding Street Twin",
+                "Start Your Journey",
+                "Confidence-Inspiring Bike",
+                "Learn on a Triumph",
+                "Approachable Performance",
+                "New Rider Friendly"
+              ],
+              "descriptions": [
+                "Ideal for new riders. The Street Twin offers confidence and control in a classic package.",
+                "Start your riding journey right. Expert training and support with every Street Twin purchase.",
+                "Easy to handle, exciting to ride. The Street Twin makes learning enjoyable and rewarding."
+              ],
+              "final_urls": ["https://www.triumphmotorcycles.com/motorcycles/classic/street-twin"]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

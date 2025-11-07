@@ -1,0 +1,134 @@
+{
+  "campaigns": [
+    {
+      "id": "campaign-triumph-thruxton-001",
+      "name": "Triumph Thruxton - Cafe Racers",
+      "status": "ACTIVE",
+      "advertising_channel_type": "SEARCH",
+      "adGroups": [
+        {
+          "id": "adgroup-triumph-thruxton-001",
+          "name": "Triumph Thruxton - Performance",
+          "keywords": [
+            {
+              "text": "triumph thruxton",
+              "matchType": "EXACT",
+              "impressions": 16000,
+              "clicks": 800,
+              "ctr": 5.0,
+              "conversions": 24,
+              "cost": 2400.00,
+              "roas": 35.0,
+              "average_cpc": 3.00
+            },
+            {
+              "text": "triumph thruxton motorcycle",
+              "matchType": "PHRASE",
+              "impressions": 13500,
+              "clicks": 945,
+              "ctr": 7.0,
+              "conversions": 27,
+              "cost": 2835.00,
+              "roas": 38.57,
+              "average_cpc": 3.00
+            },
+            {
+              "text": "thruxton cafe racer",
+              "matchType": "PHRASE",
+              "impressions": 11000,
+              "clicks": 550,
+              "ctr": 5.0,
+              "conversions": 15,
+              "cost": 1650.00,
+              "roas": 32.0,
+              "average_cpc": 3.00
+            },
+            {
+              "text": "triumph cafe bikes",
+              "matchType": "BROAD",
+              "impressions": 14000,
+              "clicks": 420,
+              "ctr": 3.0,
+              "conversions": 11,
+              "cost": 1260.00,
+              "roas": 28.5,
+              "average_cpc": 3.00
+            }
+          ],
+          "ads": [
+            {
+              "id": "ad-triumph-thruxton-001",
+              "type": "RESPONSIVE_SEARCH_AD",
+              "headlines": [
+                "Triumph Thruxton Cafe Racer",
+                "High-Performance Thruxton",
+                "Shop Triumph Thruxton Now",
+                "British Icon Motorcycle",
+                "Thruxton RS Models",
+                "Racing Heritage Bikes",
+                "Premium Cafe Racers",
+                "Triumph Performance"
+              ],
+              "descriptions": [
+                "Discover Triumph cafe racers combining timeless British style with modern performance. Test rides available.",
+                "Shop Thruxton and Street Twin models. Premium quality with comprehensive warranty.",
+                "Experience the thrill of a genuine cafe racer. Iconic design meets cutting-edge technology."
+              ],
+              "final_urls": ["https://www.triumphmotorcycles.com/motorcycles/classic/thruxton"]
+            }
+          ]
+        },
+        {
+          "id": "adgroup-triumph-thruxton-002",
+          "name": "Triumph - British Motorcycles",
+          "keywords": [
+            {
+              "text": "british cafe racer",
+              "matchType": "PHRASE",
+              "impressions": 9500,
+              "clicks": 475,
+              "ctr": 5.0,
+              "conversions": 12,
+              "cost": 1425.00,
+              "roas": 30.0,
+              "average_cpc": 3.00
+            },
+            {
+              "text": "triumph motorcycles",
+              "matchType": "BROAD",
+              "impressions": 18000,
+              "clicks": 540,
+              "ctr": 3.0,
+              "conversions": 13,
+              "cost": 1620.00,
+              "roas": 26.0,
+              "average_cpc": 3.00
+            }
+          ],
+          "ads": [
+            {
+              "id": "ad-triumph-thruxton-002",
+              "type": "RESPONSIVE_SEARCH_AD",
+              "headlines": [
+                "British Triumph Motorcycles",
+                "Authentic British Design",
+                "Triumph Heritage Collection",
+                "Classic British Bikes",
+                "Handcrafted Excellence",
+                "Triumph Craftsmanship",
+                "British Engineering",
+                "Legendary Triumph Quality"
+              ],
+              "descriptions": [
+                "Experience authentic British motorcycle engineering. Triumph's legacy of excellence continues.",
+                "Handcrafted Triumph motorcycles built to the highest standards. Visit our showroom today.",
+                "Own a piece of British motorcycle history. Premium quality and expert service guaranteed."
+              ],
+              "final_urls": ["https://www.triumphmotorcycles.com/motorcycles/classic/thruxton"]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

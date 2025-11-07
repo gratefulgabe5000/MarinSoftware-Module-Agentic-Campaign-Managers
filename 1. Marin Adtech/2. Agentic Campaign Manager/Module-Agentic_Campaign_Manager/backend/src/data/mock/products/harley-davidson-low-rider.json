@@ -1,0 +1,134 @@
+{
+  "campaigns": [
+    {
+      "id": "campaign-harley-lowrider-001",
+      "name": "Harley-Davidson Low Rider - Cruisers",
+      "status": "ACTIVE",
+      "advertising_channel_type": "SEARCH",
+      "adGroups": [
+        {
+          "id": "adgroup-harley-lowrider-001",
+          "name": "Harley Low Rider - Style",
+          "keywords": [
+            {
+              "text": "harley davidson low rider",
+              "matchType": "EXACT",
+              "impressions": 17000,
+              "clicks": 850,
+              "ctr": 5.0,
+              "conversions": 26,
+              "cost": 2550.00,
+              "roas": 32.5,
+              "average_cpc": 3.00
+            },
+            {
+              "text": "low rider motorcycle",
+              "matchType": "PHRASE",
+              "impressions": 13000,
+              "clicks": 910,
+              "ctr": 7.0,
+              "conversions": 28,
+              "cost": 2730.00,
+              "roas": 35.8,
+              "average_cpc": 3.00
+            },
+            {
+              "text": "harley low rider s",
+              "matchType": "PHRASE",
+              "impressions": 10500,
+              "clicks": 525,
+              "ctr": 5.0,
+              "conversions": 14,
+              "cost": 1575.00,
+              "roas": 28.0,
+              "average_cpc": 3.00
+            },
+            {
+              "text": "custom harley cruiser",
+              "matchType": "BROAD",
+              "impressions": 15000,
+              "clicks": 450,
+              "ctr": 3.0,
+              "conversions": 10,
+              "cost": 1350.00,
+              "roas": 25.0,
+              "average_cpc": 3.00
+            }
+          ],
+          "ads": [
+            {
+              "id": "ad-harley-lowrider-001",
+              "type": "RESPONSIVE_SEARCH_AD",
+              "headlines": [
+                "Harley Low Rider",
+                "Iconic Cruiser Style",
+                "Shop Low Rider Today",
+                "Custom Low Rider Look",
+                "Low Rider S Performance",
+                "Harley Heritage Design",
+                "Classic Low Riding",
+                "Premium Harley Cruisers"
+              ],
+              "descriptions": [
+                "Experience the legendary Low Rider. Classic styling with modern Milwaukee-Eight power.",
+                "Discover the Harley Low Rider family. From Low Rider S to ST models. Test rides available.",
+                "Own the road with a Harley Low Rider. Timeless design meets powerful performance."
+              ],
+              "final_urls": ["https://www.harley-davidson.com/us/en/motorcycles/low-rider.html"]
+            }
+          ]
+        },
+        {
+          "id": "adgroup-harley-lowrider-002",
+          "name": "Harley Cruiser - Customization",
+          "keywords": [
+            {
+              "text": "custom low rider",
+              "matchType": "PHRASE",
+              "impressions": 9500,
+              "clicks": 475,
+              "ctr": 5.0,
+              "conversions": 13,
+              "cost": 1425.00,
+              "roas": 29.5,
+              "average_cpc": 3.00
+            },
+            {
+              "text": "harley custom parts",
+              "matchType": "PHRASE",
+              "impressions": 11000,
+              "clicks": 550,
+              "ctr": 5.0,
+              "conversions": 15,
+              "cost": 1650.00,
+              "roas": 27.0,
+              "average_cpc": 3.00
+            }
+          ],
+          "ads": [
+            {
+              "id": "ad-harley-lowrider-002",
+              "type": "RESPONSIVE_SEARCH_AD",
+              "headlines": [
+                "Custom Low Rider Builds",
+                "Personalize Your Harley",
+                "Low Rider Customization",
+                "Harley Custom Shop",
+                "Build Your Dream Bike",
+                "Custom Harley Parts",
+                "Unique Low Rider Style",
+                "Expert Customization"
+              ],
+              "descriptions": [
+                "Create your perfect Low Rider. Custom builds with genuine Harley-Davidson parts and accessories.",
+                "Transform your Low Rider into a one-of-a-kind masterpiece. Expert customization services.",
+                "Extensive selection of custom parts for your Harley. Professional installation and service."
+              ],
+              "final_urls": ["https://www.harley-davidson.com/us/en/motorcycles/low-rider.html"]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

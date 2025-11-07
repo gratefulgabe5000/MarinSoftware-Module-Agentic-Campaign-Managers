@@ -1,0 +1,134 @@
+{
+  "campaigns": [
+    {
+      "id": "campaign-honda-cb350-001",
+      "name": "Honda CB350 - Classic Motorcycles",
+      "status": "ACTIVE",
+      "advertising_channel_type": "SEARCH",
+      "adGroups": [
+        {
+          "id": "adgroup-honda-cb350-001",
+          "name": "Honda CB350 - Vintage Bikes",
+          "keywords": [
+            {
+              "text": "honda cb350",
+              "matchType": "EXACT",
+              "impressions": 14000,
+              "clicks": 1120,
+              "ctr": 8.0,
+              "conversions": 21,
+              "cost": 3360.00,
+              "roas": 21.48,
+              "average_cpc": 3.00
+            },
+            {
+              "text": "cb350 for sale",
+              "matchType": "PHRASE",
+              "impressions": 11000,
+              "clicks": 770,
+              "ctr": 7.0,
+              "conversions": 18,
+              "cost": 2310.00,
+              "roas": 25.0,
+              "average_cpc": 3.00
+            },
+            {
+              "text": "honda classic motorcycle",
+              "matchType": "PHRASE",
+              "impressions": 9000,
+              "clicks": 450,
+              "ctr": 5.0,
+              "conversions": 11,
+              "cost": 1350.00,
+              "roas": 23.0,
+              "average_cpc": 3.00
+            },
+            {
+              "text": "vintage honda bikes",
+              "matchType": "BROAD",
+              "impressions": 13000,
+              "clicks": 390,
+              "ctr": 3.0,
+              "conversions": 9,
+              "cost": 1170.00,
+              "roas": 20.5,
+              "average_cpc": 3.00
+            }
+          ],
+          "ads": [
+            {
+              "id": "ad-honda-cb350-001",
+              "type": "RESPONSIVE_SEARCH_AD",
+              "headlines": [
+                "Honda CB350 Classic",
+                "Vintage CB350 Bikes",
+                "Shop Honda CB350 Today",
+                "Iconic Honda Design",
+                "Classic CB350 Collection",
+                "Legendary CB350",
+                "Honda Heritage Bikes",
+                "Timeless CB350 Style"
+              ],
+              "descriptions": [
+                "Discover the legendary Honda CB350. Classic design with proven reliability and timeless appeal.",
+                "Own a piece of motorcycle history with the CB350. Expert service and financing available.",
+                "Browse our Honda CB350 collection. Authentic vintage styling with dependable performance."
+              ],
+              "final_urls": ["https://powersports.honda.com/motorcycle/cb350"]
+            }
+          ]
+        },
+        {
+          "id": "adgroup-honda-cb350-002",
+          "name": "Honda CB350 - Restored Models",
+          "keywords": [
+            {
+              "text": "restored honda cb350",
+              "matchType": "PHRASE",
+              "impressions": 7500,
+              "clicks": 375,
+              "ctr": 5.0,
+              "conversions": 9,
+              "cost": 1125.00,
+              "roas": 24.0,
+              "average_cpc": 3.00
+            },
+            {
+              "text": "cb350 restoration",
+              "matchType": "PHRASE",
+              "impressions": 5500,
+              "clicks": 275,
+              "ctr": 5.0,
+              "conversions": 6,
+              "cost": 825.00,
+              "roas": 21.0,
+              "average_cpc": 3.00
+            }
+          ],
+          "ads": [
+            {
+              "id": "ad-honda-cb350-002",
+              "type": "RESPONSIVE_SEARCH_AD",
+              "headlines": [
+                "Restored Honda CB350",
+                "CB350 Restoration Services",
+                "Professional CB350 Builds",
+                "Quality Honda Restorations",
+                "CB350 Like New",
+                "Expert Honda Restoration",
+                "Authentic CB350 Parts",
+                "Restored to Perfection"
+              ],
+              "descriptions": [
+                "Professional Honda CB350 restoration services. Authentic parts and expert craftsmanship guaranteed.",
+                "Bring your CB350 back to life. Full restoration services with attention to original details.",
+                "Quality restored CB350 motorcycles. Each bike meticulously rebuilt to factory standards."
+              ],
+              "final_urls": ["https://powersports.honda.com/motorcycle/cb350"]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
