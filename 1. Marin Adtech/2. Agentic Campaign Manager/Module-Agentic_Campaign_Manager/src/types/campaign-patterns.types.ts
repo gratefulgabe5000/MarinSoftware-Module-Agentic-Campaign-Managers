@@ -12,6 +12,16 @@ export interface CampaignPatterns {
   highPerformingKeywords: HighPerformingKeyword[];
   adCopyPatterns: AdCopyPatterns;
   biddingPatterns: BiddingPatterns;
+  productId?: string; // Optional product identifier for product-specific patterns
+  productName?: string; // Optional product name for display
+}
+
+/**
+ * Product-Specific Patterns
+ * Contains patterns organized by product
+ */
+export interface ProductPatterns {
+  [productId: string]: CampaignPatterns;
 }
 
 /**
