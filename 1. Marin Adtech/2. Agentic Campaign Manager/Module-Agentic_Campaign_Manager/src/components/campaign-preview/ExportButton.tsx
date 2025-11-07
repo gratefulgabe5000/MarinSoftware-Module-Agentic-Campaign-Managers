@@ -3,6 +3,9 @@ import { CampaignPreviewData } from '../../types/campaign-preview.types';
 import { useCSVExport } from '../../hooks/useCSVExport';
 import { useCampaignPreviewStore } from '../../store/campaignPreviewStore';
 import { toastService } from '../../utils/toastService';
+import { Button } from '../ui/button';
+import { Alert } from '../ui/alert';
+import { Download, Loader2 } from 'lucide-react';
 
 /**
  * Export Button Component
@@ -35,7 +38,7 @@ const ExportButton: React.FC<ExportButtonProps> = ({ previewData }) => {
 
       // Also validate via API (double-check)
       const apiValidation = await validateExport(dataToExport);
-      
+
       if (!apiValidation.valid) {
         toastService.error(
           `Export validation failed:\n${apiValidation.errors.slice(0, 5).join('\n')}${apiValidation.errors.length > 5 ? `\n... and ${apiValidation.errors.length - 5} more errors` : ''}`
@@ -54,31 +57,36 @@ const ExportButton: React.FC<ExportButtonProps> = ({ previewData }) => {
     }
   };
 
+  const isDisabled = isExporting || isValidating || dataToExport.adGroups.length === 0 || (validationResult && !validationResult.isValid);
+  const isLoading = isExporting || isValidating;
+
   return (
-    <div className="export-button-container">
-      {error && (
-        <div className="export-error">
-          <p>⚠️ {error}</p>
-        </div>
-      )}
-      <button
-        className="btn btn-primary export-btn"
+    <div className="space-y-3">
+      <Button
         onClick={handleExport}
-        disabled={isExporting || isValidating || dataToExport.adGroups.length === 0 || (validationResult && !validationResult.isValid)}
+        disabled={isDisabled}
         type="button"
+        className="w-full md:w-auto"
         title={validationResult && !validationResult.isValid ? 'Please fix validation errors before exporting' : 'Export to Google Ads Editor'}
       >
-        {isExporting || isValidating ? (
+        {isLoading ? (
           <>
-            <span className="spinner"></span>
+            <Loader2 className="h-4 w-4 animate-spin" />
             {isValidating ? 'Validating...' : 'Exporting...'}
           </>
         ) : (
           <>
-            📥 Export to Google Ads Editor
+            <Download className="h-4 w-4" />
+            Export to Google Ads Editor
           </>
         )}
-      </button>
+      </Button>
+
+      {error && (
+        <Alert variant="destructive">
+          <p className="text-sm">{error}</p>
+        </Alert>
+      )}
     </div>
   );
 };

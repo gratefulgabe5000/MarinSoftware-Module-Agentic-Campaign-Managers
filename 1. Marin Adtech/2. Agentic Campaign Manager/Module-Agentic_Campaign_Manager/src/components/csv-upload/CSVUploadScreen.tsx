@@ -8,6 +8,12 @@ import {
   ProductParsingResult,
   ProductValidationError,
 } from '../../types/product.types';
+import { Button } from '../ui/button';
+import { Card, CardContent } from '../ui/card';
+import { Badge } from '../ui/badge';
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
+import { FileTextIcon, LinkIcon, AlertTriangleIcon, ArrowLeftIcon, SparklesIcon } from 'lucide-react';
 
 /**
  * CSV Upload Screen Component
@@ -81,55 +87,74 @@ const CSVUploadScreen: React.FC = () => {
   };
 
   return (
-    <div className="csv-upload-screen">
-      <div className="csv-upload-header">
-        <h1>Bulk Campaign Generation</h1>
-        <p>Upload a CSV file or paste URLs to generate campaigns for multiple products</p>
-      </div>
-
-      <div className="csv-upload-tabs">
-        <button
-          className={`tab-button ${activeTab === 'csv' ? 'active' : ''}`}
-          onClick={() => setActiveTab('csv')}
-          type="button"
-        >
-          Upload CSV
-        </button>
-        <button
-          className={`tab-button ${activeTab === 'urls' ? 'active' : ''}`}
-          onClick={() => setActiveTab('urls')}
-          type="button"
-        >
-          Paste URLs
-        </button>
-      </div>
-
-      <div className="csv-upload-content">
-        {activeTab === 'csv' ? (
-          <CSVUploadComponent
-            onParseComplete={handleParseComplete}
-            onError={handleError}
-          />
-        ) : (
-          <URLListInput
-            onParseComplete={handleParseComplete}
-            onError={handleError}
-          />
-        )}
-
-        {warnings.length > 0 && (
-          <div className="warnings-box">
-            <h4>⚠️ Warnings:</h4>
-            <ul>
-              {warnings.map((warning, index) => (
-                <li key={index}>{warning}</li>
-              ))}
-            </ul>
+    <div className="min-h-screen bg-background p-8">
+      <div className="mx-auto max-w-7xl space-y-8">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/')}
+              type="button"
+              className="mb-2"
+            >
+              <ArrowLeftIcon className="h-4 w-4" />
+              Back to Dashboard
+            </Button>
+            <h1 className="text-3xl font-bold tracking-tight">Bulk Campaign Generation</h1>
+            <p className="text-muted-foreground">
+              Upload a CSV file or paste URLs to generate campaigns for multiple products
+            </p>
           </div>
+        </div>
+
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'csv' | 'urls')}>
+          <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsTrigger value="csv">
+              <FileTextIcon className="h-4 w-4 mr-2" />
+              Upload CSV
+            </TabsTrigger>
+            <TabsTrigger value="urls">
+              <LinkIcon className="h-4 w-4 mr-2" />
+              Paste URLs
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="csv" className="space-y-6">
+            <CSVUploadComponent
+              onParseComplete={handleParseComplete}
+              onError={handleError}
+            />
+          </TabsContent>
+
+          <TabsContent value="urls" className="space-y-6">
+            <URLListInput
+              onParseComplete={handleParseComplete}
+              onError={handleError}
+            />
+          </TabsContent>
+        </Tabs>
+
+        {/* Warnings */}
+        {warnings.length > 0 && (
+          <Alert>
+            <AlertTriangleIcon className="h-4 w-4" />
+            <AlertTitle>Warnings</AlertTitle>
+            <AlertDescription>
+              <ul className="mt-2 list-disc pl-4 space-y-1">
+                {warnings.map((warning, index) => (
+                  <li key={index}>{warning}</li>
+                ))}
+              </ul>
+            </AlertDescription>
+          </Alert>
         )}
 
+        {/* Product Preview */}
         {products.length > 0 && (
-          <div className="products-preview-section">
+          <div className="space-y-4">
             <ProductPreview
               products={products}
               errors={errors}
@@ -139,33 +164,36 @@ const CSVUploadScreen: React.FC = () => {
           </div>
         )}
 
-        <div className="csv-upload-footer">
-          <div className="product-count">
-            {products.length > 0 && (
-              <span>
-                {products.length} product{products.length !== 1 ? 's' : ''} ready
-                {products.length >= 10 && ' (max reached)'}
-              </span>
-            )}
-          </div>
-          <div className="action-buttons">
-            <button
-              className="btn btn-secondary"
-              onClick={() => navigate('/')}
-              type="button"
-            >
-              Cancel
-            </button>
-            <button
-              className="btn btn-primary generate-campaign-button"
-              onClick={handleGenerateCampaign}
-              disabled={products.length === 0}
-              type="button"
-            >
-              Generate Campaign
-            </button>
-          </div>
-        </div>
+        {/* Footer */}
+        <Card>
+          <CardContent className="flex items-center justify-between p-6">
+            <div className="flex items-center gap-4">
+              {products.length > 0 && (
+                <Badge variant="secondary" className="text-base">
+                  {products.length} product{products.length !== 1 ? 's' : ''} ready
+                  {products.length >= 10 && ' (max reached)'}
+                </Badge>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => navigate('/')}
+                type="button"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleGenerateCampaign}
+                disabled={products.length === 0}
+                type="button"
+              >
+                <SparklesIcon className="h-4 w-4" />
+                Generate Campaign
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

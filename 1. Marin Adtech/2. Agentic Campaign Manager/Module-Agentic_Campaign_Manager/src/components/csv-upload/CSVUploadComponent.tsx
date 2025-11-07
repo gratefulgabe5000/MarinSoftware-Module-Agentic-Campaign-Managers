@@ -2,6 +2,9 @@ import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { productService } from '../../services/productService';
 import { ProductParsingResult } from '../../types/product.types';
+import { Card, CardContent } from '../ui/card';
+import { UploadCloudIcon, FileTextIcon, Loader2Icon, CheckCircle2Icon } from 'lucide-react';
+import { cn } from '../../lib/utils';
 
 /**
  * CSV Upload Component Props
@@ -68,44 +71,67 @@ const CSVUploadComponent: React.FC<CSVUploadComponentProps> = ({
   });
 
   return (
-    <div className="csv-upload-component">
-      <div
+    <div className="space-y-4">
+      <Card
         {...getRootProps()}
-        className={`csv-upload-dropzone ${isDragActive ? 'active' : ''} ${
-          isUploading ? 'uploading' : ''
-        }`}
+        className={cn(
+          'cursor-pointer transition-all duration-200 hover:border-primary',
+          isDragActive && 'border-primary bg-primary/5',
+          isUploading && 'pointer-events-none opacity-70'
+        )}
       >
         <input {...getInputProps()} />
-        {isUploading ? (
-          <div className="upload-progress">
-            <div className="spinner"></div>
-            <p>Uploading and parsing CSV...</p>
-            {fileName && <p className="file-name">{fileName}</p>}
-          </div>
-        ) : (
-          <div className="upload-content">
-            {isDragActive ? (
-              <p className="drop-text">Drop your CSV file here...</p>
-            ) : (
-              <>
-                <div className="upload-icon">📁</div>
-                <p className="upload-text">
-                  Drag and drop your CSV file here, or click to select
-                </p>
-                <p className="upload-hint">
-                  CSV must contain: Product Name, URL (required)
-                  <br />
-                  Optional: Category, Price, Description
-                </p>
-              </>
-            )}
-          </div>
-        )}
-      </div>
+        <CardContent className="flex flex-col items-center justify-center p-12 text-center">
+          {isUploading ? (
+            <>
+              <Loader2Icon className="h-12 w-12 animate-spin text-primary mb-4" />
+              <p className="text-lg font-medium">Uploading and parsing CSV...</p>
+              {fileName && (
+                <p className="text-sm text-muted-foreground mt-2">{fileName}</p>
+              )}
+            </>
+          ) : (
+            <>
+              {isDragActive ? (
+                <>
+                  <UploadCloudIcon className="h-12 w-12 text-primary mb-4" />
+                  <p className="text-lg font-medium">Drop your CSV file here...</p>
+                </>
+              ) : (
+                <>
+                  <div className="rounded-full bg-primary/10 p-4 mb-4">
+                    <FileTextIcon className="h-8 w-8 text-primary" />
+                  </div>
+                  <p className="text-lg font-medium mb-2">
+                    Drag and drop your CSV file here
+                  </p>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    or click to browse from your computer
+                  </p>
+                  <div className="rounded-lg bg-muted px-4 py-3 text-left">
+                    <p className="text-sm font-medium mb-1">Required columns:</p>
+                    <p className="text-sm text-muted-foreground">
+                      • Product Name, URL
+                    </p>
+                    <p className="text-sm font-medium mt-2 mb-1">Optional columns:</p>
+                    <p className="text-sm text-muted-foreground">
+                      • Category, Price, Description
+                    </p>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-4">
+                    Maximum file size: 5MB
+                  </p>
+                </>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
+
       {fileName && !isUploading && (
-        <div className="file-info">
-          <span className="file-icon">✓</span>
-          <span className="file-name-text">{fileName}</span>
+        <div className="flex items-center gap-2 rounded-lg border bg-card p-4">
+          <CheckCircle2Icon className="h-5 w-5 text-green-600" />
+          <span className="font-medium text-sm">{fileName}</span>
         </div>
       )}
     </div>

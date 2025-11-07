@@ -4,6 +4,14 @@ import { useCampaignPreviewStore } from '../../store/campaignPreviewStore';
 import AdGroupRow from './AdGroupRow';
 import ExportButton from './ExportButton';
 import ExportInstructions from './ExportInstructions';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Button } from '../ui/button';
+import { Badge } from '../ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
+import { ArrowUpIcon, ArrowDownIcon, FolderIcon, KeyIcon, FileTextIcon } from 'lucide-react';
 
 /**
  * Campaign Preview Table Component
@@ -68,101 +76,139 @@ const CampaignPreviewTable: React.FC<CampaignPreviewTableProps> = ({ previewData
   }, [displayData.adGroups, filterText, sortBy, sortOrder]);
 
   return (
-    <div className="campaign-preview-table">
-      <div className="preview-summary">
-        <div className="summary-item">
-          <span className="summary-label">Campaign:</span>
-          <span className="summary-value">{displayData.campaignName}</span>
-        </div>
-        <div className="summary-item">
-          <span className="summary-label">Ad Groups:</span>
-          <span className="summary-value">{displayData.adGroups.length}</span>
-        </div>
-        <div className="summary-item">
-          <span className="summary-label">Keywords:</span>
-          <span className="summary-value">{displayData.totalKeywords}</span>
-        </div>
-        <div className="summary-item">
-          <span className="summary-label">Ads:</span>
-          <span className="summary-value">{displayData.totalAds}</span>
-        </div>
-      </div>
+    <div className="space-y-8">
+      {/* Campaign Summary */}
+      <Card>
+        <CardHeader className="pb-4">
+          <CardTitle className="text-xl">{displayData.campaignName}</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <div className="grid grid-cols-3 gap-4">
+            <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-muted">
+              <FolderIcon className="h-5 w-5 text-muted-foreground" />
+              <div className="text-center">
+                <p className="text-2xl font-bold">{displayData.adGroups.length}</p>
+                <p className="text-sm text-muted-foreground">Ad Groups</p>
+              </div>
+            </div>
+            <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-muted">
+              <KeyIcon className="h-5 w-5 text-muted-foreground" />
+              <div className="text-center">
+                <p className="text-2xl font-bold">{displayData.totalKeywords}</p>
+                <p className="text-sm text-muted-foreground">Keywords</p>
+              </div>
+            </div>
+            <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-muted">
+              <FileTextIcon className="h-5 w-5 text-muted-foreground" />
+              <div className="text-center">
+                <p className="text-2xl font-bold">{displayData.totalAds}</p>
+                <p className="text-sm text-muted-foreground">Ads</p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Filters and Sorting */}
-      <div className="preview-filters">
-        <div className="filter-group">
-          <label htmlFor="filter-text">Filter:</label>
-          <input
-            id="filter-text"
-            type="text"
-            value={filterText}
-            onChange={(e) => setFilterText(e.target.value)}
-            placeholder="Search ad groups or keywords..."
-            className="filter-input"
-          />
-        </div>
-        <div className="filter-group">
-          <label htmlFor="sort-by">Sort by:</label>
-          <select
-            id="sort-by"
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as 'name' | 'keywords' | 'ads')}
-            className="sort-select"
-          >
-            <option value="name">Name</option>
-            <option value="keywords">Keywords Count</option>
-            <option value="ads">Ads Count</option>
-          </select>
-        </div>
-        <div className="filter-group">
-          <button
-            className="btn btn-sm btn-secondary"
-            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-            type="button"
-          >
-            {sortOrder === 'asc' ? '↑ Asc' : '↓ Desc'}
-          </button>
-        </div>
-      </div>
+      <Card>
+        <CardContent className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="filter-text">Filter</Label>
+              <Input
+                id="filter-text"
+                type="text"
+                value={filterText}
+                onChange={(e) => setFilterText(e.target.value)}
+                placeholder="Search ad groups or keywords..."
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="sort-by">Sort by</Label>
+              <Select value={sortBy} onValueChange={(value) => setSortBy(value as 'name' | 'keywords' | 'ads')}>
+                <SelectTrigger id="sort-by">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="name">Name</SelectItem>
+                  <SelectItem value="keywords">Keywords Count</SelectItem>
+                  <SelectItem value="ads">Ads Count</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Sort Order</Label>
+              <Button
+                variant="outline"
+                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                type="button"
+                className="w-full"
+              >
+                {sortOrder === 'asc' ? (
+                  <>
+                    <ArrowUpIcon className="h-4 w-4" />
+                    Ascending
+                  </>
+                ) : (
+                  <>
+                    <ArrowDownIcon className="h-4 w-4" />
+                    Descending
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-      <div className="preview-table-container">
-        <table className="preview-table">
-          <thead>
-            <tr>
-              <th className="col-expand"></th>
-              <th className="col-type">Type</th>
-              <th className="col-name">Name / Text</th>
-              <th className="col-match-type">Match Type</th>
-              <th className="col-keywords">Keywords</th>
-              <th className="col-ads">Ads</th>
-              <th className="col-actions">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredAndSortedAdGroups.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="no-results">
-                  No ad groups found matching your filter.
-                </td>
-              </tr>
-            ) : (
-              filteredAndSortedAdGroups.map((adGroup) => (
-                <AdGroupRow
-                  key={adGroup.id}
-                  adGroup={adGroup}
-                  isExpanded={expandedAdGroups.has(adGroup.id)}
-                  onToggle={() => toggleAdGroup(adGroup.id)}
-                />
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      {/* Ad Groups Table */}
+      <Card>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-12"></TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Name / Text</TableHead>
+                  <TableHead>Match Type</TableHead>
+                  <TableHead className="text-center">Keywords</TableHead>
+                  <TableHead className="text-center">Ads</TableHead>
+                  <TableHead className="text-center">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredAndSortedAdGroups.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                      No ad groups found matching your filter.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredAndSortedAdGroups.map((adGroup) => (
+                    <AdGroupRow
+                      key={adGroup.id}
+                      adGroup={adGroup}
+                      isExpanded={expandedAdGroups.has(adGroup.id)}
+                      onToggle={() => toggleAdGroup(adGroup.id)}
+                    />
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
 
-      <div className="preview-export-section">
-        <ExportInstructions />
-        <ExportButton previewData={displayData} />
-      </div>
+      {/* Export Section */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+            <ExportInstructions />
+            <ExportButton previewData={displayData} />
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

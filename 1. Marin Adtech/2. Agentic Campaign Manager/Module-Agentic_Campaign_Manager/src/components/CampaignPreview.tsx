@@ -6,6 +6,10 @@ import AudienceSummaryCard from './AudienceSummaryCard';
 import AdGroupStructureTree from './AdGroupStructureTree';
 import PerformanceEstimatesCard from './PerformanceEstimatesCard';
 import CampaignActionButtons from './CampaignActionButtons';
+import { Badge } from './ui/badge';
+import { Alert, AlertDescription } from './ui/alert';
+import LoadingSpinner from './LoadingSpinner';
+import { AlertCircleIcon } from 'lucide-react';
 
 /**
  * CampaignPreview Component
@@ -19,17 +23,22 @@ const CampaignPreview: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="campaign-preview loading">
-        <div className="loading-spinner">Loading campaign preview...</div>
+      <div className="min-h-screen bg-background flex items-center justify-center p-8">
+        <LoadingSpinner />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="campaign-preview error">
-        <div className="error-message">
-          <span>⚠️ {error}</span>
+      <div className="min-h-screen bg-background p-8">
+        <div className="mx-auto max-w-3xl">
+          <Alert variant="destructive">
+            <AlertCircleIcon className="h-4 w-4" />
+            <AlertDescription>
+              {error}
+            </AlertDescription>
+          </Alert>
         </div>
       </div>
     );
@@ -37,33 +46,33 @@ const CampaignPreview: React.FC = () => {
 
   if (!campaignPlan) {
     return (
-      <div className="campaign-preview empty">
-        <div className="empty-state">
-          <h2>No Campaign Plan</h2>
-          <p>Create a campaign plan through the conversational interface first.</p>
+      <div className="min-h-screen bg-background p-8">
+        <div className="mx-auto max-w-3xl text-center space-y-4">
+          <h2 className="text-2xl font-bold">No Campaign Plan</h2>
+          <p className="text-muted-foreground">Create a campaign plan through the conversational interface first.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="campaign-preview">
-      <div className="campaign-preview-header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-          <h2>Campaign Preview</h2>
-          {isMockData && (
-            <div className="mock-data-badge">
-              <span className="badge-icon">⚠️</span>
-              <span className="badge-text">Mock Data - Simulated Response</span>
-            </div>
-          )}
+    <div className="min-h-screen bg-background p-8">
+      <div className="mx-auto max-w-7xl space-y-8">
+        <div className="space-y-2">
+          <div className="flex items-center gap-3 flex-wrap">
+            <h2 className="text-3xl font-bold tracking-tight">Campaign Preview</h2>
+            {isMockData && (
+              <Badge variant="outline" className="bg-yellow-500/10 text-yellow-700 border-yellow-500/20">
+                <span className="mr-1">⚠️</span>
+                Mock Data - Simulated Response
+              </Badge>
+            )}
+          </div>
+          <p className="text-muted-foreground">Review your campaign plan before creating it</p>
         </div>
-        <p>Review your campaign plan before creating it</p>
-      </div>
 
-      <div className="campaign-preview-content">
-        <div className="campaign-preview-grid">
-          <div className="campaign-preview-main">
+        <div className="grid gap-8 lg:grid-cols-[1fr_300px]">
+          <div className="space-y-6">
             <CampaignOverviewCard campaignPlan={campaignPlan} />
             <BudgetBreakdown campaignPlan={campaignPlan} />
             <AudienceSummaryCard campaignPlan={campaignPlan} />
@@ -71,7 +80,7 @@ const CampaignPreview: React.FC = () => {
             <PerformanceEstimatesCard campaignPlan={campaignPlan} />
           </div>
 
-          <div className="campaign-preview-sidebar">
+          <div className="lg:sticky lg:top-8 h-fit">
             <CampaignActionButtons campaignPlan={campaignPlan} />
           </div>
         </div>

@@ -4,6 +4,17 @@ import { CampaignPlan } from '../types/ai.types';
 import { useCampaignStore } from '../store/campaignStore';
 import { campaignService } from '../services/campaignService';
 import CampaignPlanEditor from './CampaignPlanEditor';
+import { Button } from './ui/button';
+import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from './ui/dialog';
+import { Alert } from './ui/alert';
 
 /**
  * CampaignActionButtons Component Props
@@ -159,82 +170,85 @@ const CampaignActionButtons: React.FC<CampaignActionButtonsProps> = ({
   // If editing, show the editor
   if (showEditor) {
     return (
-      <div className="campaign-action-buttons card">
-        <CampaignPlanEditor
-          campaignPlan={campaignPlan}
-          onSave={handleSaveEditedPlan}
-          onCancel={handleCancelEdit}
-        />
-      </div>
+      <Card>
+        <CardContent>
+          <CampaignPlanEditor
+            campaignPlan={campaignPlan}
+            onSave={handleSaveEditedPlan}
+            onCancel={handleCancelEdit}
+          />
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="campaign-action-buttons card">
-      <div className="card-header">
-        <h3>Actions</h3>
-      </div>
-      <div className="card-content">
-        <div className="action-buttons-list">
-          <button
-            className="action-btn action-btn-primary"
+    <Card>
+      <CardHeader>
+        <CardTitle>Actions</CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2">
+          <Button
             onClick={handleApprove}
             disabled={isApproving || !isCampaignPlanValid}
+            className="w-full"
           >
             {isApproving ? 'Approving...' : 'Approve & Create Campaign'}
-          </button>
+          </Button>
 
-          <button
-            className="action-btn action-btn-secondary"
+          <Button
+            variant="secondary"
             onClick={handleEdit}
             disabled={isEditing || isApproving}
+            className="w-full"
           >
             {isEditing ? 'Editing...' : 'Edit Plan'}
-          </button>
+          </Button>
 
-          <button
-            className="action-btn action-btn-tertiary"
+          <Button
+            variant="outline"
             onClick={handleRequestChanges}
+            className="w-full"
           >
             Request Changes
-          </button>
+          </Button>
         </div>
 
         {!isCampaignPlanValid && (
-          <div className="validation-warning">
-            <p>⚠️ Campaign plan is incomplete. Please ensure all required fields are filled.</p>
-          </div>
+          <Alert variant="destructive" className="mt-2">
+            <p className="text-sm">⚠️ Campaign plan is incomplete. Please ensure all required fields are filled.</p>
+          </Alert>
         )}
 
-        {showConfirmDialog && (
-          <div className="confirm-dialog-overlay">
-            <div className="confirm-dialog">
-              <h4>
+        <Dialog open={showConfirmDialog} onOpenChange={(open) => !open && cancelDialog()}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
                 {requestedAction === 'approve'
                   ? 'Approve Campaign?'
                   : 'Edit Campaign Plan?'}
-              </h4>
-              <p>
+              </DialogTitle>
+              <DialogDescription>
                 {requestedAction === 'approve'
                   ? 'This will create the campaign on all selected platforms. Are you sure?'
                   : 'This will allow you to modify the campaign plan. Continue?'}
-              </p>
-              <div className="confirm-dialog-buttons">
-                <button
-                  className="confirm-btn confirm-btn-primary"
-                  onClick={requestedAction === 'approve' ? confirmApprove : confirmEdit}
-                >
-                  Confirm
-                </button>
-                <button className="confirm-btn confirm-btn-secondary" onClick={cancelDialog}>
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={cancelDialog}>
+                Cancel
+              </Button>
+              <Button
+                onClick={requestedAction === 'approve' ? confirmApprove : confirmEdit}
+              >
+                Confirm
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </CardContent>
+    </Card>
   );
 };
 

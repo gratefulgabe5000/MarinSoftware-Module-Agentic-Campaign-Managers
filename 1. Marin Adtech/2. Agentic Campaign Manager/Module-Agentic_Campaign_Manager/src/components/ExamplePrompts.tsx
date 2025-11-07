@@ -1,4 +1,5 @@
 import React from 'react';
+import { Card, CardHeader, CardTitle, CardDescription } from './ui/card';
 
 /**
  * ExamplePrompts Component Props
@@ -35,21 +36,25 @@ const EXAMPLE_PROMPTS = [
  */
 const ExamplePrompts: React.FC<ExamplePromptsProps> = ({ onSelectPrompt }) => {
   return (
-    <div className="example-prompts">
-      <h3>Get Started</h3>
-      <p>Choose an example or describe your campaign goals:</p>
-      <div className="example-prompts-grid">
+    <div className="space-y-4">
+      <div className="space-y-1">
+        <h3 className="text-lg font-semibold">Get Started</h3>
+        <p className="text-sm text-muted-foreground">Choose an example or describe your campaign goals:</p>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
         {EXAMPLE_PROMPTS.map((example, index) => (
-          <button
+          <Card
             key={index}
-            className="example-prompt-card"
+            className="cursor-pointer transition-colors hover:bg-accent hover:text-accent-foreground"
             onClick={() => onSelectPrompt(example.prompt)}
           >
-            <div className="example-prompt-title">{example.title}</div>
-            <div className="example-prompt-preview">
-              {example.prompt.substring(0, 100)}...
-            </div>
-          </button>
+            <CardHeader>
+              <CardTitle className="text-base">{example.title}</CardTitle>
+              <CardDescription className="line-clamp-3">
+                {example.prompt}
+              </CardDescription>
+            </CardHeader>
+          </Card>
         ))}
       </div>
     </div>

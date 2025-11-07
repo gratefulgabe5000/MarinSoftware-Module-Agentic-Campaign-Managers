@@ -7,6 +7,12 @@ import { CampaignPreviewData, AdGroupPreviewRow } from '../../types/campaign-pre
 import { GeneratedAdGroup } from '../../types/adgroup-generation.types';
 import CampaignPreviewTable from './CampaignPreviewTable';
 import LoadingSpinner from '../LoadingSpinner';
+import { Button } from '../ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { Badge } from '../ui/badge';
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { ArrowLeftIcon, SparklesIcon, CheckCircle2Icon, AlertCircleIcon, AlertTriangleIcon, SaveIcon, Loader2Icon } from 'lucide-react';
 
 /**
  * Campaign Preview Screen
@@ -125,140 +131,179 @@ const CampaignPreviewScreen: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="campaign-preview-screen">
-        <LoadingSpinner />
+      <div className="min-h-screen bg-background p-8">
+        <div className="flex items-center justify-center py-12">
+          <Loader2Icon className="h-8 w-8 animate-spin text-primary" />
+        </div>
       </div>
     );
   }
 
   if (campaigns.length === 0) {
     return (
-      <div className="campaign-preview-screen">
-        <div className="preview-header">
-          <h1>Campaign Preview</h1>
-        </div>
-        <div className="preview-empty">
-          <p>No campaigns found. Generate campaigns first.</p>
-          <div className="preview-actions">
-            <button
-              className="btn btn-primary"
-              onClick={handleBackToGeneration}
-              type="button"
-            >
-              Generate Campaigns
-            </button>
-            <button
-              className="btn btn-secondary"
-              onClick={handleBackToDashboard}
-              type="button"
-            >
-              Back to Dashboard
-            </button>
-          </div>
+      <div className="min-h-screen bg-background p-8">
+        <div className="mx-auto max-w-4xl space-y-6">
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12 space-y-4 text-center">
+              <div className="space-y-2">
+                <h2 className="text-2xl font-bold">No Campaigns Found</h2>
+                <p className="text-muted-foreground">
+                  Generate campaigns first to preview and edit them.
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={handleBackToGeneration} type="button">
+                  <SparklesIcon className="h-4 w-4" />
+                  Generate Campaigns
+                </Button>
+                <Button variant="outline" onClick={handleBackToDashboard} type="button">
+                  <ArrowLeftIcon className="h-4 w-4" />
+                  Back to Dashboard
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="campaign-preview-screen">
-      <div className="preview-header">
-        <div className="preview-header-content">
-          <h1>Campaign Preview & Edit</h1>
-          <p>Review and edit your generated campaigns before exporting</p>
-        </div>
-        <div className="preview-header-actions">
-          {campaigns.length > 1 && (
-            <select
-              className="campaign-select"
-              value={selectedCampaign?.campaignId || ''}
-              onChange={(e) => handleCampaignSelect(e.target.value)}
-            >
-              <option value="">Select a campaign...</option>
-              {campaigns.map((campaign) => (
-                <option key={campaign.id} value={campaign.id}>
-                  {campaign.name}
-                </option>
-              ))}
-            </select>
-          )}
-          <button
-            className="btn btn-secondary"
-            onClick={handleBackToDashboard}
-            type="button"
-          >
-            Back to Dashboard
-          </button>
-        </div>
-      </div>
-
-      {error && (
-        <div className="preview-error">
-          <p>⚠️ {error}</p>
-        </div>
-      )}
-
-      {/* Validation Summary */}
-      {validationResult && (
-        <div className={`validation-summary ${validationResult.isValid ? 'valid' : 'invalid'}`}>
-          <div className="validation-header">
-            <h3>Validation Summary</h3>
-            {hasUnsavedChanges && (
-              <button
-                className="btn btn-sm btn-secondary"
-                onClick={saveDraft}
-                type="button"
-              >
-                Save Draft
-              </button>
-            )}
+    <div className="min-h-screen bg-background p-8">
+      <div className="mx-auto max-w-7xl space-y-8">
+        {/* Header */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Campaign Preview & Edit</h1>
+            <p className="text-muted-foreground mt-1">
+              Review and edit your generated campaigns before exporting
+            </p>
           </div>
-          {validationResult.isValid ? (
-            <div className="validation-success">
-              ✅ All fields are valid. Ready to export.
-            </div>
-          ) : (
-            <div className="validation-errors">
-              <p>❌ {validationResult.errors.length} error(s) found:</p>
-              <ul>
-                {validationResult.errors.slice(0, 10).map((error, index) => (
-                  <li key={index}>
-                    <strong>{error.field}</strong>: {error.message}
-                  </li>
-                ))}
-                {validationResult.errors.length > 10 && (
-                  <li>... and {validationResult.errors.length - 10} more errors</li>
-                )}
-              </ul>
-            </div>
-          )}
-          {validationResult.warnings.length > 0 && (
-            <div className="validation-warnings">
-              <p>⚠️ {validationResult.warnings.length} warning(s):</p>
-              <ul>
-                {validationResult.warnings.slice(0, 5).map((warning, index) => (
-                  <li key={index}>
-                    <strong>{warning.field}</strong>: {warning.message}
-                  </li>
-                ))}
-                {validationResult.warnings.length > 5 && (
-                  <li>... and {validationResult.warnings.length - 5} more warnings</li>
-                )}
-              </ul>
-            </div>
-          )}
+          <div className="flex gap-2">
+            {campaigns.length > 1 && (
+              <Select
+                value={selectedCampaign?.campaignId || ''}
+                onValueChange={handleCampaignSelect}
+              >
+                <SelectTrigger className="w-[250px]">
+                  <SelectValue placeholder="Select a campaign..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {campaigns.map((campaign) => (
+                    <SelectItem key={campaign.id} value={campaign.id}>
+                      {campaign.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+            <Button variant="outline" onClick={handleBackToDashboard} type="button">
+              <ArrowLeftIcon className="h-4 w-4" />
+              Back to Dashboard
+            </Button>
+          </div>
         </div>
-      )}
 
-      {selectedCampaign ? (
-        <CampaignPreviewTable previewData={selectedCampaign} />
-      ) : campaigns.length === 1 ? (
-        <CampaignPreviewTable previewData={transformCampaignToPreview(campaigns[0])} />
-      ) : (
-        <div className="preview-select">
-          <p>Please select a campaign to preview</p>
-        </div>
-      )}
+        {/* Error Alert */}
+        {error && (
+          <Alert variant="destructive">
+            <AlertCircleIcon className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        {/* Validation Summary */}
+        {validationResult && (
+          <Card>
+            <CardHeader className="pb-4">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xl">Validation Summary</CardTitle>
+                {hasUnsavedChanges && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={saveDraft}
+                    type="button"
+                  >
+                    <SaveIcon className="h-4 w-4" />
+                    Save Draft
+                  </Button>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-0">
+              {validationResult.isValid ? (
+                <Alert className="border-green-500/50 bg-green-500/5">
+                  <CheckCircle2Icon className="h-4 w-4 text-green-600" />
+                  <AlertTitle className="text-green-600">All Valid</AlertTitle>
+                  <AlertDescription className="text-green-600">
+                    All fields are valid. Ready to export.
+                  </AlertDescription>
+                </Alert>
+              ) : (
+                <Alert variant="destructive">
+                  <AlertCircleIcon className="h-4 w-4" />
+                  <AlertTitle>{validationResult.errors.length} Error{validationResult.errors.length !== 1 ? 's' : ''} Found</AlertTitle>
+                  <AlertDescription>
+                    <ul className="mt-2 space-y-1 list-disc list-inside">
+                      {validationResult.errors.slice(0, 10).map((error, index) => (
+                        <li key={index} className="text-sm">
+                          <strong>{error.field}</strong>: {error.message}
+                        </li>
+                      ))}
+                      {validationResult.errors.length > 10 && (
+                        <li className="text-sm">
+                          ... and {validationResult.errors.length - 10} more errors
+                        </li>
+                      )}
+                    </ul>
+                  </AlertDescription>
+                </Alert>
+              )}
+              {validationResult.warnings.length > 0 && (
+                <Alert className="border-yellow-500/50 bg-yellow-500/5">
+                  <AlertTriangleIcon className="h-4 w-4 text-yellow-600" />
+                  <AlertTitle className="text-yellow-600">
+                    {validationResult.warnings.length} Warning{validationResult.warnings.length !== 1 ? 's' : ''}
+                  </AlertTitle>
+                  <AlertDescription>
+                    <ul className="mt-2 space-y-1 list-disc list-inside text-yellow-600">
+                      {validationResult.warnings.slice(0, 5).map((warning, index) => (
+                        <li key={index} className="text-sm">
+                          <strong>{warning.field}</strong>: {warning.message}
+                        </li>
+                      ))}
+                      {validationResult.warnings.length > 5 && (
+                        <li className="text-sm">
+                          ... and {validationResult.warnings.length - 5} more warnings
+                        </li>
+                      )}
+                    </ul>
+                  </AlertDescription>
+                </Alert>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {selectedCampaign ? (
+          <CampaignPreviewTable previewData={selectedCampaign} />
+        ) : campaigns.length === 1 ? (
+          <CampaignPreviewTable previewData={transformCampaignToPreview(campaigns[0])} />
+        ) : (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="rounded-full bg-muted p-4 mb-4">
+                <AlertCircleIcon className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Select a Campaign</h3>
+              <p className="text-muted-foreground">
+                Please select a campaign from the dropdown above to preview and edit.
+              </p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>
   );
 };

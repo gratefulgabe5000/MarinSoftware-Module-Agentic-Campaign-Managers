@@ -44,20 +44,20 @@ const MetricCard: React.FC<MetricCardProps> = ({
   };
 
   return (
-    <div className="metric-card" style={{ borderLeft: `4px solid ${color}` }}>
-      <div className="metric-card-header">
-        {icon && <span className="metric-icon">{icon}</span>}
-        <h4 className="metric-title">{title}</h4>
+    <div className="flex flex-col border-l-4 p-4 rounded-md bg-card shadow-sm" style={{ borderLeftColor: color }}>
+      <div className="flex items-center gap-2 mb-2">
+        {icon && <span className="text-2xl">{icon}</span>}
+        <h4 className="text-sm font-medium text-muted-foreground">{title}</h4>
       </div>
-      <div className="metric-card-body">
-        <p className="metric-value">
+      <div className="flex flex-col">
+        <p className="text-2xl font-bold">
           {formatValue(value)}
-          {unit && <span className="metric-unit">{unit}</span>}
+          {unit && <span className="text-lg text-muted-foreground ml-1">{unit}</span>}
         </p>
         {trend && (
-          <div className={`metric-trend ${trend.isPositive ? 'positive' : 'negative'}`}>
-            <span className="trend-icon">{trend.isPositive ? '↑' : '↓'}</span>
-            <span className="trend-value">{Math.abs(trend.value).toFixed(1)}%</span>
+          <div className={`flex items-center gap-1 text-sm font-medium ${trend.isPositive ? 'text-green-600' : 'text-red-600'}`}>
+            <span>{trend.isPositive ? '↑' : '↓'}</span>
+            <span>{Math.abs(trend.value).toFixed(1)}%</span>
           </div>
         )}
       </div>
@@ -71,7 +71,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
  */
 const MetricsSummaryCards: React.FC<MetricsSummaryCardsProps> = ({ metrics }) => {
   return (
-    <div className="metrics-summary-cards">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       <MetricCard
         title="Impressions"
         value={metrics.impressions}

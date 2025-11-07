@@ -5,6 +5,11 @@ import { handleAdGroupNameEdit } from '../../utils/inlineEditing';
 import { validateAdGroupName } from '../../services/validationService';
 import KeywordRow from './KeywordRow';
 import AdRow from './AdRow';
+import { Button } from '../ui/button';
+import { Badge } from '../ui/badge';
+import { Input } from '../ui/input';
+import { TableCell, TableRow } from '../ui/table';
+import { ChevronRightIcon, ChevronDownIcon, PencilIcon } from 'lucide-react';
 
 /**
  * Ad Group Row Component
@@ -55,24 +60,30 @@ const AdGroupRow: React.FC<AdGroupRowProps> = ({ adGroup, isExpanded, onToggle }
 
   return (
     <>
-      <tr className="adgroup-row">
-        <td className="col-expand">
-          <button
-            className="expand-button"
+      <TableRow className="bg-muted/50 hover:bg-muted/70">
+        <TableCell className="w-12">
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={onToggle}
             type="button"
             aria-label={isExpanded ? 'Collapse' : 'Expand'}
+            className="h-8 w-8 p-0"
           >
-            {isExpanded ? '▼' : '▶'}
-          </button>
-        </td>
-        <td className="col-type">
-          <span className="type-badge type-adgroup">Ad Group</span>
-        </td>
-        <td className="col-name">
+            {isExpanded ? (
+              <ChevronDownIcon className="h-4 w-4" />
+            ) : (
+              <ChevronRightIcon className="h-4 w-4" />
+            )}
+          </Button>
+        </TableCell>
+        <TableCell>
+          <Badge variant="default">Ad Group</Badge>
+        </TableCell>
+        <TableCell>
           {isEditing ? (
-            <div className="editing-wrapper">
-              <input
+            <div className="space-y-1">
+              <Input
                 type="text"
                 value={editValue}
                 onChange={handleNameChange}
@@ -84,42 +95,38 @@ const AdGroupRow: React.FC<AdGroupRowProps> = ({ adGroup, isExpanded, onToggle }
                     handleNameCancel();
                   }
                 }}
-                className={error ? 'error' : ''}
+                className={error ? 'border-destructive' : ''}
                 autoFocus
                 maxLength={255}
               />
-              {error && <div className="error-message">{error}</div>}
+              {error && <p className="text-xs text-destructive">{error}</p>}
             </div>
           ) : (
-            <span
-              className="editable-text"
+            <button
+              className="text-left hover:text-primary transition-colors font-medium"
               onClick={() => setIsEditing(true)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  setIsEditing(true);
-                }
-              }}
+              type="button"
             >
               {adGroup.name}
-            </span>
+            </button>
           )}
-        </td>
-        <td className="col-match-type">—</td>
-        <td className="col-keywords">{adGroup.keywords.length}</td>
-        <td className="col-ads">{adGroup.ads.length}</td>
-        <td className="col-actions">
-          <button
-            className="btn-icon"
+        </TableCell>
+        <TableCell className="text-center text-muted-foreground">—</TableCell>
+        <TableCell className="text-center font-medium">{adGroup.keywords.length}</TableCell>
+        <TableCell className="text-center font-medium">{adGroup.ads.length}</TableCell>
+        <TableCell className="text-center">
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => setIsEditing(!isEditing)}
             type="button"
             title="Edit"
+            className="h-8 w-8 p-0"
           >
-            ✏️
-          </button>
-        </td>
-      </tr>
+            <PencilIcon className="h-4 w-4" />
+          </Button>
+        </TableCell>
+      </TableRow>
       {isExpanded && (
         <>
           {adGroup.keywords.map((keyword, index) => (

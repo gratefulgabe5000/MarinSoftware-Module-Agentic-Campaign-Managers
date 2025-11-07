@@ -1,5 +1,8 @@
 import React from 'react';
 import { CampaignPlan } from '../types/ai.types';
+import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
+import { Label } from './ui/label';
+import { Badge } from './ui/badge';
 
 /**
  * AudienceSummaryCard Component Props
@@ -18,42 +21,42 @@ const AudienceSummaryCard: React.FC<AudienceSummaryCardProps> = ({
   const { targetAudience } = campaignPlan;
 
   return (
-    <div className="audience-summary-card card">
-      <div className="card-header">
-        <h3>Target Audience</h3>
-      </div>
-      <div className="card-content">
+    <Card>
+      <CardHeader>
+        <CardTitle>Target Audience</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
         {targetAudience.demographics && (
-          <div className="audience-section">
-            <h4>Demographics</h4>
-            <div className="demographics-list">
+          <div className="space-y-4">
+            <h4 className="font-semibold text-base">Demographics</h4>
+            <div className="space-y-3">
               {targetAudience.demographics.age && (
-                <div className="demographic-item">
-                  <label>Age:</label>
-                  <span>{targetAudience.demographics.age}</span>
+                <div className="flex items-center gap-2">
+                  <Label className="min-w-[80px]">Age:</Label>
+                  <span className="text-sm">{targetAudience.demographics.age}</span>
                 </div>
               )}
               {targetAudience.demographics.gender && (
-                <div className="demographic-item">
-                  <label>Gender:</label>
-                  <span>{targetAudience.demographics.gender}</span>
+                <div className="flex items-center gap-2">
+                  <Label className="min-w-[80px]">Gender:</Label>
+                  <span className="text-sm">{targetAudience.demographics.gender}</span>
                 </div>
               )}
               {targetAudience.demographics.location && (
-                <div className="demographic-item">
-                  <label>Location:</label>
-                  <span>{targetAudience.demographics.location}</span>
+                <div className="flex items-center gap-2">
+                  <Label className="min-w-[80px]">Location:</Label>
+                  <span className="text-sm">{targetAudience.demographics.location}</span>
                 </div>
               )}
               {targetAudience.demographics.interests &&
                 targetAudience.demographics.interests.length > 0 && (
-                  <div className="demographic-item">
-                    <label>Interests:</label>
-                    <div className="interests-list">
+                  <div className="space-y-2">
+                    <Label>Interests:</Label>
+                    <div className="flex flex-wrap gap-2">
                       {targetAudience.demographics.interests.map((interest, index) => (
-                        <span key={index} className="interest-badge">
+                        <Badge key={index} variant="secondary">
                           {interest}
-                        </span>
+                        </Badge>
                       ))}
                     </div>
                   </div>
@@ -63,39 +66,39 @@ const AudienceSummaryCard: React.FC<AudienceSummaryCardProps> = ({
         )}
 
         {targetAudience.psychographics && (
-          <div className="audience-section">
-            <h4>Psychographics</h4>
+          <div className="space-y-4">
+            <h4 className="font-semibold text-base">Psychographics</h4>
             {targetAudience.psychographics.values &&
               targetAudience.psychographics.values.length > 0 && (
-                <div className="psychographic-item">
-                  <label>Values:</label>
-                  <div className="values-list">
+                <div className="space-y-2">
+                  <Label>Values:</Label>
+                  <div className="flex flex-wrap gap-2">
                     {targetAudience.psychographics.values.map((value, index) => (
-                      <span key={index} className="value-badge">
+                      <Badge key={index} variant="outline">
                         {value}
-                      </span>
+                      </Badge>
                     ))}
                   </div>
                 </div>
               )}
             {targetAudience.psychographics.behaviors &&
               targetAudience.psychographics.behaviors.length > 0 && (
-                <div className="psychographic-item">
-                  <label>Behaviors:</label>
-                  <div className="behaviors-list">
+                <div className="space-y-2">
+                  <Label>Behaviors:</Label>
+                  <div className="flex flex-wrap gap-2">
                     {targetAudience.psychographics.behaviors.map((behavior, index) => (
-                      <span key={index} className="behavior-badge">
+                      <Badge key={index} variant="outline">
                         {behavior}
-                      </span>
+                      </Badge>
                     ))}
                   </div>
                 </div>
               )}
             {targetAudience.psychographics.painPoints &&
               targetAudience.psychographics.painPoints.length > 0 && (
-                <div className="psychographic-item">
-                  <label>Pain Points:</label>
-                  <ul className="pain-points-list">
+                <div className="space-y-2">
+                  <Label>Pain Points:</Label>
+                  <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
                     {targetAudience.psychographics.painPoints.map((painPoint, index) => (
                       <li key={index}>{painPoint}</li>
                     ))}
@@ -106,12 +109,12 @@ const AudienceSummaryCard: React.FC<AudienceSummaryCardProps> = ({
         )}
 
         {!targetAudience.demographics && !targetAudience.psychographics && (
-          <div className="audience-empty">
-            <p>No audience information specified</p>
+          <div className="text-center py-4">
+            <p className="text-sm text-muted-foreground">No audience information specified</p>
           </div>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 

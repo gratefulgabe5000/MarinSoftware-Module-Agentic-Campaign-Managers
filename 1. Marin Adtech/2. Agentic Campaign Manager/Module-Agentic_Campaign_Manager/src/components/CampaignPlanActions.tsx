@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useCampaignStore } from '../store/campaignStore';
 import { campaignService } from '../services/campaignService';
 import { toastService } from '../utils/toastService';
+import { Button } from './ui/button';
+import { EyeIcon, CheckCircle2Icon } from 'lucide-react';
 
 /**
  * Campaign Plan Actions Props
@@ -101,23 +103,24 @@ const CampaignPlanActions: React.FC<CampaignPlanActionsProps> = () => {
   }
 
   return (
-    <div className="campaign-plan-actions">
-      <button
-        className="btn btn-secondary"
+    <div className="flex flex-wrap gap-3">
+      <Button
+        variant="outline"
         onClick={handleViewPreview}
         type="button"
         disabled={isLoading}
       >
-        📋 View Preview
-      </button>
-      <button
-        className="btn btn-primary"
+        <EyeIcon className="h-4 w-4" />
+        View Preview
+      </Button>
+      <Button
         onClick={handleCreateCampaign}
         type="button"
         disabled={isLoading}
       >
-        {isLoading ? 'Creating...' : '✅ Create Campaign'}
-      </button>
+        <CheckCircle2Icon className="h-4 w-4" />
+        {isLoading ? 'Creating...' : 'Create Campaign'}
+      </Button>
     </div>
   );
 };

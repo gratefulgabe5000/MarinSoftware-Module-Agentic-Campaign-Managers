@@ -4,6 +4,12 @@ import { useCampaignStore } from '../store/campaignStore';
 import { campaignService } from '../services/campaignService';
 import { toastService } from '../utils/toastService';
 import { Campaign } from '../types/campaign.types';
+import { Button } from './ui/button';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from './ui/card';
+import { Badge } from './ui/badge';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './ui/dialog';
+import { Alert, AlertDescription } from './ui/alert';
+import { PlusIcon, UploadIcon, Loader2Icon, TrashIcon, BarChart3Icon, EyeIcon, AlertCircleIcon } from 'lucide-react';
 
 /**
  * Campaign Dashboard Component
@@ -64,18 +70,18 @@ const CampaignDashboard: React.FC = () => {
     }
   };
 
-  const getStatusColor = (status: string): string => {
+  const getStatusVariant = (status: string): 'default' | 'secondary' | 'destructive' | 'outline' => {
     switch (status) {
       case 'active':
-        return '#34A853';
+        return 'default';
       case 'paused':
-        return '#FBBC04';
+        return 'secondary';
       case 'creating':
-        return '#4285F4';
+        return 'outline';
       case 'error':
-        return '#EA4335';
+        return 'destructive';
       default:
-        return '#9AA0A6';
+        return 'outline';
     }
   };
 
@@ -131,163 +137,198 @@ const CampaignDashboard: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="campaign-dashboard">
-        <div className="dashboard-loading">
-          <div className="loading-spinner" />
-          <p>Loading campaigns...</p>
+      <div className="min-h-screen bg-background p-8">
+        <div className="flex flex-col items-center justify-center gap-4 py-12">
+          <Loader2Icon className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-muted-foreground">Loading campaigns...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="campaign-dashboard">
-      <div className="dashboard-header">
-        <h2 className="dashboard-title">Campaign Dashboard</h2>
-        <div className="dashboard-actions">
-          <button
-            className="btn btn-secondary"
-            onClick={() => navigate('/campaigns/csv-upload')}
-            type="button"
-          >
-            📊 Bulk Generate from CSV/URLs
-          </button>
-          <button
-            className="btn btn-primary"
-            onClick={() => navigate('/create')}
-            type="button"
-          >
-            + Create New Campaign
-          </button>
-        </div>
-      </div>
-
-      {error && (
-        <div className="dashboard-error">
-          <p>{error}</p>
-          <button
-            className="btn btn-secondary"
-            onClick={loadCampaigns}
-            type="button"
-          >
-            Retry
-          </button>
-        </div>
-      )}
-
-      {campaigns.length === 0 ? (
-        <div className="dashboard-empty">
-          <p>No campaigns found. Create your first campaign to get started!</p>
-        </div>
-      ) : (
-        <div className="campaigns-list">
-          <h3 className="section-title">Your Campaigns</h3>
-          <div className="campaigns-grid">
-            {campaigns.map((campaign) => (
-              <div key={campaign.id} className="campaign-card">
-                <div className="campaign-card-header">
-                  <h4 className="campaign-name">{campaign.name}</h4>
-                  <span
-                    className="campaign-status"
-                    style={{
-                      backgroundColor: getStatusColor(campaign.status),
-                      color: 'white',
-                      padding: '4px 12px',
-                      borderRadius: '12px',
-                      fontSize: '12px',
-                      fontWeight: 'bold',
-                    }}
-                  >
-                    {getStatusLabel(campaign.status)}
-                  </span>
-                </div>
-
-                {campaign.description && (
-                  <p className="campaign-description">{campaign.description}</p>
-                )}
-
-                <div className="campaign-meta">
-                  <div className="campaign-meta-item">
-                    <span className="meta-label">Platforms:</span>
-                    <span className="meta-value">
-                      {campaign.campaignPlan.platforms.join(', ')}
-                    </span>
-                  </div>
-                  <div className="campaign-meta-item">
-                    <span className="meta-label">Budget:</span>
-                    <span className="meta-value">
-                      {campaign.campaignPlan.budget.currency}{' '}
-                      {campaign.campaignPlan.budget.total.toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="campaign-meta-item">
-                    <span className="meta-label">Created:</span>
-                    <span className="meta-value">
-                      {new Date(campaign.createdAt).toLocaleDateString()}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="campaign-actions">
-                  <Link
-                    to={`/campaign/${campaign.id}`}
-                    className="btn btn-secondary"
-                  >
-                    View Details
-                  </Link>
-                  <Link
-                    to={`/campaign/${campaign.id}/performance`}
-                    className="btn btn-primary"
-                  >
-                    View Performance
-                  </Link>
-                  <button
-                    className="btn btn-danger"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleDeleteClick(campaign.id);
-                    }}
-                    disabled={deletingCampaignId === campaign.id}
-                    type="button"
-                    title="Delete Campaign"
-                  >
-                    {deletingCampaignId === campaign.id ? 'Deleting...' : '🗑️ Delete'}
-                  </button>
-                </div>
-              </div>
-            ))}
+    <div className="min-h-screen bg-background p-8">
+      <div className="mx-auto max-w-7xl space-y-8">
+        {/* Header */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Campaign Dashboard</h1>
+            <p className="text-muted-foreground mt-1">
+              Manage and monitor your advertising campaigns
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => navigate('/campaigns/csv-upload')}
+              type="button"
+            >
+              <UploadIcon className="h-4 w-4" />
+              Bulk Generate
+            </Button>
+            <Button
+              onClick={() => navigate('/create')}
+              type="button"
+            >
+              <PlusIcon className="h-4 w-4" />
+              Create Campaign
+            </Button>
           </div>
         </div>
-      )}
 
-      {/* Delete Confirmation Dialog */}
-      {showDeleteConfirm && (
-        <div className="confirm-dialog-overlay">
-          <div className="confirm-dialog">
-            <h4>Delete Campaign?</h4>
-            <p>
-              Are you sure you want to delete "{campaigns.find((c) => c.id === showDeleteConfirm)?.name}"? 
-              This action cannot be undone.
-            </p>
-            <div className="confirm-dialog-buttons">
-              <button
-                className="confirm-btn confirm-btn-primary"
-                onClick={() => handleConfirmDelete(showDeleteConfirm)}
+        {/* Error Alert */}
+        {error && (
+          <Alert variant="destructive">
+            <AlertCircleIcon className="h-4 w-4" />
+            <AlertDescription className="flex items-center justify-between">
+              <span>{error}</span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={loadCampaigns}
                 type="button"
               >
-                Delete
-              </button>
-              <button
-                className="confirm-btn confirm-btn-secondary"
+                Retry
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Empty State */}
+        {campaigns.length === 0 ? (
+          <Card className="py-12">
+            <CardContent className="flex flex-col items-center justify-center gap-4 text-center">
+              <div className="rounded-full bg-muted p-4">
+                <BarChart3Icon className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold">No campaigns found</h3>
+                <p className="text-muted-foreground mt-1">
+                  Create your first campaign to get started!
+                </p>
+              </div>
+              <Button onClick={() => navigate('/create')} type="button">
+                <PlusIcon className="h-4 w-4" />
+                Create New Campaign
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold">Your Campaigns</h2>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {campaigns.map((campaign) => (
+                <Card key={campaign.id} className="flex flex-col">
+                  <CardHeader>
+                    <div className="flex items-start justify-between gap-4">
+                      <CardTitle className="line-clamp-1">{campaign.name}</CardTitle>
+                      <Badge variant={getStatusVariant(campaign.status)}>
+                        {getStatusLabel(campaign.status)}
+                      </Badge>
+                    </div>
+                    {campaign.description && (
+                      <CardDescription className="line-clamp-2">
+                        {campaign.description}
+                      </CardDescription>
+                    )}
+                  </CardHeader>
+
+                  <CardContent className="flex-1 space-y-4">
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Platforms:</span>
+                        <span className="font-medium">
+                          {campaign.campaignPlan.platforms.join(', ')}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Budget:</span>
+                        <span className="font-medium">
+                          {campaign.campaignPlan.budget.currency}{' '}
+                          {campaign.campaignPlan.budget.total.toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Created:</span>
+                        <span className="font-medium">
+                          {new Date(campaign.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+
+                  <CardFooter className="flex flex-wrap gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      asChild
+                      className="flex-1"
+                    >
+                      <Link to={`/campaign/${campaign.id}`}>
+                        <EyeIcon className="h-4 w-4" />
+                        Details
+                      </Link>
+                    </Button>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      asChild
+                      className="flex-1"
+                    >
+                      <Link to={`/campaign/${campaign.id}/performance`}>
+                        <BarChart3Icon className="h-4 w-4" />
+                        Performance
+                      </Link>
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleDeleteClick(campaign.id)}
+                      disabled={deletingCampaignId === campaign.id}
+                      type="button"
+                    >
+                      {deletingCampaignId === campaign.id ? (
+                        <Loader2Icon className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <TrashIcon className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog open={!!showDeleteConfirm} onOpenChange={(open) => !open && handleCancelDelete()}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete Campaign?</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete "{campaigns.find((c) => c.id === showDeleteConfirm)?.name}"?
+                This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button
+                variant="outline"
                 onClick={handleCancelDelete}
                 type="button"
               >
                 Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => showDeleteConfirm && handleConfirmDelete(showDeleteConfirm)}
+                type="button"
+              >
+                Delete
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
     </div>
   );
 };

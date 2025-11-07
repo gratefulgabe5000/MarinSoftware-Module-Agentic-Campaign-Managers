@@ -8,6 +8,12 @@ import { useRSAGeneration } from '../../hooks/useRSAGeneration';
 import { useCampaignStore } from '../../store/campaignStore';
 import { Campaign } from '../../types/campaign.types';
 import LoadingSpinner from '../LoadingSpinner';
+import { Button } from '../ui/button';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '../ui/card';
+import { Badge } from '../ui/badge';
+import { Alert, AlertDescription } from '../ui/alert';
+import { CheckCircle2Icon, Loader2Icon, ClockIcon, SparklesIcon, ArrowLeftIcon, EyeIcon, HomeIcon, AlertCircleIcon } from 'lucide-react';
+import { Progress } from '../ui/progress';
 
 /**
  * Campaign Generation Screen Component
@@ -233,19 +239,20 @@ const CampaignGenerationScreen: React.FC = () => {
 
   if (products.length === 0) {
     return (
-      <div className="campaign-generation-screen">
-        <div className="campaign-generation-header">
-          <h1>Campaign Generation</h1>
-        </div>
-        <div className="campaign-generation-error">
-          <p>No products found. Please go back and upload products.</p>
-          <button
-            className="btn btn-primary"
-            onClick={() => navigate('/campaigns/csv-upload')}
-            type="button"
-          >
-            Go Back
-          </button>
+      <div className="min-h-screen bg-background p-8">
+        <div className="mx-auto max-w-3xl space-y-6">
+          <Alert variant="destructive">
+            <AlertCircleIcon className="h-4 w-4" />
+            <AlertDescription>
+              <div className="space-y-4">
+                <p>No products found. Please go back and upload products.</p>
+                <Button onClick={() => navigate('/campaigns/csv-upload')} type="button">
+                  <ArrowLeftIcon className="h-4 w-4" />
+                  Go Back
+                </Button>
+              </div>
+            </AlertDescription>
+          </Alert>
         </div>
       </div>
     );
@@ -253,29 +260,28 @@ const CampaignGenerationScreen: React.FC = () => {
 
   if (error) {
     return (
-      <div className="campaign-generation-screen">
-        <div className="campaign-generation-header">
-          <h1>Campaign Generation</h1>
-        </div>
-        <div className="campaign-generation-error">
-          <h3>Error Generating Campaigns</h3>
-          <p>{error}</p>
-          <div className="error-actions">
-            <button
-              className="btn btn-secondary"
-              onClick={() => navigate('/campaigns/csv-upload')}
-              type="button"
-            >
-              Go Back
-            </button>
-            <button
-              className="btn btn-primary"
-              onClick={() => window.location.reload()}
-              type="button"
-            >
-              Retry
-            </button>
-          </div>
+      <div className="min-h-screen bg-background p-8">
+        <div className="mx-auto max-w-3xl space-y-6">
+          <Alert variant="destructive">
+            <AlertCircleIcon className="h-4 w-4" />
+            <AlertDescription>
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-semibold mb-1">Error Generating Campaigns</h3>
+                  <p className="text-sm">{error}</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => navigate('/campaigns/csv-upload')} type="button">
+                    <ArrowLeftIcon className="h-4 w-4" />
+                    Go Back
+                  </Button>
+                  <Button onClick={() => window.location.reload()} type="button">
+                    Retry
+                  </Button>
+                </div>
+              </div>
+            </AlertDescription>
+          </Alert>
         </div>
       </div>
     );
@@ -283,100 +289,221 @@ const CampaignGenerationScreen: React.FC = () => {
 
   if (currentStep === 'complete') {
     return (
-      <div className="campaign-generation-screen">
-        <div className="campaign-generation-header">
-          <h1>Campaign Generation Complete</h1>
-        </div>
-        <div className="campaign-generation-success">
-          <p>✅ Successfully generated campaigns for {products.length} product(s)</p>
-          <div className="generation-summary">
-            <h3>Generation Summary</h3>
-            <ul>
+      <div className="min-h-screen bg-background p-8">
+        <div className="mx-auto max-w-4xl space-y-8">
+          <Card className="border-green-500/50 bg-green-500/5">
+            <CardHeader className="text-center">
+              <div className="mx-auto mb-4 rounded-full bg-green-500/10 p-4 w-fit">
+                <CheckCircle2Icon className="h-12 w-12 text-green-600" />
+              </div>
+              <CardTitle className="text-2xl">Campaign Generation Complete!</CardTitle>
+              <CardDescription>
+                Successfully generated campaigns for {products.length} product{products.length !== 1 ? 's' : ''}
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Generation Summary</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
               {products.map((product, index) => (
-                <li key={index}>
-                  <strong>{product.name}</strong>
-                  <ul>
-                    <li>Ad Groups: {generationProgress.adGroups[index]?.length || 0}</li>
-                    <li>Keywords: {generationProgress.keywords[index]?.length || 0}</li>
-                    <li>Ads: {generationProgress.ads[index]?.length || 0}</li>
-                  </ul>
-                </li>
+                <div key={index} className="rounded-lg border p-4 space-y-2">
+                  <h4 className="font-semibold">{product.name}</h4>
+                  <div className="grid grid-cols-3 gap-4 text-sm">
+                    <div className="space-y-1">
+                      <p className="text-muted-foreground">Ad Groups</p>
+                      <p className="text-2xl font-bold">{generationProgress.adGroups[index]?.length || 0}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-muted-foreground">Keywords</p>
+                      <p className="text-2xl font-bold">{generationProgress.keywords[index]?.length || 0}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-muted-foreground">Ads</p>
+                      <p className="text-2xl font-bold">{generationProgress.ads[index]?.length || 0}</p>
+                    </div>
+                  </div>
+                </div>
               ))}
-            </ul>
-          </div>
-          <div className="generation-actions">
-            <button
-              className="btn btn-secondary"
-              onClick={() => navigate('/campaigns/csv-upload')}
-              type="button"
-            >
-              Generate Another
-            </button>
-            <button
-              className="btn btn-primary"
-              onClick={() => navigate('/campaigns/preview', { 
-                state: { campaigns: generatedCampaigns } 
-              })}
-              type="button"
-            >
-              Preview & Edit
-            </button>
-            <button
-              className="btn btn-secondary"
-              onClick={() => navigate('/')}
-              type="button"
-            >
-              View Dashboard
-            </button>
-          </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="flex flex-wrap justify-center gap-3 p-6">
+              <Button variant="outline" onClick={() => navigate('/campaigns/csv-upload')} type="button">
+                <SparklesIcon className="h-4 w-4" />
+                Generate Another
+              </Button>
+              <Button
+                onClick={() => navigate('/campaigns/preview', {
+                  state: { campaigns: generatedCampaigns }
+                })}
+                type="button"
+              >
+                <EyeIcon className="h-4 w-4" />
+                Preview & Edit
+              </Button>
+              <Button variant="outline" onClick={() => navigate('/')} type="button">
+                <HomeIcon className="h-4 w-4" />
+                View Dashboard
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
   }
 
+  const progressPercentage =
+    currentStep === 'adgroups' ? 33 :
+    currentStep === 'keywords' ? 66 :
+    currentStep === 'ads' ? 90 : 100;
+
   return (
-    <div className="campaign-generation-screen">
-      <div className="campaign-generation-header">
-        <h1>Generating Campaigns</h1>
-        <p>Please wait while we generate your campaigns...</p>
-      </div>
-      <div className="campaign-generation-progress">
-        <LoadingSpinner />
-        <div className="progress-steps">
-          <div className={`progress-step ${currentStep === 'adgroups' ? 'active' : currentStep === 'keywords' || currentStep === 'ads' || currentStep === 'complete' ? 'completed' : ''}`}>
-            <span className="step-number">1</span>
-            <span className="step-label">Generating Ad Groups</span>
-            {currentStep === 'adgroups' && <span className="step-status">In Progress...</span>}
-            {currentStep !== 'adgroups' && <span className="step-status">✓ Complete</span>}
-          </div>
-          <div className={`progress-step ${currentStep === 'keywords' ? 'active' : currentStep === 'ads' || currentStep === 'complete' ? 'completed' : ''}`}>
-            <span className="step-number">2</span>
-            <span className="step-label">Generating Keywords</span>
-            {currentStep === 'keywords' && <span className="step-status">In Progress...</span>}
-            {currentStep === 'ads' || currentStep === 'complete' ? <span className="step-status">✓ Complete</span> : <span className="step-status">Waiting...</span>}
-          </div>
-          <div className={`progress-step ${currentStep === 'ads' ? 'active' : currentStep === 'complete' ? 'completed' : ''}`}>
-            <span className="step-number">3</span>
-            <span className="step-label">Generating Ads</span>
-            {currentStep === 'ads' && <span className="step-status">In Progress...</span>}
-            {currentStep === 'complete' ? <span className="step-status">✓ Complete</span> : <span className="step-status">Waiting...</span>}
-          </div>
+    <div className="min-h-screen bg-background p-8">
+      <div className="mx-auto max-w-4xl space-y-8">
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl font-bold tracking-tight">Generating Campaigns</h1>
+          <p className="text-muted-foreground">
+            Please wait while we generate your campaigns...
+          </p>
         </div>
-        <div className="progress-details">
-          <p>Generating campaigns for {products.length} product(s)...</p>
-          <div className="product-progress">
+
+        <Card>
+          <CardContent className="py-8 space-y-8">
+            {/* Overall Progress */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Overall Progress</span>
+                <span className="text-sm text-muted-foreground">{progressPercentage}%</span>
+              </div>
+              <Progress value={progressPercentage} className="h-2" />
+            </div>
+
+            {/* Steps */}
+            <div className="space-y-4">
+              {/* Step 1: Ad Groups */}
+              <div className={`flex items-start gap-4 p-4 rounded-lg border ${
+                currentStep === 'adgroups' ? 'border-primary bg-primary/5' :
+                currentStep !== 'adgroups' ? 'border-green-500/50 bg-green-500/5' : 'border-muted'
+              }`}>
+                <div className="mt-0.5">
+                  {currentStep === 'adgroups' ? (
+                    <Loader2Icon className="h-5 w-5 animate-spin text-primary" />
+                  ) : (
+                    <CheckCircle2Icon className="h-5 w-5 text-green-600" />
+                  )}
+                </div>
+                <div className="flex-1 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold">Generating Ad Groups</h3>
+                    <Badge variant={currentStep === 'adgroups' ? 'default' : 'outline'}>
+                      {currentStep === 'adgroups' ? 'In Progress' : 'Complete'}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 2: Keywords */}
+              <div className={`flex items-start gap-4 p-4 rounded-lg border ${
+                currentStep === 'keywords' ? 'border-primary bg-primary/5' :
+                currentStep === 'ads' || currentStep === 'complete' ? 'border-green-500/50 bg-green-500/5' : 'border-muted'
+              }`}>
+                <div className="mt-0.5">
+                  {currentStep === 'keywords' ? (
+                    <Loader2Icon className="h-5 w-5 animate-spin text-primary" />
+                  ) : currentStep === 'ads' || currentStep === 'complete' ? (
+                    <CheckCircle2Icon className="h-5 w-5 text-green-600" />
+                  ) : (
+                    <ClockIcon className="h-5 w-5 text-muted-foreground" />
+                  )}
+                </div>
+                <div className="flex-1 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold">Generating Keywords</h3>
+                    <Badge variant={
+                      currentStep === 'keywords' ? 'default' :
+                      currentStep === 'ads' || currentStep === 'complete' ? 'outline' : 'secondary'
+                    }>
+                      {currentStep === 'keywords' ? 'In Progress' :
+                       currentStep === 'ads' || currentStep === 'complete' ? 'Complete' : 'Waiting'}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 3: Ads */}
+              <div className={`flex items-start gap-4 p-4 rounded-lg border ${
+                currentStep === 'ads' ? 'border-primary bg-primary/5' :
+                currentStep === 'complete' ? 'border-green-500/50 bg-green-500/5' : 'border-muted'
+              }`}>
+                <div className="mt-0.5">
+                  {currentStep === 'ads' ? (
+                    <Loader2Icon className="h-5 w-5 animate-spin text-primary" />
+                  ) : currentStep === 'complete' ? (
+                    <CheckCircle2Icon className="h-5 w-5 text-green-600" />
+                  ) : (
+                    <ClockIcon className="h-5 w-5 text-muted-foreground" />
+                  )}
+                </div>
+                <div className="flex-1 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold">Generating Ads</h3>
+                    <Badge variant={
+                      currentStep === 'ads' ? 'default' :
+                      currentStep === 'complete' ? 'outline' : 'secondary'
+                    }>
+                      {currentStep === 'ads' ? 'In Progress' :
+                       currentStep === 'complete' ? 'Complete' : 'Waiting'}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Products Progress */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Generating campaigns for {products.length} product{products.length !== 1 ? 's' : ''}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
             {products.map((product, index) => (
-              <div key={index} className="product-progress-item">
-                <span>{product.name}</span>
-                <span>
-                  {generationProgress.adGroups[index] ? '✓' : '⏳'} Ad Groups |{' '}
-                  {generationProgress.keywords[index] ? '✓' : '⏳'} Keywords |{' '}
-                  {generationProgress.ads[index] ? '✓' : '⏳'} Ads
-                </span>
+              <div key={index} className="flex items-center justify-between p-3 rounded-lg border">
+                <span className="font-medium">{product.name}</span>
+                <div className="flex items-center gap-3 text-sm">
+                  <div className="flex items-center gap-1.5">
+                    {generationProgress.adGroups[index] ? (
+                      <CheckCircle2Icon className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <ClockIcon className="h-4 w-4 text-muted-foreground" />
+                    )}
+                    <span className="text-muted-foreground">Ad Groups</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    {generationProgress.keywords[index] ? (
+                      <CheckCircle2Icon className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <ClockIcon className="h-4 w-4 text-muted-foreground" />
+                    )}
+                    <span className="text-muted-foreground">Keywords</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    {generationProgress.ads[index] ? (
+                      <CheckCircle2Icon className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <ClockIcon className="h-4 w-4 text-muted-foreground" />
+                    )}
+                    <span className="text-muted-foreground">Ads</span>
+                  </div>
+                </div>
               </div>
             ))}
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
