@@ -3,6 +3,13 @@ import { BasePlatformAPI, IPlatformAPI } from './platformApiService';
 import { CampaignPlan } from '../types/ai.types';
 import { PlatformAPIResponse } from '../types/campaign.types';
 import config from '../config/env';
+import {
+  mockCampaignQueryResults,
+  mockAdGroupQueryResults,
+  mockKeywordQueryResults,
+  mockRSAQueryResults,
+  simulateApiDelay,
+} from '../mocks/googleAdsApiMocks';
 
 /**
  * Google Ads API Service
@@ -41,7 +48,12 @@ export class GoogleAdsService extends BasePlatformAPI implements IPlatformAPI {
       // Generate mock campaign ID
       const mockCampaignId = `google-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
+      // Get campaign type for Google Ads
+      const campaignType = campaignPlan.campaignType?.googleAds || 'SEARCH';
+
       console.log(`[Google Ads] Creating campaign: ${name}`);
+      console.log(`[Google Ads] Campaign type: ${campaignType}`);
+      console.log(`[Google Ads] Campaign objective: ${campaignPlan.objective}`);
       console.log(`[Google Ads] Campaign plan:`, campaignPlan);
 
       return {
@@ -50,6 +62,7 @@ export class GoogleAdsService extends BasePlatformAPI implements IPlatformAPI {
         details: {
           name,
           objective: campaignPlan.objective,
+          campaignType,
           budget: campaignPlan.budget,
         },
       };
@@ -172,29 +185,32 @@ export class GoogleAdsService extends BasePlatformAPI implements IPlatformAPI {
         throw new Error('Google Ads access token not found');
       }
 
-      // For MVP, return mock data
+      // For MVP, return comprehensive mock data
       // In production, this would use the Google Ads API Query Language
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await simulateApiDelay();
 
-      // Mock campaign data
-      return [
-        {
-          id: 'campaign_1',
-          name: 'Sample Campaign 1',
-          status: 'ENABLED',
-          budget: 1000,
-          startDate: '2024-01-01',
-          endDate: null,
-        },
-        {
-          id: 'campaign_2',
-          name: 'Sample Campaign 2',
-          status: 'ENABLED',
-          budget: 2000,
-          startDate: '2024-01-01',
-          endDate: null,
-        },
-      ];
+      // Return mock campaign data with full metrics
+      return mockCampaignQueryResults.map((campaign) => ({
+        id: campaign.id,
+        name: campaign.name,
+        resourceName: campaign.resourceName,
+        status: campaign.status,
+        advertisingChannelType: campaign.advertisingChannelType,
+        budget: Math.floor(campaign.metrics.costMicros / 1000000), // Convert micros to dollars
+        budgetMicros: campaign.targetSpend?.targetSpendMicros,
+        startDate: campaign.startDate,
+        endDate: campaign.endDate,
+        biddingStrategyType: campaign.biddingStrategyType,
+        // Include metrics for pattern extraction
+        impressions: campaign.metrics.impressions,
+        clicks: campaign.metrics.clicks,
+        conversions: campaign.metrics.conversions,
+        cost: campaign.metrics.costMicros / 1000000, // Convert to dollars
+        costMicros: campaign.metrics.costMicros,
+        ctr: campaign.metrics.ctr,
+        averageCpc: campaign.metrics.averageCpc,
+        conversionsValue: campaign.metrics.conversionsValue,
+      }));
     } catch (error) {
       console.error('Error querying campaigns:', error);
       throw error;
@@ -213,33 +229,40 @@ export class GoogleAdsService extends BasePlatformAPI implements IPlatformAPI {
         throw new Error('Google Ads access token not found');
       }
 
-      // For MVP, return mock data
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      // For MVP, return comprehensive mock data
+      await simulateApiDelay();
 
-      // Mock ad group data
-      return [
-        {
-          id: 'adgroup_1',
-          campaignId: 'campaign_1',
-          name: 'Brand - Product Category',
-          status: 'ENABLED',
-          cpcBid: 1.50,
-        },
-        {
-          id: 'adgroup_2',
-          campaignId: 'campaign_1',
-          name: 'Product Type - Model',
-          status: 'ENABLED',
-          cpcBid: 2.00,
-        },
-        {
-          id: 'adgroup_3',
-          campaignId: 'campaign_2',
-          name: 'Brand + Feature',
-          status: 'ENABLED',
-          cpcBid: 1.75,
-        },
-      ];
+      // Return mock ad group data with full metrics
+      let adGroups = mockAdGroupQueryResults.map((adGroup) => ({
+        id: adGroup.id,
+        resourceName: adGroup.resourceName,
+        name: adGroup.name,
+        campaignId: adGroup.campaign.split('/').pop(), // Extract campaign ID from resource name
+        campaign: adGroup.campaign,
+        status: adGroup.status,
+        type: adGroup.type,
+        cpcBid: adGroup.cpcBidMicros ? adGroup.cpcBidMicros / 1000000 : undefined,
+        cpcBidMicros: adGroup.cpcBidMicros,
+        effectiveCpcBidMicros: adGroup.effectiveCpcBidMicros,
+        // Include metrics for pattern extraction
+        impressions: adGroup.metrics.impressions,
+        clicks: adGroup.metrics.clicks,
+        conversions: adGroup.metrics.conversions,
+        cost: adGroup.metrics.costMicros / 1000000,
+        costMicros: adGroup.metrics.costMicros,
+        ctr: adGroup.metrics.ctr,
+        averageCpc: adGroup.metrics.averageCpc,
+        conversionsValue: adGroup.metrics.conversionsValue,
+      }));
+
+      // Filter by campaign IDs if provided
+      if (campaignIds && campaignIds.length > 0) {
+        adGroups = adGroups.filter((ag) =>
+          ag.campaignId && campaignIds.includes(ag.campaignId)
+        );
+      }
+
+      return adGroups;
     } catch (error) {
       console.error('Error querying ad groups:', error);
       throw error;
@@ -259,57 +282,33 @@ export class GoogleAdsService extends BasePlatformAPI implements IPlatformAPI {
         throw new Error('Google Ads access token not found');
       }
 
-      // For MVP, return mock data with performance metrics
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      // For MVP, return comprehensive mock data with performance metrics
+      await simulateApiDelay();
 
-      // Mock keyword data with performance
-      return [
-        {
-          id: 'keyword_1',
-          adGroupId: 'adgroup_1',
-          text: 'buy product online',
-          matchType: 'BROAD',
-          status: 'ENABLED',
-          cpcBid: 1.50,
-          impressions: 10000,
-          clicks: 500,
-          conversions: 25,
-          cost: 750,
-          ctr: 5.0,
-          averageCpc: 1.50,
-          conversionsValue: 2500,
-        },
-        {
-          id: 'keyword_2',
-          adGroupId: 'adgroup_1',
-          text: 'product reviews',
-          matchType: 'PHRASE',
-          status: 'ENABLED',
-          cpcBid: 1.25,
-          impressions: 8000,
-          clicks: 320,
-          conversions: 16,
-          cost: 400,
-          ctr: 4.0,
-          averageCpc: 1.25,
-          conversionsValue: 1600,
-        },
-        {
-          id: 'keyword_3',
-          adGroupId: 'adgroup_2',
-          text: '[best product]',
-          matchType: 'EXACT',
-          status: 'ENABLED',
-          cpcBid: 2.00,
-          impressions: 5000,
-          clicks: 350,
-          conversions: 20,
-          cost: 700,
-          ctr: 7.0,
-          averageCpc: 2.00,
-          conversionsValue: 2000,
-        },
-      ];
+      // Return mock keyword data with full metrics
+      return mockKeywordQueryResults.map((keyword) => ({
+        id: keyword.criterionId,
+        criterionId: keyword.criterionId,
+        resourceName: keyword.resourceName,
+        adGroupId: keyword.resourceName.split('/').pop()?.split('~')[0], // Extract ad group ID
+        text: keyword.keyword?.text || '',
+        matchType: keyword.keyword?.matchType || 'BROAD',
+        status: keyword.status,
+        cpcBid: keyword.cpcBidMicros ? keyword.cpcBidMicros / 1000000 : undefined,
+        cpcBidMicros: keyword.cpcBidMicros,
+        // Include detailed performance metrics
+        impressions: keyword.metrics.impressions,
+        clicks: keyword.metrics.clicks,
+        conversions: keyword.metrics.conversions,
+        cost: keyword.metrics.costMicros / 1000000,
+        costMicros: keyword.metrics.costMicros,
+        ctr: keyword.metrics.ctr,
+        averageCpc: keyword.metrics.averageCpc,
+        conversionsValue: keyword.metrics.conversionsValue,
+        conversionsFromInteractionsRate: keyword.metrics.conversionsFromInteractionsRate,
+        costPerConversion: keyword.metrics.costPerConversion,
+        qualityScore: keyword.metrics.qualityScore,
+      }));
     } catch (error) {
       console.error('Error querying keywords:', error);
       throw error;
@@ -329,48 +328,27 @@ export class GoogleAdsService extends BasePlatformAPI implements IPlatformAPI {
         throw new Error('Google Ads access token not found');
       }
 
-      // For MVP, return mock data
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      // For MVP, return comprehensive mock data
+      await simulateApiDelay();
 
-      // Mock RSA data
-      return [
-        {
-          id: 'ad_1',
-          adGroupId: 'adgroup_1',
-          type: 'RESPONSIVE_SEARCH_AD',
-          headlines: [
-            'Buy Our Amazing Product',
-            'Best Product Online',
-            'Quality Product Guaranteed',
-            'Shop Now - Free Shipping',
-            'Premium Product Selection',
-          ],
-          descriptions: [
-            'Discover our amazing product with free shipping and returns.',
-            'Shop the best selection of products online today.',
-          ],
-          finalUrls: ['https://example.com/product'],
-          status: 'ENABLED',
-        },
-        {
-          id: 'ad_2',
-          adGroupId: 'adgroup_2',
-          type: 'RESPONSIVE_SEARCH_AD',
-          headlines: [
-            'Top Rated Product',
-            'Best Deals Online',
-            'Shop Quality Products',
-            'Customer Favorite',
-            'Premium Selection',
-          ],
-          descriptions: [
-            'Get the best deals on quality products with fast shipping.',
-            'Join thousands of satisfied customers shopping today.',
-          ],
-          finalUrls: ['https://example.com/products'],
-          status: 'ENABLED',
-        },
-      ];
+      // Return mock RSA data with complete ad assets
+      return mockRSAQueryResults.map((adGroupAd) => ({
+        id: adGroupAd.ad.id,
+        resourceName: adGroupAd.resourceName,
+        adGroupId: adGroupAd.adGroup.split('/').pop(), // Extract ad group ID
+        adGroup: adGroupAd.adGroup,
+        type: adGroupAd.ad.type,
+        status: adGroupAd.status,
+        finalUrls: adGroupAd.ad.finalUrls,
+        // Extract headlines as array of strings for pattern extraction
+        headlines: adGroupAd.ad.responsiveSearchAd?.headlines.map((h) => h.text) || [],
+        // Extract descriptions as array of strings for pattern extraction
+        descriptions: adGroupAd.ad.responsiveSearchAd?.descriptions.map((d) => d.text) || [],
+        // Include complete RSA info for detailed analysis
+        responsiveSearchAd: adGroupAd.ad.responsiveSearchAd,
+        path1: adGroupAd.ad.responsiveSearchAd?.path1,
+        path2: adGroupAd.ad.responsiveSearchAd?.path2,
+      }));
     } catch (error) {
       console.error('Error querying ads:', error);
       throw error;
