@@ -6,10 +6,13 @@ AI-powered campaign creation and management for performance marketers. This modu
 
 ### Core Functionality
 - **Conversational Campaign Creation**: Natural language interface with intelligent AI response extraction
+- **CSV/URL-Based Campaign Generation**: Generate complete Google Ads campaigns from CSV files or product URL lists
 - **Multi-Platform Support**: Google Ads, Meta, Microsoft Advertising
 - **Campaign Management**: Create, view, edit, pause, resume, and delete campaigns
 - **Campaign Plan Editing**: Full editor for modifying campaign plans before creation
+- **Campaign Preview & Editing**: Spreadsheet-like interface for reviewing and editing generated campaigns
 - **Performance Dashboard**: Real-time metrics, time series analysis, and goal tracking
+- **Google Ads Editor Export**: Export campaigns to CSV format compatible with Google Ads Editor
 - **Offline Support**: Cached data with offline viewing capabilities
 - **Export Functionality**: CSV export for metrics and time series data
 - **Mock Data Indicators**: Clear badges showing when data is simulated vs. from API
@@ -75,22 +78,58 @@ Module-Agentic_Campaign_Manager/
 │   │   ├── CampaignCreation.tsx
 │   │   ├── CampaignDetail.tsx
 │   │   ├── PerformanceDashboard.tsx
+│   │   ├── csv-upload/       # CSV/URL upload components
+│   │   │   ├── CSVUploadScreen.tsx
+│   │   │   ├── CSVUploadComponent.tsx
+│   │   │   ├── URLListInput.tsx
+│   │   │   └── ProductPreview.tsx
+│   │   ├── pattern-learning/ # Pattern learning components
+│   │   │   ├── PatternLearningScreen.tsx
+│   │   │   └── PatternViewer.tsx
+│   │   ├── campaign-generation/ # Campaign generation components
+│   │   │   └── CampaignGenerationScreen.tsx
+│   │   ├── campaign-preview/ # Campaign preview & editing
+│   │   │   ├── CampaignPreviewScreen.tsx
+│   │   │   ├── CampaignPreviewTable.tsx
+│   │   │   ├── AdGroupRow.tsx
+│   │   │   ├── KeywordRow.tsx
+│   │   │   ├── AdRow.tsx
+│   │   │   ├── AdCopyEditor.tsx
+│   │   │   ├── ExportButton.tsx
+│   │   │   └── ExportInstructions.tsx
 │   │   ├── ErrorBoundary.tsx
 │   │   ├── ToastContainer.tsx
 │   │   └── ...
 │   ├── services/            # API services
 │   │   ├── campaignService.ts
 │   │   ├── performanceService.ts
+│   │   ├── productService.ts
+│   │   ├── validationService.ts
 │   │   └── ...
 │   ├── store/               # Zustand state management
-│   │   └── campaignStore.ts
+│   │   ├── campaignStore.ts
+│   │   └── campaignPreviewStore.ts
+│   ├── hooks/               # Custom React hooks
+│   │   ├── useCampaignPatterns.ts
+│   │   ├── useAdGroupGeneration.ts
+│   │   ├── useKeywordGeneration.ts
+│   │   ├── useRSAGeneration.ts
+│   │   ├── useCSVExport.ts
+│   │   └── ...
 │   ├── utils/               # Utility functions
 │   │   ├── indexedDB.ts
 │   │   ├── toastService.ts
+│   │   ├── inlineEditing.ts
 │   │   └── ...
 │   ├── types/               # TypeScript type definitions
 │   │   ├── campaign.types.ts
 │   │   ├── performance.types.ts
+│   │   ├── product.types.ts
+│   │   ├── campaign-patterns.types.ts
+│   │   ├── campaign-preview.types.ts
+│   │   ├── adgroup-generation.types.ts
+│   │   ├── keyword-generation.types.ts
+│   │   ├── rsa-generation.types.ts
 │   │   └── ade.types.ts
 │   ├── config/              # Configuration
 │   │   └── module.config.ts
@@ -102,12 +141,28 @@ Module-Agentic_Campaign_Manager/
 ├── backend/                 # Backend API
 │   ├── src/
 │   │   ├── controllers/
+│   │   │   ├── csvExportController.ts
+│   │   │   ├── adGroupGenerationController.ts
+│   │   │   ├── keywordGenerationController.ts
+│   │   │   ├── rsaGenerationController.ts
+│   │   │   └── ...
 │   │   ├── routes/
+│   │   │   ├── campaigns.ts
+│   │   │   ├── products.ts
+│   │   │   └── ...
 │   │   ├── services/
+│   │   │   ├── productParsingService.ts
+│   │   │   ├── patternExtractionService.ts
+│   │   │   ├── adGroupGenerationService.ts
+│   │   │   ├── keywordGenerationService.ts
+│   │   │   ├── rsaGenerationService.ts
+│   │   │   ├── csvExportService.ts
+│   │   │   └── ...
 │   │   └── ...
 │   └── package.json
 ├── public/                  # Static assets
 ├── dist/                    # Production build output
+├── sample-products.csv      # Sample CSV file for testing
 ├── package.json
 ├── tsconfig.json
 ├── vite.config.ts
@@ -126,6 +181,18 @@ Module-Agentic_Campaign_Manager/
 - `POST /api/campaigns/:id/pause` - Pause campaign
 - `POST /api/campaigns/:id/resume` - Resume campaign
 
+### CSV/URL Campaign Generation Endpoints
+- `POST /api/products/parse-csv` - Parse CSV file and extract products
+- `POST /api/products/parse-urls` - Parse URL list and extract products
+- `GET /api/campaigns/query-patterns` - Query existing campaigns and extract patterns
+- `POST /api/campaigns/adgroups/generate` - Generate ad groups for products
+- `POST /api/campaigns/keywords/generate` - Generate keywords for a product
+- `POST /api/campaigns/keywords/validate` - Validate keywords
+- `POST /api/campaigns/ads/generate-rsa` - Generate responsive search ads
+- `POST /api/campaigns/ads/validate` - Validate ad copy
+- `POST /api/campaigns/export` - Export campaign to Google Ads Editor CSV
+- `POST /api/campaigns/export/validate` - Validate campaign before export
+
 ### Performance Endpoints
 - `GET /api/campaigns/:id/performance` - Get campaign performance metrics
   - Query params: `timeRange` (today|7d|30d|90d|custom), `startDate`, `endDate`, `includeTimeSeries`
@@ -138,7 +205,7 @@ Module-Agentic_Campaign_Manager/
 
 ## Usage
 
-### Creating a Campaign
+### Creating a Campaign (Conversational)
 
 1. Navigate to the Campaign Dashboard
 2. Click "Create Campaign"
@@ -149,6 +216,35 @@ Module-Agentic_Campaign_Manager/
    - Platforms (Google Ads, Meta, Microsoft)
 4. Review the generated campaign plan
 5. Launch the campaign
+
+### Generating Campaigns from CSV/URL List
+
+1. Navigate to the Campaign Dashboard
+2. Click "Generate Campaigns from CSV" or "CSV/URL Campaign Generation"
+3. **Upload CSV File** (or enter URL list):
+   - Drag and drop a CSV file, or click to browse
+   - CSV format: Product Name, URL, Category, Price, Description
+   - Maximum 10 products per batch (MVP)
+4. **Review Products**:
+   - Verify parsed products in the preview table
+   - Edit product names or URLs if needed
+   - Click "Generate Campaigns" when ready
+5. **Pattern Learning** (Optional):
+   - Review extracted patterns from existing campaigns
+   - Learn from high-performing keywords and ad copy
+   - Click "Skip & Use Defaults" to proceed without patterns
+6. **Campaign Generation**:
+   - Watch progress as ad groups, keywords, and ads are generated
+   - System automatically creates campaigns for each product
+7. **Preview & Edit**:
+   - Review generated campaign structure in spreadsheet-like interface
+   - Edit ad group names, keywords, headlines, descriptions, and URLs inline
+   - See real-time validation and character counts
+   - Filter and sort campaign data
+8. **Export to Google Ads Editor**:
+   - Click "Export to Google Ads Editor" button
+   - Download CSV file in Google Ads Editor format
+   - Import into Google Ads Editor to upload campaigns
 
 ### Viewing Performance
 
@@ -254,9 +350,30 @@ When no OpenAI API key is configured, the module operates in **Mock Data Mode**:
 
 ISC
 
-## Recent Updates (November 5, 2025)
+## Recent Updates
 
-### Enhancements
+### January 6, 2025 - CSV/URL Campaign Generation MVP Complete
+
+#### New Features
+- ✅ **CSV/URL-Based Campaign Generation**: Complete workflow from CSV upload to Google Ads Editor export
+- ✅ **Pattern Learning**: Extract patterns from existing high-performing campaigns
+- ✅ **Automatic Campaign Generation**: Generate ad groups, keywords, and responsive search ads automatically
+- ✅ **Campaign Preview & Editing**: Spreadsheet-like interface with inline editing
+- ✅ **Google Ads Editor Export**: Export campaigns to CSV format compatible with Google Ads Editor
+- ✅ **Real-time Validation**: Character limits, required fields, and format validation
+- ✅ **Filtering & Sorting**: Filter by ad group/keywords, sort by various criteria
+- ✅ **Comprehensive Testing Documentation**: Test plans, execution logs, and testing guides
+
+#### Technical Enhancements
+- ✅ Campaign preview store (Zustand) for managing editable campaign state
+- ✅ Validation service for comprehensive data validation
+- ✅ CSV export service with Google Ads Editor format compliance
+- ✅ Inline editing utilities for seamless editing experience
+- ✅ Enhanced components with filtering, sorting, and validation
+
+### November 5, 2025
+
+#### Enhancements
 - ✅ Intelligent AI response extraction (parses budget, duration, platforms, objectives from user input)
 - ✅ Campaign plan editor with full editing capabilities
 - ✅ Delete campaigns from dashboard
@@ -267,7 +384,7 @@ ISC
 - ✅ Complete responsive design
 - ✅ Production build optimization
 
-### Bug Fixes
+#### Bug Fixes
 - ✅ Fixed duplicate "Create Campaign" button
 - ✅ Fixed budget extraction ($4,000 now correctly parsed)
 - ✅ Fixed duration extraction (weeks to days conversion)
