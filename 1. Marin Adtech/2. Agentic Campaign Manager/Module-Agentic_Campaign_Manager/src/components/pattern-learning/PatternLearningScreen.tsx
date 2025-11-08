@@ -258,7 +258,7 @@ const PatternLearningScreen: React.FC = () => {
         {/* Product tabs for segmented patterns */}
         {products.length > 0 && productPatterns.length > 0 && (
           <Tabs value={activeProductTab} onValueChange={setActiveProductTab}>
-            <TabsList className="grid w-full" style={{ gridTemplateColumns: `repeat(${products.length}, minmax(0, 1fr))` }}>
+            <TabsList className="grid w-full sticky top-0 z-10 bg-background" style={{ gridTemplateColumns: `repeat(${products.length}, minmax(0, 1fr))` }}>
               {products.map((product: any, index: number) => (
                 <TabsTrigger key={product.id} value={String(index)}>
                   <PackageIcon className="h-4 w-4 mr-2" />
