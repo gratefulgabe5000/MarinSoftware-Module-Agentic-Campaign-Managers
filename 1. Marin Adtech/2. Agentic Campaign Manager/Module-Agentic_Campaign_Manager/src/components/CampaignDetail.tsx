@@ -103,7 +103,7 @@ const CampaignDetail: React.FC = () => {
           } catch (apiError) {
             console.error('API fetch failed, campaign only exists in memory/IndexedDB:', apiError);
             // If API fails, campaign doesn't exist
-            campaignData = null;
+            campaignData = undefined;
           }
         }
 
@@ -115,7 +115,7 @@ const CampaignDetail: React.FC = () => {
         console.log('Platform Campaign IDs:', campaignData?.platformCampaignIds);
         console.log('Mapped Status to Enum:', mapCampaignStatusToEnum(campaignData?.status));
 
-        setCampaign(campaignData);
+        setCampaign(campaignData || null);
         console.log('Campaign state has been set');
       } catch (error) {
         console.error('Error loading campaign:', error);
@@ -235,27 +235,6 @@ const CampaignDetail: React.FC = () => {
         {campaign.campaignPlan && (
           <CampaignOverviewCard campaignPlan={campaign.campaignPlan} />
         )}
-
-        {/* Debug Info */}
-        <Card className="border-yellow-500 bg-yellow-50">
-          <CardHeader>
-            <CardTitle className="text-sm">🔧 Debug Info (Remove after testing)</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 text-xs">
-            <div className="flex justify-between">
-              <span className="font-semibold">Campaign Status (string):</span>
-              <span className="font-mono">{campaign.status}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="font-semibold">Mapped to Enum:</span>
-              <span className="font-mono">{mapCampaignStatusToEnum(campaign.status)?.toString() || 'undefined'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="font-semibold">Updated At:</span>
-              <span className="font-mono">{new Date(campaign.updatedAt).toLocaleTimeString()}</span>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Campaign Status */}
         <Card>

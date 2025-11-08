@@ -270,14 +270,6 @@ const CampaignStatus: React.FC<CampaignStatusProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* Debug Info */}
-      <div className="p-3 bg-purple-50 border border-purple-200 rounded text-xs space-y-1">
-        <div className="font-semibold text-purple-900">🔍 Status Component Debug:</div>
-        <div className="font-mono">initialStatus (prop): {initialStatus?.toString() || 'null'}</div>
-        <div className="font-mono">status (state): {status?.toString() || 'null'}</div>
-        <div className="font-mono">Display Text: {getStatusText(status)}</div>
-      </div>
-
       {/* Current Status */}
       <div className="flex items-center gap-3">
         <Badge variant={getStatusVariant(status)} className="flex items-center gap-1.5 px-3 py-1.5">

@@ -6,7 +6,6 @@ import AudienceSummaryCard from './AudienceSummaryCard';
 import AdGroupStructureTree from './AdGroupStructureTree';
 import PerformanceEstimatesCard from './PerformanceEstimatesCard';
 import CampaignActionButtons from './CampaignActionButtons';
-import { Badge } from './ui/badge';
 import { Alert, AlertDescription } from './ui/alert';
 import LoadingSpinner from './LoadingSpinner';
 import { AlertCircleIcon } from 'lucide-react';
@@ -17,7 +16,6 @@ import { AlertCircleIcon } from 'lucide-react';
  */
 const CampaignPreview: React.FC = () => {
   const campaignPlan = useCampaignStore((state) => state.currentCampaignPlan);
-  const isMockData = useCampaignStore((state) => state.currentCampaignPlanIsMock);
   const isLoading = useCampaignStore((state) => state.isLoading);
   const error = useCampaignStore((state) => state.error);
 
@@ -59,15 +57,7 @@ const CampaignPreview: React.FC = () => {
     <div className="min-h-screen bg-background p-8">
       <div className="mx-auto max-w-7xl space-y-8">
         <div className="space-y-2">
-          <div className="flex items-center gap-3 flex-wrap">
-            <h2 className="text-3xl font-bold tracking-tight">Campaign Preview</h2>
-            {isMockData && (
-              <Badge variant="outline" className="bg-yellow-500/10 text-yellow-700 border-yellow-500/20">
-                <span className="mr-1">⚠️</span>
-                Mock Data - Simulated Response
-              </Badge>
-            )}
-          </div>
+          <h2 className="text-3xl font-bold tracking-tight">Campaign Preview</h2>
           <p className="text-muted-foreground">Review your campaign plan before creating it</p>
         </div>
 
