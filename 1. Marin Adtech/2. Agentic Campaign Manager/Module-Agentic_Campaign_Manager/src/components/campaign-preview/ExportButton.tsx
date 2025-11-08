@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { CampaignPreviewData } from '../../types/campaign-preview.types';
 import { useCSVExport } from '../../hooks/useCSVExport';
 import { useCampaignPreviewStore } from '../../store/campaignPreviewStore';
+import { validateCampaignPreview } from '../../services/validationService';
 import { toastService } from '../../utils/toastService';
 import { Button } from '../ui/button';
 import { Alert } from '../ui/alert';
@@ -17,7 +18,7 @@ interface ExportButtonProps {
 
 const ExportButton: React.FC<ExportButtonProps> = ({ previewData }) => {
   const { exportCampaign, validateExport, isExporting, error } = useCSVExport();
-  const { editedPreviewData, validateCampaign, validationResult } = useCampaignPreviewStore();
+  const { editedPreviewData, validationResult } = useCampaignPreviewStore();
   const [isValidating, setIsValidating] = useState(false);
 
   // Use edited data if available, otherwise use original
@@ -27,8 +28,12 @@ const ExportButton: React.FC<ExportButtonProps> = ({ previewData }) => {
     try {
       setIsValidating(true);
 
-      // Validate campaign first (using store validation)
-      const validation = validateCampaign();
+      // Validate the actual data being exported (not store state)
+      const validation = validateCampaignPreview(
+        dataToExport,
+        dataToExport.adGroups
+      );
+      
       if (!validation.isValid) {
         toastService.error(
           `Export validation failed:\n${validation.errors.slice(0, 5).map((e: any) => e.message || e).join('\n')}${validation.errors.length > 5 ? `\n... and ${validation.errors.length - 5} more errors` : ''}`
