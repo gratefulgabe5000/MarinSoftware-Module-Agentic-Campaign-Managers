@@ -271,7 +271,7 @@ const CampaignDashboard: React.FC = () => {
 
         {/* Status Filter */}
         {campaigns.length > 0 && (
-          <Card>
+          <Card className="sticky top-0 z-10 bg-background">
             <CardContent className="pt-6">
               <div className="flex items-center gap-2 flex-wrap">
                 <FilterIcon className="h-4 w-4 text-muted-foreground" />

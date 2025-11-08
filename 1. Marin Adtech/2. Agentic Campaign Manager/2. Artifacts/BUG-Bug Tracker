@@ -47,10 +47,10 @@
 | ✅ BUG-003 | Edit/Delete Buttons Scroll with Table Content Instead of Being Fixed | 🟡 Medium | UI/UX | 🟢 Fixed | 45-60 min |
 | ✅ BUG-004 | Product Tab Navigation Scrolls Off-Screen on Pattern Learning Page | 🟡 Medium | UI/UX | 🟢 Fixed | 30-45 min |
 | BUG-005 | URLs Not Verified to Exist/Be Reachable During CSV Upload | 🟡 Medium | CSV Processing | 🔴 Open | 1-2 hours |
-| BUG-006 | Campaign Preview Pages Should Match Dashboard/Details Layout with PREVIEW Badge | 🟡 Medium | UI/UX | 🔴 Open | 2-3 hours |
+| ✅ BUG-006 | Campaign Preview Pages Should Match Dashboard/Details Layout with PREVIEW Badge | 🟡 Medium | UI/UX | 🟢 Fixed | 2-3 hours |
 | BUG-007 | Campaign Dashboard Enhancement: Hashtags, Tag Filtering, and Batch Actions | 🟡 Medium | UI/UX, Data Management | 🔴 Open | 3-5 hours |
 | BUG-008 | Campaign Dashboard Should Filter by Product Category with Batch Actions | 🟡 Medium | UI/UX, Data Management | 🔴 Open | 2-3 hours |
-| BUG-009 | Campaign Dashboard Filter Bar Should Remain Static While Scrolling | 🟡 Medium | UI/UX | 🔴 Open | 30-45 min |
+| ✅ BUG-009 | Campaign Dashboard Filter Bar Should Remain Static While Scrolling | 🟡 Medium | UI/UX | 🟢 Fixed | 30-45 min |
 | BUG-010 | Performance Dashboard Header Should Remain Static While Scrolling | 🟡 Medium | UI/UX | 🔴 Open | 30-45 min |
 | BUG-011 | Performance Dashboard Export CSV Fails with "point.date.toISOString is not a function" | 🟠 High | Export, Data Processing | 🔴 Open | 30-60 min |
 
