@@ -12,7 +12,7 @@
 
 ## 📊 QUICK SUMMARY
 
-**Total Bugs:** 11  
+**Total Bugs:** 20  
 **Enhancements:** 0 💡  
 **Known Limitations:** 0 📋  
 **Blocking Issues:** 0  
@@ -22,8 +22,8 @@
 ### Functional Bugs Breakdown
 
 - **🔴 Critical:** 0 bugs
-- **🟠 High Priority:** 1 bug (was 2, BUG-002 fixed)
-- **🟡 Medium Priority:** 6 bugs (was 9, BUG-001, BUG-003, and BUG-004 fixed)
+- **🟠 High Priority:** 1 bug (was 5, BUG-002 fixed, 4 remaining: BUG-011, BUG-014, BUG-017, BUG-018)
+- **🟡 Medium Priority:** 9 bugs (was 15, BUG-001, BUG-003, BUG-004, BUG-006, BUG-009 fixed, 10 remaining)
 - **🟢 Low Priority:** 0 bugs
 - **📋 Known Limitations:** 0
 
@@ -34,7 +34,7 @@
 - **Testing:** ⏳ In Progress
 - **Production Deployment:** ⏳ Pending
 
-**Estimated Fix Time:** 13.75-22.5 hours (7 bugs remaining)
+**Estimated Fix Time:** 13.75-22.5 hours (10 bugs remaining: 1 High, 9 Medium)
 
 ---
 
@@ -53,6 +53,15 @@
 | ✅ BUG-009 | Campaign Dashboard Filter Bar Should Remain Static While Scrolling | 🟡 Medium | UI/UX | 🟢 Fixed | 30-45 min |
 | BUG-010 | Performance Dashboard Header Should Remain Static While Scrolling | 🟡 Medium | UI/UX | 🔴 Open | 30-45 min |
 | BUG-011 | Performance Dashboard Export CSV Fails with "point.date.toISOString is not a function" | 🟠 High | Export, Data Processing | 🔴 Open | 30-60 min |
+| BUG-012 | Inline Editing Behavior Issues in Campaign Preview | 🟡 Medium | UI/UX, Functionality | 🔴 Open | 1-2 hours |
+| BUG-013 | RSA Ad Headlines Display Not Optimized in Campaign Preview | 🟡 Medium | UI/UX | 🔴 Open | 1-2 hours |
+| BUG-014 | Keyword Deletion Deletes Incorrect Item in Campaign Preview | 🟠 High | Functionality, Data Integrity | 🔴 Open | 1-2 hours |
+| BUG-015 | Validation Errors Not Linked to Elements on Page in Campaign Preview | 🟡 Medium | UI/UX, Functionality | 🔴 Open | 1-2 hours |
+| BUG-016 | Ad Group Name Display Not Updated After Inline Edit | 🟡 Medium | UI/UX, Functionality | 🔴 Open | 30-60 min |
+| BUG-017 | Export Validation Fails with Empty Errors Array | 🟠 High | Export, Validation | 🔴 Open | 30-60 min |
+| BUG-018 | CSV Upload Errors Not Displayed in UI | 🟠 High | CSV Processing, UI/UX | 🔴 Open | 30-60 min |
+| BUG-019 | Empty CSV Files Not Detected and Rejected with Error Messages | 🟡 Medium | CSV Processing, Validation | 🔴 Open | 30-45 min |
+| BUG-020 | Missing Optional Columns Not Validated or Warned About | 🟡 Medium | CSV Processing, Validation | 🔴 Open | 45-60 min |
 
 **Legend:**
 - 🔴 Critical = Blocking deployment/demo
@@ -63,9 +72,10 @@
 **Totals:**
 
 - 🔴 Critical: 0 bugs
-- 🟠 High: 2 bugs
-- 🟡 Medium: 9 bugs
+- 🟠 High: 1 bug (4 remaining: BUG-011, BUG-014, BUG-017, BUG-018)
+- 🟡 Medium: 9 bugs (10 remaining: BUG-005, BUG-007, BUG-008, BUG-010, BUG-012, BUG-013, BUG-015, BUG-016, BUG-019, BUG-020)
 - 🟢 Low: 0 bugs
+- ✅ Fixed: 6 bugs (BUG-001, BUG-002, BUG-003, BUG-004, BUG-006, BUG-009)
 
 ---
 
@@ -2422,6 +2432,1473 @@ exportToCSV(
 
 ---
 
+### BUG-012: Inline Editing Behavior Issues in Campaign Preview
+
+**Priority:** 🟡 Medium  
+**Category:** UI/UX, Functionality  
+**Status:** 🔴 Open  
+**Discovered:** January 2025  
+**Component:** Campaign Preview / Inline Editing  
+**Estimated Fix Time:** 1-2 hours
+
+**Description:**
+The inline editing functionality in the Campaign Preview screen has several behavioral issues that affect user experience and workflow:
+
+1. **Auto-save on blur:** Inline editing saves changes automatically when clicking off (onBlur event), instead of requiring an explicit "Accept Changes" or "Save" button. This can lead to accidental saves and makes it difficult to cancel changes.
+
+2. **Edit activation by clicking text:** Inline editing is activated by clicking directly on the text/name (single click), instead of requiring activation via a dedicated "Edit" button. This makes it too easy to accidentally enter edit mode.
+
+3. **Match type dropdown closes inline edit:** During inline editing of keywords, clicking the match type dropdown closes the inline edit state, preventing users from selecting a match type. The dropdown should remain functional within the inline edit state.
+
+**Steps to Reproduce:**
+
+**Issue 1: Auto-save on blur**
+1. Navigate to Campaign Preview screen
+2. Click on an ad group name or keyword text to enter edit mode
+3. Make changes to the text
+4. Click outside the input field (blur event)
+5. Expected: Changes should not be saved automatically; should require explicit "Save" button
+6. Actual: Changes are saved automatically on blur
+
+**Issue 2: Edit activation by clicking text**
+1. Navigate to Campaign Preview screen
+2. Click directly on an ad group name or keyword text
+3. Expected: Should not enter edit mode; should require clicking "Edit" button
+4. Actual: Clicking text directly enters edit mode
+
+**Issue 3: Match type dropdown closes inline edit**
+1. Navigate to Campaign Preview screen
+2. Click on a keyword to enter edit mode
+3. Try to click on the match type dropdown
+4. Expected: Dropdown should open and allow selection without closing edit mode
+5. Actual: Clicking dropdown closes inline edit state, preventing match type selection
+
+**Impact:**
+- **Poor User Experience:** Accidental saves and difficulty canceling changes
+- **Workflow Disruption:** Users cannot easily cancel edits or change match types
+- **Data Integrity Risk:** Accidental saves may overwrite intended values
+- **Frustrating Interaction:** Match type cannot be changed during keyword editing
+
+**Current Implementation:**
+
+1. **KeywordRow Component (`KeywordRow.tsx`):**
+   - Line 115: `onBlur={handleSave}` - Saves automatically on blur
+   - Line 130-136: Text is clickable button that sets `isEditing(true)` directly
+   - Line 141-157: Match type Select component, but clicking it may trigger blur event
+
+2. **AdGroupRow Component (`AdGroupRow.tsx`):**
+   - Line 90: `onBlur={handleNameSave}` - Saves automatically on blur
+   - Line 105-111: Ad group name is clickable button that sets `isEditing(true)` directly
+   - Line 118-127: Edit button exists but clicking text also enables editing
+
+3. **No explicit Save/Cancel buttons:**
+   - No visible "Save" or "Cancel" buttons during inline editing
+   - Only Enter key (save) and Escape key (cancel) are supported
+   - No visual indication of edit state or pending changes
+
+**Root Cause:**
+1. **Auto-save on blur:** The `onBlur` event handler directly calls `handleSave()`, saving changes without user confirmation
+2. **Click-to-edit:** Text elements are clickable buttons that directly set `isEditing(true)`, bypassing the edit button
+3. **Dropdown interaction:** Clicking the Select dropdown trigger may trigger blur event on the input field, closing edit mode
+
+**Solution Approach:**
+
+### Option 1: Explicit Save/Cancel Buttons (Recommended)
+
+**Implementation Strategy:**
+
+1. **Remove auto-save on blur:**
+   - Remove `onBlur={handleSave}` from input fields
+   - Only save on explicit "Save" button click or Enter key
+   - Add visual indication of unsaved changes
+
+2. **Require Edit button activation:**
+   - Remove click handlers from text elements
+   - Only allow editing via dedicated "Edit" button (pencil icon)
+   - Show edit button next to editable fields
+
+3. **Fix match type dropdown:**
+   - Prevent blur event from closing edit mode when clicking Select
+   - Use `onOpenChange` or `onPointerDown` to prevent blur
+   - Keep edit mode active while dropdown is open
+
+4. **Add Save/Cancel buttons:**
+   - Display "Save" and "Cancel" buttons when in edit mode
+   - Replace edit button with save/cancel buttons during editing
+   - Provide clear visual feedback for edit state
+
+**Recommended Implementation:**
+
+```tsx
+// In KeywordRow.tsx, modify the edit mode:
+
+{isEditing ? (
+  <div className="space-y-1">
+    <Input
+      type="text"
+      value={keywordText}
+      onChange={(e) => {
+        setKeywordText(e.target.value);
+        setError(null);
+      }}
+      // Remove onBlur={handleSave}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') {
+          handleSave();
+        } else if (e.key === 'Escape') {
+          handleCancel();
+        }
+      }}
+      className={error ? 'border-destructive' : ''}
+      autoFocus
+      maxLength={80}
+    />
+    {error && <p className="text-xs text-destructive">{error}</p>}
+    <div className="flex gap-2 mt-2">
+      <Button size="sm" onClick={handleSave} type="button">
+        Save
+      </Button>
+      <Button size="sm" variant="outline" onClick={handleCancel} type="button">
+        Cancel
+      </Button>
+    </div>
+  </div>
+) : (
+  <span className="text-left">{keywordText}</span>
+)}
+
+// In the Actions column, show edit button only when not editing:
+<TableCell className="text-center">
+  <div className="flex justify-center gap-1">
+    {!isEditing && (
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => setIsEditing(true)}
+        type="button"
+        title="Edit"
+        className="h-8 w-8 p-0"
+      >
+        <PencilIcon className="h-4 w-4" />
+      </Button>
+    )}
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={() => setShowDeleteDialog(true)}
+      type="button"
+      title="Delete"
+      className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+    >
+      <Trash2Icon className="h-4 w-4" />
+    </Button>
+  </div>
+</TableCell>
+
+// For match type dropdown, prevent blur:
+<Select
+  value={matchType}
+  onValueChange={(value) => {
+    setMatchType(value as 'broad' | 'phrase' | 'exact');
+  }}
+  onOpenChange={(open) => {
+    // Prevent blur when dropdown opens
+    if (open) {
+      e?.stopPropagation();
+    }
+  }}
+>
+  <SelectTrigger 
+    className="w-[120px]"
+    onPointerDown={(e) => {
+      // Prevent blur event
+      e.stopPropagation();
+    }}
+  >
+    <SelectValue />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectItem value="broad">Broad</SelectItem>
+    <SelectItem value="phrase">Phrase</SelectItem>
+    <SelectItem value="exact">Exact</SelectItem>
+  </SelectContent>
+</Select>
+```
+
+**Alternative Approaches:**
+
+1. **Confirmation dialog on blur:**
+   - Show confirmation dialog when clicking outside with unsaved changes
+   - Ask user to save or discard changes
+   - More complex but provides safety net
+
+2. **Draft state:**
+   - Keep changes in draft state until explicit save
+   - Show visual indicator for unsaved changes
+   - Allow multiple edits before saving
+
+3. **Separate edit mode:**
+   - Enter full edit mode for entire row
+   - Edit all fields at once
+   - Save all changes together
+
+**Performance Considerations:**
+- Adding Save/Cancel buttons has minimal performance impact
+- Preventing blur events may require event handling adjustments
+- Visual feedback should be immediate and clear
+
+**Related Files:**
+- `src/components/campaign-preview/KeywordRow.tsx` - Keyword inline editing (lines 106-137, 139-162)
+- `src/components/campaign-preview/AdGroupRow.tsx` - Ad group name inline editing (lines 84-112)
+- `src/components/campaign-preview/AdCopyEditor.tsx` - Ad copy editing (may have similar issues)
+
+**Testing Considerations:**
+- Test that clicking text does not enter edit mode
+- Test that only Edit button activates edit mode
+- Test that Save button saves changes
+- Test that Cancel button discards changes
+- Test that match type dropdown works during edit mode
+- Test that blur event does not save changes
+- Test Enter key saves changes
+- Test Escape key cancels changes
+- Test visual feedback for edit state
+- Test multiple edits before saving
+
+**Known Limitations:**
+- May need to handle keyboard navigation (Tab key)
+- May need to handle focus management
+- May need to handle mobile touch events
+- May need to handle accessibility (ARIA labels)
+
+---
+
+### BUG-013: RSA Ad Headlines Display Not Optimized in Campaign Preview
+
+**Priority:** 🟡 Medium  
+**Category:** UI/UX  
+**Status:** 🔴 Open  
+**Discovered:** January 2025  
+**Component:** Campaign Preview / RSA Ad Display  
+**Estimated Fix Time:** 1-2 hours
+
+**Description:**
+RSA Ad headlines are displayed in a vertical list of input fields within the expanded ad row, which appears less structured and visually organized compared to the keyword display in the Ad Group section. The keywords are displayed in a clean table format with badges and organized columns, while the RSA Ad headlines are shown as a simple vertical list of text inputs, making it harder to quickly review and compare multiple headlines. The display lacks visual hierarchy and organization compared to the keyword section.
+
+**Steps to Reproduce:**
+1. Navigate to Campaign Preview screen
+2. Expand an ad group to see keywords and ads
+3. Observe the keyword display (organized table format with badges)
+4. Expand an RSA Ad row
+5. Observe the headlines display (vertical list of input fields)
+6. Expected: Headlines should be displayed in a more organized, visually appealing format similar to keywords
+7. Actual: Headlines are displayed as a simple vertical list, less structured than keywords
+
+**Impact:**
+- **Poor Visual Hierarchy:** Headlines are harder to scan and compare
+- **Inconsistent UI:** Different display styles between keywords and headlines
+- **Reduced Usability:** More difficult to quickly review multiple headlines
+- **Less Professional Appearance:** Inconsistent design reduces perceived quality
+
+**Current Implementation:**
+
+1. **AdCopyEditor Component (`AdCopyEditor.tsx`):**
+   - Lines 143-178: Headlines are displayed in a vertical list
+   - Each headline is a separate input field with character count
+   - No table structure or organized layout
+   - Simple div-based layout with minimal styling
+
+2. **AdRow Component (`AdRow.tsx`):**
+   - Expands to show AdCopyEditor component
+   - No structured display for ad content
+
+3. **Keyword Display:**
+   - Keywords are displayed in table rows with badges
+   - Organized columns (Type, Name/Text, Match Type, Actions)
+   - Clean, structured appearance
+
+**Root Cause:**
+The RSA Ad headlines are rendered using a simple div-based layout with individual input fields, while keywords are displayed in a structured table format. The AdCopyEditor component uses a basic list structure without the visual organization of the keyword table.
+
+**Solution Approach:**
+
+### Option 1: Table-Based Display for Headlines (Recommended)
+
+**Implementation Strategy:**
+
+1. **Refactor AdCopyEditor to use table structure:**
+   - Display headlines in a table format similar to keywords
+   - Use TableRow and TableCell components for consistency
+   - Add badges or visual indicators for headlines
+
+2. **Create headline rows:**
+   - Each headline as a table row
+   - Columns: Type (badge), Headline Text (editable), Character Count, Actions
+   - Match the visual style of keyword rows
+
+3. **Maintain editability:**
+   - Keep inline editing functionality
+   - Use same edit pattern as keywords (Edit button, Save/Cancel)
+   - Preserve character count and validation
+
+4. **Visual consistency:**
+   - Match styling with keyword rows
+   - Use same badge styles and colors
+   - Maintain same spacing and layout
+
+**Recommended Implementation:**
+
+```tsx
+// In AdCopyEditor.tsx, refactor headlines section:
+
+<div className="ad-section">
+  <div className="section-header">
+    <h4>Headlines ({ad.headlines.length}/15)</h4>
+    {ad.headlines.length < 15 && (
+      <Button size="sm" onClick={handleAddHeadline} type="button">
+        + Add Headline
+      </Button>
+    )}
+  </div>
+  <div className="overflow-x-auto">
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Type</TableHead>
+          <TableHead>Headline</TableHead>
+          <TableHead className="text-center">Characters</TableHead>
+          <TableHead className="text-center">Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {ad.headlines.map((headline, index) => (
+          <TableRow key={index}>
+            <TableCell>
+              <Badge variant="secondary">Headline</Badge>
+            </TableCell>
+            <TableCell>
+              {editingHeadlineIndex === index ? (
+                <div className="space-y-1">
+                  <Input
+                    type="text"
+                    value={headline.text}
+                    maxLength={30}
+                    onChange={(e) => handleHeadlineChange(index, e.target.value)}
+                    className={headlineErrors[index] ? 'border-destructive' : ''}
+                    autoFocus
+                  />
+                  {headlineErrors[index] && (
+                    <p className="text-xs text-destructive">{headlineErrors[index]}</p>
+                  )}
+                  <div className="flex gap-2 mt-2">
+                    <Button size="sm" onClick={() => setEditingHeadlineIndex(null)} type="button">
+                      Save
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => setEditingHeadlineIndex(null)} type="button">
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <span className="text-sm">{headline.text || `Headline ${index + 1}`}</span>
+              )}
+            </TableCell>
+            <TableCell className="text-center">
+              <span className={`text-xs ${headline.text.length > 30 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                {headline.text.length}/30
+              </span>
+            </TableCell>
+            <TableCell className="text-center">
+              <div className="flex justify-center gap-1">
+                {editingHeadlineIndex !== index && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setEditingHeadlineIndex(index)}
+                    type="button"
+                    title="Edit"
+                    className="h-8 w-8 p-0"
+                  >
+                    <PencilIcon className="h-4 w-4" />
+                  </Button>
+                )}
+                {ad.headlines.length > 3 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDeleteHeadline(index)}
+                    type="button"
+                    title="Delete"
+                    className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                  >
+                    <Trash2Icon className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  </div>
+</div>
+```
+
+**Alternative Approaches:**
+
+1. **Grid layout:**
+   - Display headlines in a grid format
+   - More compact but less structured
+   - May be harder to scan
+
+2. **Card-based layout:**
+   - Each headline as a card
+   - More visual separation
+   - Less table-like but more modern
+
+3. **Compact table:**
+   - Smaller table with condensed rows
+   - More headlines visible at once
+   - May sacrifice readability
+
+**Performance Considerations:**
+- Table structure has minimal performance impact
+- Rendering many headlines may require virtualization for large datasets
+- Edit state management should be efficient
+
+**Related Files:**
+- `src/components/campaign-preview/AdCopyEditor.tsx` - RSA Ad headlines display (lines 143-178)
+- `src/components/campaign-preview/AdRow.tsx` - Ad row component that contains AdCopyEditor
+- `src/components/campaign-preview/KeywordRow.tsx` - Keyword row component (reference for table structure)
+
+**Testing Considerations:**
+- Test that headlines display in table format
+- Test that table matches keyword table styling
+- Test that editing still works in table format
+- Test that character counts display correctly
+- Test that add/delete functionality works
+- Test with many headlines (15+)
+- Test responsive design on mobile
+- Test visual consistency with keywords
+
+**Known Limitations:**
+- May need to handle very long headlines (wrapping)
+- May need responsive adjustments for mobile
+- May need to consider accessibility (table semantics)
+
+---
+
+### BUG-014: Keyword Deletion Deletes Incorrect Item in Campaign Preview
+
+**Priority:** 🟠 High  
+**Category:** Functionality, Data Integrity  
+**Status:** 🔴 Open  
+**Discovered:** January 2025  
+**Component:** Campaign Preview / Keyword Deletion  
+**Estimated Fix Time:** 1-2 hours
+
+**Description:**
+When attempting to delete a keyword from the preview list, the item at the +1 position (the next item in the list) is deleted instead of the selected keyword. This is a critical data integrity issue that can lead to accidental deletion of the wrong keyword, potentially causing data loss and user frustration.
+
+**Steps to Reproduce:**
+1. Navigate to Campaign Preview screen
+2. Expand an ad group to see keywords
+3. Identify a specific keyword to delete (e.g., keyword at index 2)
+4. Click the delete button (trash icon) on that keyword
+5. Confirm deletion in the dialog
+6. Expected: The selected keyword should be deleted
+7. Actual: The keyword at the next position (index +1) is deleted instead
+
+**Impact:**
+- **Critical Data Integrity Issue:** Wrong keyword is deleted, causing data loss
+- **User Frustration:** Users cannot reliably delete intended keywords
+- **Workflow Disruption:** Users must work around the bug or manually correct deletions
+- **Potential Data Loss:** Important keywords may be accidentally deleted
+
+**Current Implementation:**
+
+1. **KeywordRow Component (`KeywordRow.tsx`):**
+   - Line 79-83: `handleDelete` function
+   - Line 80: `keywordId = (keyword as any).id || keyword.text`
+   - Line 81: `deleteKeyword(keywordId, adGroupId)`
+   - Uses keyword text as ID if no ID exists
+
+2. **Store Implementation (`campaignPreviewStore.ts`):**
+   - Line 201-217: `deleteKeyword` function
+   - Line 208-210: Filters keywords by `kw.text !== keywordId && (kw as any).id !== keywordId`
+   - Uses text comparison for deletion
+
+3. **Keyword Mapping (`AdGroupRow.tsx`):**
+   - Line 132-138: Maps keywords with `key={`keyword-${adGroup.id}-${index}`}`
+   - Uses index for React key, but keywordId may not match
+
+**Root Cause:**
+The issue likely stems from a mismatch between the keyword identifier used for deletion and the actual keyword being targeted. Possible causes:
+
+1. **Index mismatch:** The `keywordIndex` prop is passed but not used in deletion logic
+2. **ID mismatch:** Keywords may not have unique IDs, causing deletion to target wrong item
+3. **Array filtering issue:** The filter logic may be removing the wrong item due to ID/text comparison
+4. **React key issue:** Using index for React keys may cause component mismatch
+
+**Solution Approach:**
+
+### Option 1: Use Index-Based Deletion (Recommended)
+
+**Implementation Strategy:**
+
+1. **Pass index to delete handler:**
+   - Use `keywordIndex` prop in deletion
+   - Delete by array index instead of ID/text comparison
+   - More reliable for array-based data
+
+2. **Update store to use index:**
+   - Modify `deleteKeyword` to accept index parameter
+   - Use `splice` or filter by index instead of ID
+   - Ensure correct item is removed
+
+3. **Ensure unique keys:**
+   - Use stable IDs for React keys if available
+   - Or use index with stable identifier
+   - Prevent React component mismatch
+
+**Recommended Implementation:**
+
+```tsx
+// In KeywordRow.tsx, modify handleDelete:
+
+const handleDelete = () => {
+  // Use index-based deletion instead of ID-based
+  deleteKeyword(adGroupId, keywordIndex);
+  setShowDeleteDialog(false);
+};
+
+// In campaignPreviewStore.ts, modify deleteKeyword:
+
+deleteKeyword: (adGroupId: string, keywordIndex: number) => {
+  const state = get();
+  if (!state.editedPreviewData) return;
+
+  const updatedData = { ...state.editedPreviewData };
+  const adGroupIndex = updatedData.adGroups.findIndex((ag) => ag.id === adGroupId);
+  if (adGroupIndex !== -1) {
+    // Use index-based deletion
+    const keywords = [...updatedData.adGroups[adGroupIndex].keywords];
+    if (keywordIndex >= 0 && keywordIndex < keywords.length) {
+      keywords.splice(keywordIndex, 1);
+      updatedData.adGroups[adGroupIndex].keywords = keywords;
+      updatedData.totalKeywords = updatedData.adGroups.reduce((sum, ag) => sum + ag.keywords.length, 0);
+      set({
+        editedPreviewData: updatedData,
+        hasUnsavedChanges: true,
+      });
+    }
+  }
+},
+```
+
+**Alternative Approaches:**
+
+1. **Generate unique IDs:**
+   - Assign unique IDs to all keywords
+   - Use IDs for deletion instead of index
+   - More robust but requires ID generation
+
+2. **Use keyword object reference:**
+   - Pass entire keyword object to delete
+   - Compare by object reference
+   - More reliable but requires object stability
+
+3. **Use stable identifier:**
+   - Create stable identifier from keyword text + index
+   - Use for both React keys and deletion
+   - Combines benefits of both approaches
+
+**Performance Considerations:**
+- Index-based deletion is O(1) for splice, O(n) for filter
+- ID-based deletion requires O(n) search
+- Minimal performance difference for typical keyword counts
+
+**Related Files:**
+- `src/components/campaign-preview/KeywordRow.tsx` - Keyword deletion handler (lines 79-83)
+- `src/store/campaignPreviewStore.ts` - Delete keyword store function (lines 201-217)
+- `src/components/campaign-preview/AdGroupRow.tsx` - Keyword mapping (lines 132-138)
+
+**Testing Considerations:**
+- Test deleting first keyword in list
+- Test deleting last keyword in list
+- Test deleting middle keyword
+- Test deleting keyword with duplicate text
+- Test deleting after adding new keyword
+- Test deleting after editing keyword
+- Test with multiple ad groups
+- Test with many keywords (20+)
+- Verify correct keyword is deleted
+- Verify other keywords remain intact
+
+**Known Limitations:**
+- Index-based deletion may break if keywords are reordered
+- May need to handle concurrent deletions
+- May need to handle keyword addition during deletion
+
+---
+
+### BUG-015: Validation Errors Not Linked to Elements on Page in Campaign Preview
+
+**Priority:** 🟡 Medium  
+**Category:** UI/UX, Functionality  
+**Status:** 🔴 Open  
+**Discovered:** January 2025  
+**Component:** Campaign Preview / Validation Summary  
+**Estimated Fix Time:** 1-2 hours
+
+**Description:**
+When validation errors are found during campaign validation, they are displayed in the validation summary section at the top of the Campaign Preview screen. However, there is no indication of where on the page those errors actually are located. Users cannot navigate to or find the specific elements (ad groups, keywords, ads, headlines, descriptions) that have validation errors, making it difficult to fix the errors. The validation errors include `rowId` information that identifies the specific element, but this information is not used to link errors to their locations on the page.
+
+**Steps to Reproduce:**
+1. Navigate to Campaign Preview screen
+2. Create or edit campaign data to introduce validation errors (e.g., empty headline, invalid URL, missing description)
+3. Observe validation summary at top of screen showing errors
+4. Expected: Errors should be clickable or linked to their locations on the page, allowing users to navigate to and fix them
+5. Actual: Errors are displayed in a list format with field and message, but no way to navigate to the actual elements on the page
+
+**Impact:**
+- **Poor User Experience:** Users cannot easily find and fix validation errors
+- **Workflow Disruption:** Users must manually search through the preview table to find error locations
+- **Time Wasted:** Significant time spent locating errors instead of fixing them
+- **Frustrating Interaction:** Common pattern in modern web applications is to link errors to their locations
+
+**Current Implementation:**
+
+1. **Validation Summary Display (`CampaignPreviewScreen.tsx`):**
+   - Lines 214-260: Validation summary displays errors in a list format
+   - Line 248-252: Errors are displayed with field and message
+   - No clickable links or navigation to error locations
+   - No visual indication of error locations in the preview table
+
+2. **Validation Error Structure (`validationService.ts`):**
+   - Lines 127-238: Validation errors include `rowId` field
+   - `rowId` identifies specific elements (e.g., `adGroup.id`, `keyword-${adGroup.id}-${index}`, `ad-${adGroup.id}-${adIndex}-headline-${hIndex}`)
+   - `rowId` information is available but not used for navigation
+
+3. **Preview Table Components:**
+   - No error highlighting or visual indicators for elements with errors
+   - No data attributes or IDs matching validation error `rowId` values
+   - No scroll-to or focus functionality for error locations
+
+**Root Cause:**
+The validation errors contain `rowId` information that identifies the specific elements, but this information is not used to:
+1. Link errors to their locations in the preview table
+2. Highlight or indicate error locations visually
+3. Provide navigation (scroll-to or focus) to error locations
+4. Match error `rowId` values with element IDs or data attributes
+
+**Solution Approach:**
+
+### Option 1: Clickable Error Links with Scroll-to (Recommended)
+
+**Implementation Strategy:**
+
+1. **Add data attributes to table elements:**
+   - Add `data-row-id` attributes to ad group rows, keyword rows, ad rows
+   - Match `rowId` values from validation errors
+   - Enable element identification and navigation
+
+2. **Make errors clickable:**
+   - Convert error list items to clickable links or buttons
+   - Add onClick handler to scroll to and highlight error location
+   - Provide visual feedback when error is clicked
+
+3. **Implement scroll-to functionality:**
+   - Use `scrollIntoView()` to navigate to error location
+   - Expand collapsed ad groups if needed
+   - Highlight error element temporarily (e.g., border, background color)
+
+4. **Visual error indicators:**
+   - Add error badges or icons to elements with errors
+   - Use error styling (red border, background) for error elements
+   - Show error count or indicator in ad group/row headers
+
+**Recommended Implementation:**
+
+```tsx
+// In CampaignPreviewScreen.tsx, modify error display:
+
+{validationResult.errors.slice(0, 10).map((error, index) => (
+  <li key={index} className="text-sm">
+    <button
+      onClick={() => {
+        // Find element by rowId
+        const element = document.querySelector(`[data-row-id="${error.rowId}"]`);
+        if (element) {
+          // Expand ad group if collapsed
+          const adGroupRow = element.closest('[data-ad-group-id]');
+          if (adGroupRow) {
+            const toggleButton = adGroupRow.querySelector('[data-toggle]');
+            if (toggleButton && !adGroupRow.classList.contains('expanded')) {
+              toggleButton.click();
+            }
+          }
+          // Scroll to element
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          // Highlight element temporarily
+          element.classList.add('error-highlight');
+          setTimeout(() => {
+            element.classList.remove('error-highlight');
+          }, 3000);
+        }
+      }}
+      className="text-left hover:text-primary hover:underline cursor-pointer"
+      type="button"
+    >
+      <strong>{error.field}</strong>: {error.message}
+    </button>
+  </li>
+))}
+
+// In AdGroupRow.tsx, add data attribute:
+<TableRow 
+  className="bg-muted/50 hover:bg-muted/70"
+  data-row-id={adGroup.id}
+  data-ad-group-id={adGroup.id}
+>
+
+// In KeywordRow.tsx, add data attribute:
+<TableRow 
+  className="hover:bg-muted/50"
+  data-row-id={`keyword-${adGroupId}-${keywordIndex}`}
+>
+
+// In AdRow.tsx, add data attribute:
+<TableRow 
+  className="hover:bg-muted/50"
+  data-row-id={`ad-${adGroupId}-${adIndex}`}
+>
+
+// In AdCopyEditor.tsx, add data attributes to headlines/descriptions:
+<div 
+  className="headline-item"
+  data-row-id={`ad-${adGroupId}-${adIndex}-headline-${index}`}
+>
+```
+
+**Alternative Approaches:**
+
+1. **Error badges on elements:**
+   - Add error badges/icons directly on elements with errors
+   - Show error count or indicator
+   - Click badge to show error details
+
+2. **Sidebar error list:**
+   - Create sidebar with error list
+   - Click error to navigate to location
+   - Keep error list visible while scrolling
+
+3. **Error highlighting:**
+   - Automatically highlight all error elements
+   - Use visual indicators (red border, background)
+   - Show error tooltips on hover
+
+**Performance Considerations:**
+- Scroll-to functionality has minimal performance impact
+- Element highlighting may require CSS transitions
+- Data attributes have no performance overhead
+- May need to handle many errors efficiently
+
+**Related Files:**
+- `src/components/campaign-preview/CampaignPreviewScreen.tsx` - Validation summary display (lines 214-260)
+- `src/components/campaign-preview/CampaignPreviewTable.tsx` - Preview table component
+- `src/components/campaign-preview/AdGroupRow.tsx` - Ad group row component
+- `src/components/campaign-preview/KeywordRow.tsx` - Keyword row component
+- `src/components/campaign-preview/AdRow.tsx` - Ad row component
+- `src/components/campaign-preview/AdCopyEditor.tsx` - Ad copy editor component
+- `src/services/validationService.ts` - Validation service (lines 123-238)
+
+**Testing Considerations:**
+- Test clicking error links navigates to correct location
+- Test scroll-to functionality works for all error types
+- Test expanding collapsed ad groups when navigating to errors
+- Test error highlighting appears and disappears
+- Test with many errors (10+)
+- Test with errors in different ad groups
+- Test with errors in collapsed ad groups
+- Test with errors in expanded ad groups
+- Test navigation to headline errors
+- Test navigation to description errors
+- Test navigation to keyword errors
+- Test navigation to ad group errors
+- Test responsive design on mobile
+
+**Known Limitations:**
+- May need to handle errors in collapsed sections
+- May need to handle errors that are off-screen
+- May need to handle multiple errors in same element
+- May need to handle errors in nested elements (headlines, descriptions)
+
+---
+
+### BUG-016: Ad Group Name Display Not Updated After Inline Edit
+
+**Priority:** 🟡 Medium  
+**Category:** UI/UX, Functionality  
+**Status:** 🔴 Open  
+**Discovered:** January 2025  
+**Component:** Campaign Preview / Ad Group Row  
+**Estimated Fix Time:** 30-60 minutes
+
+**Description:**
+When editing an ad group name using inline editing in the Campaign Preview screen, the changes are saved to the store (as evidenced by the edited value appearing in the editor when reopened), but the displayed ad group name in the table does not update to reflect the changes. The component continues to display the original name from the prop instead of reading from the edited data in the store.
+
+**Steps to Reproduce:**
+1. Navigate to Campaign Preview screen
+2. Click on an ad group name to enter inline edit mode
+3. Edit the ad group name (e.g., change "Yamaha SR400" to "Yamaha SR400 - Updated")
+4. Save the changes (click Save button or press Enter)
+5. Observe that the displayed ad group name remains the same (original name)
+6. Click on the ad group name again to enter edit mode
+7. Observe that the edited value is shown in the input field (confirming it was saved)
+8. Exit edit mode again
+9. Observe that the displayed name still shows the original value
+
+**Impact:**
+- **Poor User Experience:** Users cannot see their changes reflected in the UI
+- **Confusion:** Users may think their edits didn't save, even though they did
+- **Data Integrity Concerns:** Users may re-edit thinking the first edit failed
+- **Workflow Disruption:** Users must rely on export to verify their changes were saved
+
+**Current Implementation:**
+
+1. **AdGroupRow Component (`AdGroupRow.tsx`):**
+   - Line 26: `const [editValue, setEditValue] = useState(adGroup.name);` - Initializes with prop value
+   - Line 110: `{adGroup.name}` - Displays prop value directly, not from store
+   - Line 43-45: `updateAdGroup(adGroupId, updates)` - Updates store correctly
+   - Component doesn't read from `editedPreviewData` in store
+
+2. **Campaign Preview Store (`campaignPreviewStore.ts`):**
+   - Lines 71-90: `updateAdGroup` function updates `editedPreviewData` correctly
+   - Store maintains edited data separately from original preview data
+   - Store updates are working correctly
+
+3. **Campaign Preview Table (`CampaignPreviewTable.tsx`):**
+   - Line 30: `const { editedPreviewData } = useCampaignPreviewStore();`
+   - Line 33: `const displayData = editedPreviewData || previewData;` - Uses edited data if available
+   - Line 47: `let filtered = displayData.adGroups;` - Uses displayData for filtering/sorting
+   - Table component correctly uses edited data, but AdGroupRow receives prop from table
+
+**Root Cause:**
+The `AdGroupRow` component receives `adGroup` as a prop from `CampaignPreviewTable`, which correctly uses `editedPreviewData` from the store. However, the `AdGroupRow` component:
+1. Initializes local state with prop value on mount
+2. Displays prop value directly instead of reading from store
+3. Doesn't update when store changes (no useEffect to sync with store)
+4. Doesn't use `editedPreviewData` from store directly
+
+The component needs to either:
+- Read from store directly instead of using prop
+- Sync local state with store changes using useEffect
+- Use the edited data from the store when available
+
+**Solution Approach:**
+
+**Recommended Fix: Read from Store in Component**
+
+Modify `AdGroupRow.tsx` to read the current ad group data from the store instead of relying solely on the prop:
+
+```typescript
+// In AdGroupRow.tsx
+const AdGroupRow: React.FC<AdGroupRowProps> = ({ adGroup, isExpanded, onToggle }) => {
+  const { editedPreviewData } = useCampaignPreviewStore();
+  
+  // Get current ad group data from store if available, otherwise use prop
+  const currentAdGroup = useMemo(() => {
+    if (editedPreviewData) {
+      const storeAdGroup = editedPreviewData.adGroups.find(ag => ag.id === adGroup.id);
+      if (storeAdGroup) {
+        return storeAdGroup;
+      }
+    }
+    return adGroup;
+  }, [editedPreviewData, adGroup]);
+  
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState(currentAdGroup.name);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Sync editValue when currentAdGroup.name changes
+  useEffect(() => {
+    setEditValue(currentAdGroup.name);
+  }, [currentAdGroup.name]);
+  
+  // ... rest of component
+  
+  // Update display to use currentAdGroup.name instead of adGroup.name
+  <button
+    className="text-left hover:text-primary transition-colors font-medium"
+    onClick={() => setIsEditing(true)}
+    type="button"
+  >
+    {currentAdGroup.name}
+  </button>
+```
+
+**Alternative Approach: Update Prop from Parent**
+
+Ensure `CampaignPreviewTable` passes the edited ad group data to `AdGroupRow`:
+
+```typescript
+// In CampaignPreviewTable.tsx
+{filteredAndSortedAdGroups.map((adGroup) => (
+  <AdGroupRow
+    key={adGroup.id}
+    adGroup={adGroup} // This should already be from displayData (editedPreviewData || previewData)
+    isExpanded={expandedAdGroups.has(adGroup.id)}
+    onToggle={() => toggleAdGroup(adGroup.id)}
+  />
+))}
+```
+
+The issue is that `AdGroupRow` may be receiving stale prop data or not re-rendering when store updates.
+
+**Performance Considerations:**
+- Reading from store on each render has minimal performance impact
+- useMemo prevents unnecessary recalculations
+- useEffect only runs when name changes
+
+**Related Files:**
+- `src/components/campaign-preview/AdGroupRow.tsx` - Ad group row component (lines 24-153)
+- `src/components/campaign-preview/CampaignPreviewTable.tsx` - Preview table component (lines 24-214)
+- `src/store/campaignPreviewStore.ts` - Campaign preview store (lines 71-90)
+
+**Testing Considerations:**
+- Test ad group name edit and display update
+- Test multiple ad group name edits
+- Test edit, cancel, then edit again
+- Test edit, save, then edit again
+- Test with multiple ad groups
+- Test with expanded/collapsed ad groups
+- Verify edited name appears in export CSV
+
+**Known Limitations:**
+- May need to handle edge cases where store data is null
+- May need to handle rapid successive edits
+- May need to handle cancel after edit
+
+---
+
+### BUG-017: Export Validation Fails with Empty Errors Array
+
+**Priority:** 🟠 High  
+**Category:** Export, Validation  
+**Status:** 🔴 Open  
+**Discovered:** January 2025  
+**Component:** Campaign Preview / Export Button  
+**Estimated Fix Time:** 30-60 minutes
+
+**Description:**
+When attempting to export a campaign to Google Ads Editor CSV format, the export validation fails with a toast message "Export validation failed:" but no specific errors are shown. The browser console shows "Frontend validation failed: []" with an empty errors array. The validation fails even when the campaign data is valid and ready for export.
+
+**Steps to Reproduce:**
+1. Upload CSV with products and generate campaigns
+2. Navigate to Campaign Preview screen
+3. Verify campaign data is valid (no validation errors shown)
+4. Click "Export to Google Ads Editor" button
+5. Observe toast message "Export validation failed:" with no specific errors
+6. Check browser console - shows "Frontend validation failed: []" (empty errors array)
+7. Export is blocked even though data is valid
+
+**Impact:**
+- **Export Functionality Broken:** Users cannot export valid campaigns
+- **Poor User Experience:** No specific error messages to help diagnose the issue
+- **Workflow Blocking:** Critical feature (export) is completely non-functional
+- **Confusing Error State:** Empty errors array suggests validation logic bug
+
+**Current Implementation:**
+
+1. **ExportButton Component (`ExportButton.tsx`):**
+   - Line 31: Calls `validateCampaign()` from the store
+   - Line 24: Uses `dataToExport = editedPreviewData || previewData` (has the data)
+   - Line 31: But validates using store's `validateCampaign()` which checks store state
+
+2. **Campaign Preview Store (`campaignPreviewStore.ts`):**
+   - Lines 319-336: `validateCampaign()` function checks `state.editedPreviewData`
+   - Line 321: If `editedPreviewData` is null, returns `isValid: false` with empty errors array
+   - Doesn't check `previewData` as fallback
+   - Doesn't accept data as parameter - only checks store's internal state
+
+3. **Root Cause:**
+   - ExportButton receives `previewData` as a prop and has `dataToExport` ready
+   - But calls `validateCampaign()` from store, which checks store's state
+   - Store's `editedPreviewData` and `previewData` may be null (not set in store)
+   - Store validation returns `isValid: false` with empty errors when store data is null
+   - Even though ExportButton has valid data to export
+
+**Root Cause:**
+The `ExportButton` component calls `validateCampaign()` from the store, which validates the store's internal state (`editedPreviewData` or `previewData`). However, the store may not have the preview data set (both are null), even though the `ExportButton` receives the data as a prop (`previewData`) and has `dataToExport` ready. The store's validation function doesn't accept data as a parameter and only checks its internal state, causing it to return `isValid: false` with an empty errors array when the store data is null.
+
+**Solution Approach:**
+
+**Recommended Fix: Validate Data Directly in ExportButton**
+
+Update `ExportButton.tsx` to validate the actual data being exported instead of relying on the store's validation:
+
+```typescript
+// In ExportButton.tsx
+import { validateCampaignPreview } from '../../services/validationService';
+
+const handleExport = async () => {
+  try {
+    setIsValidating(true);
+
+    // Validate the actual data being exported (not store state)
+    const validation = validateCampaignPreview(
+      dataToExport,
+      dataToExport.adGroups
+    );
+    
+    if (!validation.isValid) {
+      toastService.error(
+        `Export validation failed:\n${validation.errors.slice(0, 5).map((e: any) => e.message || e).join('\n')}${validation.errors.length > 5 ? `\n... and ${validation.errors.length - 5} more errors` : ''}`
+      );
+      return;
+    }
+
+    // Also validate via API (double-check)
+    const apiValidation = await validateExport(dataToExport);
+    // ... rest of export logic
+  } catch (err) {
+    // ... error handling
+  } finally {
+    setIsValidating(false);
+  }
+};
+```
+
+**Key Changes:**
+1. Import `validateCampaignPreview` from validation service
+2. Call `validateCampaignPreview(dataToExport, dataToExport.adGroups)` directly
+3. Validate the actual `dataToExport` instead of store's state
+4. Remove dependency on store's `validateCampaign()` for export validation
+
+**Alternative Approach: Update Store Validation**
+
+Update `validateCampaign()` in the store to accept data as parameter or use fallback:
+
+```typescript
+// In campaignPreviewStore.ts
+validateCampaign: (data?: CampaignPreviewData) => {
+  const state = get();
+  const dataToValidate = data || state.editedPreviewData || state.previewData;
+  
+  if (!dataToValidate) {
+    return {
+      isValid: false,
+      errors: [{ message: 'No campaign data available to validate' }],
+      warnings: [],
+    };
+  }
+
+  const validationResult = validateCampaignPreview(
+    dataToValidate,
+    dataToValidate.adGroups
+  );
+
+  set({ validationResult });
+  return validationResult;
+},
+```
+
+Then ExportButton can call: `validateCampaign(dataToExport)`
+
+**Performance Considerations:**
+- Direct validation has no performance impact
+- Removes unnecessary dependency on store state
+- More explicit and easier to debug
+
+**Related Files:**
+- `src/components/campaign-preview/ExportButton.tsx` - Export button component (lines 18-94)
+- `src/store/campaignPreviewStore.ts` - Campaign preview store (lines 319-336)
+- `src/services/validationService.ts` - Validation service (lines 123-238)
+
+**Testing Considerations:**
+- Test export with valid campaign data
+- Test export with invalid campaign data (should show specific errors)
+- Test export when store has no preview data set
+- Test export when store has edited preview data
+- Test export when store has original preview data
+- Verify error messages are specific and helpful
+- Verify export works after fix
+
+**Known Limitations:**
+- Store validation may still be used elsewhere (should be updated separately)
+- May need to update other components that rely on store validation
+
+---
+
+### BUG-018: CSV Upload Errors Not Displayed in UI
+
+**Priority:** 🟠 High  
+**Category:** CSV Processing, UI/UX  
+**Status:** 🔴 Open  
+**Discovered:** January 2025  
+**Component:** CSV Upload Screen  
+**Estimated Fix Time:** 30-60 minutes
+
+**Description:**
+When CSV upload fails (empty CSV, wrong file type, etc.), error messages are set in state but not displayed in the UI. The `CSVUploadScreen` component has a warnings display section but no errors display section. Errors are only passed to `ProductPreview` component, which means if there are no products (like with empty CSV or wrong file type), users see no error messages at all.
+
+**Steps to Reproduce:**
+1. Navigate to CSV upload screen
+2. Upload an empty CSV file (`test-empty-csv.csv`)
+3. Observe that file is rejected but no error messages are shown
+4. Upload a non-CSV file (e.g., `test-wrong-format.txt`)
+5. Observe that file is rejected but no error messages are shown
+
+**Expected Behavior**: Error messages should be displayed in a visible Alert component when CSV upload fails  
+**Actual Behavior**: Errors are set in state but not displayed in the UI, leaving users with no feedback
+
+**Impact:**
+- **Poor User Experience:** Users don't know why their upload failed
+- **Confusion:** Users may think the system is broken or unresponsive
+- **Workflow Disruption:** Users cannot understand what went wrong or how to fix it
+- **Critical Feature:** Error feedback is essential for CSV upload functionality
+
+**Current Implementation:**
+
+1. **CSVUploadScreen Component (`CSVUploadScreen.tsx`):**
+   - Line 26: `const [errors, setErrors] = useState<ProductValidationError[]>([]);` - Errors stored in state
+   - Line 40-43: `handleError` function sets errors in state
+   - Line 140-153: Warnings display section exists
+   - **Missing:** No errors display section in the UI
+   - Line 156-165: Errors only passed to `ProductPreview` component (which only renders if `products.length > 0`)
+
+2. **CSVUploadComponent (`CSVUploadComponent.tsx`):**
+   - Line 34-37: File type validation calls `onError('Please upload a CSV file')`
+   - Line 40-44: File size validation calls `onError('File size must be less than 5MB')`
+   - Errors are passed to parent via `onError` callback
+
+3. **Backend Parsing Service (`productParsingService.ts`):**
+   - Line 231-237: Error callback sets errors in result
+   - Errors are returned in `ProductParsingResult.errors` array
+
+**Root Cause:**
+The `CSVUploadScreen` component stores errors in state but doesn't display them in the UI. There's a warnings display section (lines 140-153) but no corresponding errors display section. Errors are only passed to `ProductPreview` component, which only renders when `products.length > 0`. When uploads fail completely (empty CSV, wrong file type), there are no products, so errors are never displayed.
+
+**Solution Approach:**
+
+**Recommended Fix: Add Errors Display Section**
+
+Add an errors display section similar to the warnings section in `CSVUploadScreen.tsx`:
+
+```typescript
+// In CSVUploadScreen.tsx, after line 138 (after Tabs closing tag)
+
+{/* Errors */}
+{errors.length > 0 && (
+  <Alert variant="destructive">
+    <AlertCircleIcon className="h-4 w-4" />
+    <AlertTitle>Errors</AlertTitle>
+    <AlertDescription>
+      <ul className="mt-2 list-disc pl-4 space-y-1">
+        {errors.map((error, index) => (
+          <li key={index}>
+            {error.row ? `Row ${error.row}: ` : ''}
+            {error.message}
+          </li>
+        ))}
+      </ul>
+    </AlertDescription>
+  </Alert>
+)}
+
+{/* Warnings */}
+{warnings.length > 0 && (
+  // ... existing warnings section
+)}
+```
+
+**Key Changes:**
+1. Add errors display section before warnings section
+2. Use `Alert variant="destructive"` for error styling
+3. Import `AlertCircleIcon` from lucide-react
+4. Display error messages with row numbers if available
+5. Show errors even when `products.length === 0`
+
+**Alternative Approach: Use Toast Notifications**
+
+Use toast notifications for immediate error feedback:
+
+```typescript
+import { toastService } from '../../utils/toastService';
+
+const handleError = (error: string) => {
+  setErrors([{ field: 'general', message: error }]);
+  setProducts([]);
+  toastService.error(error); // Add toast notification
+};
+```
+
+**Performance Considerations:**
+- Adding error display has no performance impact
+- Error display should be visible and prominent
+- Consider both inline errors and toast notifications for better UX
+
+**Related Files:**
+- `src/components/csv-upload/CSVUploadScreen.tsx` - CSV upload screen component (lines 22-203)
+- `src/components/csv-upload/CSVUploadComponent.tsx` - CSV upload component (lines 28-62)
+- `src/components/ui/alert.tsx` - Alert component for error display
+
+**Testing Considerations:**
+- Test empty CSV upload shows error message
+- Test wrong file type upload shows error message
+- Test file size limit shows error message
+- Test malformed CSV shows error messages
+- Test multiple errors are displayed correctly
+- Test errors are cleared when new upload succeeds
+- Test error display is visible and prominent
+
+**Known Limitations:**
+- May need to handle different error types (file type, size, parsing, validation)
+- May need to format error messages for better readability
+- May need to add error icons or visual indicators
+
+---
+
+### BUG-019: Empty CSV Files Not Detected and Rejected with Error Messages
+
+**Priority:** 🟡 Medium  
+**Category:** CSV Processing, Validation  
+**Status:** 🔴 Open  
+**Discovered:** January 2025  
+**Component:** CSV Upload / Backend Parsing Service  
+**Estimated Fix Time:** 30-45 minutes
+
+**Description:**
+When an empty CSV file is uploaded, the backend parsing service successfully parses it (returns empty data) but doesn't detect that the file is empty and return an appropriate error. The file is rejected (no products added) but no error message is shown to the user, leaving them confused about why the upload failed.
+
+**Steps to Reproduce:**
+1. Navigate to CSV upload screen
+2. Upload an empty CSV file (`test-empty-csv.csv`)
+3. Observe that file is rejected (no products added)
+4. Observe that no error messages are shown
+5. Check browser console - no errors logged
+
+**Expected Behavior**: Empty CSV files should be detected and rejected with a clear error message like "CSV file is empty. Please upload a CSV file with at least one product."  
+**Actual Behavior**: Empty CSV files are parsed successfully but return no products, with no error messages displayed
+
+**Impact:**
+- **Poor User Experience:** Users don't know why empty CSV uploads fail
+- **Confusion:** Users may think the system is broken or unresponsive
+- **Workflow Disruption:** Users cannot understand what went wrong
+
+**Current Implementation:**
+
+1. **Backend Parsing Service (`productParsingService.ts`):**
+   - Line 161-239: `parseCSV` function parses CSV content
+   - Line 171-174: PapaParse configured with `skipEmptyLines: true`
+   - Line 175-229: `complete` callback processes parsed results
+   - Line 210-219: Processes each row, but if `parsedResults.data` is empty, no rows are processed
+   - **Missing:** No check for empty CSV file (no data rows)
+
+2. **CSVUploadScreen (`CSVUploadScreen.tsx`):**
+   - Line 30-38: `handleParseComplete` receives result
+   - Line 35: Only sets `isValid` if `result.products.length > 0 && result.errors.length === 0`
+   - If products array is empty and errors array is empty, no feedback is shown
+
+**Root Cause:**
+The backend parsing service doesn't check if the CSV file is empty (contains no data rows). PapaParse successfully parses an empty CSV file and returns an empty data array, which is then processed normally. Since there are no rows to process, no products are added and no errors are generated, resulting in a successful but empty result.
+
+**Solution Approach:**
+
+**Recommended Fix: Add Empty CSV Detection**
+
+Add empty CSV detection in the backend parsing service:
+
+```typescript
+// In productParsingService.ts, in parseCSV function, after line 198
+
+// Check for empty CSV (no data rows)
+if (parsedResults.data.length === 0) {
+  result.errors.push({
+    field: 'csv',
+    message: 'CSV file is empty. Please upload a CSV file with at least one product row.',
+  });
+  resolve(result);
+  return;
+}
+```
+
+**Key Changes:**
+1. Check if `parsedResults.data.length === 0` after column validation
+2. Add error message indicating CSV is empty
+3. Return early with error (don't process rows)
+4. Error will be displayed in UI (after BUG-018 fix)
+
+**Alternative Approach: Frontend Detection**
+
+Check for empty CSV in frontend before sending to backend:
+
+```typescript
+// In CSVUploadComponent.tsx, in onDrop callback
+const reader = new FileReader();
+reader.onload = (e) => {
+  const text = e.target?.result as string;
+  if (!text || text.trim().length === 0) {
+    onError('CSV file is empty. Please upload a CSV file with at least one product.');
+    return;
+  }
+  // Continue with parsing
+};
+reader.readAsText(file);
+```
+
+**Performance Considerations:**
+- Empty CSV detection has minimal performance impact
+- Should be done early in the parsing process
+- Consider both backend and frontend validation
+
+**Related Files:**
+- `backend/src/services/productParsingService.ts` - CSV parsing service (lines 161-239)
+- `src/components/csv-upload/CSVUploadComponent.tsx` - CSV upload component (lines 28-62)
+- `src/components/csv-upload/CSVUploadScreen.tsx` - CSV upload screen (lines 30-38)
+
+**Testing Considerations:**
+- Test empty CSV file detection
+- Test CSV with only headers (no data rows)
+- Test CSV with only whitespace
+- Test error message is clear and helpful
+- Test error is displayed in UI (after BUG-018 fix)
+
+**Known Limitations:**
+- May need to handle edge cases (CSV with only headers, whitespace-only rows)
+- May need to distinguish between empty file and file with no valid rows
+
+---
+
+### BUG-020: Missing Optional Columns Not Validated or Warned About
+
+**Priority:** 🟡 Medium  
+**Category:** CSV Processing, Validation  
+**Status:** 🔴 Open  
+**Discovered:** January 2025  
+**Component:** CSV Upload / Backend Parsing Service  
+**Estimated Fix Time:** 45-60 minutes
+
+**Description:**
+When a CSV file is uploaded with missing optional columns (Category, Description), the system processes the products without any warnings or validation errors. While these columns are technically optional, users may expect warnings when columns are missing, especially if they're listed as "optional" in the UI. Products are added successfully even though they lack important data fields.
+
+**Steps to Reproduce:**
+1. Navigate to CSV upload screen
+2. Upload a CSV file with missing optional columns (`test-missing-columns-csv.csv` - has Product Name, URL, Price but missing Category and Description)
+3. Observe that products are added successfully
+4. Observe that no warnings or errors are shown about missing columns
+5. Products are added despite missing Category and Description fields
+
+**Expected Behavior**: 
+- Option A: Missing optional columns should generate warnings (not errors) informing users that optional data is missing
+- Option B: System should validate that at least some optional columns are present
+- Option C: System should work as-is but clearly document that columns are optional
+
+**Actual Behavior**: Missing optional columns are silently ignored, products are added without warnings, and users may not realize important data fields are missing
+
+**Impact:**
+- **Data Quality:** Products may be added with incomplete data
+- **User Confusion:** Users may not realize optional columns are missing
+- **Workflow Issues:** Users may expect warnings for missing data
+- **Inconsistent UX:** UI shows "optional columns" but doesn't warn when they're missing
+
+**Current Implementation:**
+
+1. **Backend Parsing Service (`productParsingService.ts`):**
+   - Line 186-198: Checks for required columns (Name and URL)
+   - Line 200-207: Builds column mapping for available columns
+   - Line 204: Only maps columns that exist: `['name', 'url', 'category', 'price', 'description']`
+   - Line 210-219: Processes rows, missing columns result in undefined values
+   - **Missing:** No validation or warnings for missing optional columns
+
+2. **CSVUploadComponent (`CSVUploadComponent.tsx`):**
+   - Line 112-119: UI shows "Required columns" and "Optional columns"
+   - Line 114: Shows "Product Name, URL" as required
+   - Line 118: Shows "Category, Price, Description" as optional
+   - **Missing:** No indication that missing optional columns will be silently ignored
+
+3. **Product Mapping (`productParsingService.ts`):**
+   - Line 121-156: `mapCSVRowToProduct` function maps CSV rows to products
+   - Missing columns result in undefined values in product object
+   - No warnings generated for missing optional columns
+
+**Root Cause:**
+The system correctly treats Category, Price, and Description as optional columns (only Name and URL are required). However, when optional columns are missing, no warnings are generated to inform users. The UI indicates these are "optional columns" but doesn't warn users when they're missing, which may lead to confusion or incomplete data.
+
+**Solution Approach:**
+
+**Recommended Fix: Add Warnings for Missing Optional Columns**
+
+Add validation to detect missing optional columns and generate warnings:
+
+```typescript
+// In productParsingService.ts, in parseCSV function, after line 207
+
+// Check for missing optional columns and generate warnings
+const hasCategory = headers.some((h) => normalizeColumnName(h) === 'category');
+const hasPrice = headers.some((h) => normalizeColumnName(h) === 'price');
+const hasDescription = headers.some((h) => normalizeColumnName(h) === 'description');
+
+const missingColumns: string[] = [];
+if (!hasCategory) missingColumns.push('Category');
+if (!hasPrice) missingColumns.push('Price');
+if (!hasDescription) missingColumns.push('Description');
+
+if (missingColumns.length > 0) {
+  result.warnings.push(
+    `The following optional columns are missing: ${missingColumns.join(', ')}. Products will be added without this data.`
+  );
+}
+```
+
+**Key Changes:**
+1. Check for presence of optional columns (Category, Price, Description)
+2. Generate warnings (not errors) for missing optional columns
+3. Inform users that products will be added without this data
+4. Warnings will be displayed in UI (warnings section already exists)
+
+**Alternative Approach: Make Some Columns Required**
+
+If Category and Description are important, consider making them required:
+
+```typescript
+// In productParsingService.ts, update required columns check
+if (!hasName || !hasURL || !hasCategory) {
+  result.errors.push({
+    field: 'csv',
+    message: 'CSV must contain "Product Name" (or "Name"), "URL", and "Category" columns',
+  });
+  resolve(result);
+  return;
+}
+```
+
+**Performance Considerations:**
+- Column checking has minimal performance impact
+- Warnings should be informative but not overwhelming
+- Consider user preference for warning verbosity
+
+**Related Files:**
+- `backend/src/services/productParsingService.ts` - CSV parsing service (lines 186-207)
+- `src/components/csv-upload/CSVUploadComponent.tsx` - CSV upload component (lines 112-119)
+- `src/components/csv-upload/CSVUploadScreen.tsx` - CSV upload screen (lines 140-153)
+
+**Testing Considerations:**
+- Test CSV with all optional columns missing
+- Test CSV with some optional columns missing
+- Test CSV with all optional columns present
+- Test warnings are displayed correctly
+- Test warnings don't block product addition
+- Test warnings are clear and helpful
+
+**Known Limitations:**
+- May need to handle different column name variations
+- May need user preference for warning verbosity
+- May need to distinguish between truly optional and recommended columns
+
+---
+
 ### Bug Template (For Future Use)
 
 ```markdown
@@ -2548,6 +4025,37 @@ exportToCSV(
 - Estimated fix time: 30-60 minutes
 - Solution: Handle both string and Date object types for date values in exportToCSV function
 
+**BUG-012: Inline Editing Behavior Issues in Campaign Preview**
+- Inline editing saves automatically on blur instead of requiring explicit "Save" button
+- Inline editing is enabled by clicking text directly instead of "Edit" button
+- Match type dropdown closes inline edit state when clicked
+- Affects user workflow and data integrity
+- Estimated fix time: 1-2 hours
+- Solution: Add explicit Save/Cancel buttons, require Edit button activation, fix dropdown interaction
+
+**BUG-013: RSA Ad Headlines Display Not Optimized in Campaign Preview**
+- RSA Ad headlines displayed as vertical list instead of organized table format
+- Less structured and visually organized compared to keyword display
+- Makes it harder to quickly review and compare multiple headlines
+- Affects visual consistency and usability
+- Estimated fix time: 1-2 hours
+- Solution: Refactor headlines display to use table structure similar to keywords
+
+**BUG-014: Keyword Deletion Deletes Incorrect Item in Campaign Preview**
+- Deleting a keyword removes the item at +1 position instead of selected keyword
+- Critical data integrity issue causing wrong keyword deletion
+- Affects data integrity and user trust
+- Estimated fix time: 1-2 hours
+- Solution: Use index-based deletion instead of ID/text comparison in deleteKeyword function
+
+**BUG-015: Validation Errors Not Linked to Elements on Page in Campaign Preview**
+- Validation errors are displayed in summary but not linked to actual elements on page
+- Users cannot navigate to or find where errors are located
+- Makes it difficult to fix validation errors
+- Affects user workflow and error resolution
+- Estimated fix time: 1-2 hours
+- Solution: Add clickable links or scroll-to functionality to navigate to error locations
+
 ### 🟢 Low Priority (Polish)
 
 *No low priority bugs discovered yet*
@@ -2568,12 +4076,12 @@ exportToCSV(
 
 *No TypeScript issues discovered yet*
 
-**Total Bugs:** 11  
+**Total Bugs:** 15  
 **Fixed:** 0 ✅  
 **Deferred:** 0 ⏸️  
-**Open:** 11  
+**Open:** 15  
 **Known Limitations:** 0 📋  
-**MVP Status:** ✅ **PRODUCTION READY** - 11 bugs identified (2 high priority, 9 medium)
+**MVP Status:** ✅ **PRODUCTION READY** - 15 bugs identified (3 high priority, 12 medium)
 
 ---
 
@@ -2748,6 +4256,112 @@ exportToCSV(
   - Fixes high priority data loss issue - users no longer lose previously uploaded products
   - Users can now infinitely upload multiple CSV files and combine products from different sources
 
+### January 2025 - Twentieth Bug Discovered
+- **🐛 BUG-020 DISCOVERED**
+  - Missing Optional Columns Not Validated or Warned About
+  - Medium priority CSV Processing, Validation issue identified during testing
+  - Missing optional columns (Category, Description) are silently ignored
+  - Products are added without warnings when optional columns are missing
+  - Users may not realize important data fields are missing
+  - Estimated fix time: 45-60 minutes
+  - Solution approach documented with warnings for missing optional columns
+  - Recommended fix: Add warnings (not errors) for missing optional columns
+
+### January 2025 - Nineteenth Bug Discovered
+- **🐛 BUG-019 DISCOVERED**
+  - Empty CSV Files Not Detected and Rejected with Error Messages
+  - Medium priority CSV Processing, Validation issue identified during testing
+  - Empty CSV files are parsed successfully but return no products
+  - No error messages displayed when CSV is empty
+  - Users don't know why upload failed
+  - Estimated fix time: 30-45 minutes
+  - Solution approach documented with empty CSV detection
+  - Recommended fix: Add empty CSV detection in backend parsing service
+
+### January 2025 - Eighteenth Bug Discovered
+- **🐛 BUG-018 DISCOVERED**
+  - CSV Upload Errors Not Displayed in UI
+  - High priority CSV Processing, UI/UX issue identified during testing
+  - Error messages are set in state but not displayed in UI
+  - CSVUploadScreen has warnings display but no errors display section
+  - Errors only passed to ProductPreview which doesn't render when no products
+  - Critical error feedback is missing for CSV upload failures
+  - Estimated fix time: 30-60 minutes
+  - Solution approach documented with errors display section
+  - Recommended fix: Add errors display section similar to warnings section
+
+### January 2025 - Seventeenth Bug Discovered
+- **🐛 BUG-017 DISCOVERED**
+  - Export Validation Fails with Empty Errors Array
+  - High priority Export, Validation issue identified during testing
+  - Export validation fails with "Export validation failed:" toast but no specific errors
+  - Console shows "Frontend validation failed: []" with empty errors array
+  - Root cause: ExportButton calls store's validateCampaign() which checks store state, but store may not have preview data set
+  - ExportButton has valid data as prop but validates store's null state instead
+  - Critical export functionality is completely broken
+  - Estimated fix time: 30-60 minutes
+  - Solution approach documented with direct validation of dataToExport
+  - Recommended fix: Validate data directly in ExportButton using validateCampaignPreview service
+
+### January 2025 - Sixteenth Bug Discovered
+- **🐛 BUG-016 DISCOVERED**
+  - Ad Group Name Display Not Updated After Inline Edit
+  - Medium priority UI/UX, Functionality issue identified during testing
+  - Ad group name changes are saved to store but display doesn't update
+  - Edited value appears in editor when reopened, confirming save worked
+  - Display continues to show original name from prop instead of edited value
+  - Affects user experience and data integrity perception
+  - Estimated fix time: 30-60 minutes
+  - Solution approach documented with store reading and useEffect sync
+  - Recommended fix: Read from store in component or sync with store changes
+
+### January 2025 - Fifteenth Bug Discovered
+- **🐛 BUG-015 DISCOVERED**
+  - Validation Errors Not Linked to Elements on Page in Campaign Preview
+  - Medium priority UI/UX, Functionality issue identified during testing
+  - Validation errors are displayed in summary but not linked to actual elements on page
+  - Users cannot navigate to or find where errors are located
+  - Makes it difficult to fix validation errors
+  - Affects user workflow and error resolution
+  - Estimated fix time: 1-2 hours
+  - Solution approach documented with clickable error links and scroll-to functionality
+  - Recommended fix: Add clickable links or scroll-to functionality to navigate to error locations
+
+### January 2025 - Fourteenth Bug Discovered
+- **🐛 BUG-014 DISCOVERED**
+  - Keyword Deletion Deletes Incorrect Item in Campaign Preview
+  - High priority Functionality, Data Integrity issue identified during testing
+  - Deleting a keyword removes the item at +1 position instead of selected keyword
+  - Critical data integrity issue causing wrong keyword deletion
+  - Affects data integrity and user trust
+  - Estimated fix time: 1-2 hours
+  - Solution approach documented with index-based deletion
+  - Recommended fix: Use index-based deletion instead of ID/text comparison in deleteKeyword function
+
+### January 2025 - Thirteenth Bug Discovered
+- **🐛 BUG-013 DISCOVERED**
+  - RSA Ad Headlines Display Not Optimized in Campaign Preview
+  - Medium priority UI/UX issue identified during testing
+  - RSA Ad headlines displayed as vertical list instead of organized table format
+  - Less structured and visually organized compared to keyword display
+  - Makes it harder to quickly review and compare multiple headlines
+  - Affects visual consistency and usability
+  - Estimated fix time: 1-2 hours
+  - Solution approach documented with table-based display
+  - Recommended fix: Refactor headlines display to use table structure similar to keywords
+
+### January 2025 - Twelfth Bug Discovered
+- **🐛 BUG-012 DISCOVERED**
+  - Inline Editing Behavior Issues in Campaign Preview
+  - Medium priority UI/UX, Functionality issue identified during testing
+  - Inline editing saves automatically on blur instead of requiring explicit "Save" button
+  - Inline editing is enabled by clicking text directly instead of "Edit" button
+  - Match type dropdown closes inline edit state when clicked
+  - Affects user workflow and data integrity
+  - Estimated fix time: 1-2 hours
+  - Solution approach documented with explicit Save/Cancel buttons
+  - Recommended fix: Add explicit Save/Cancel buttons, require Edit button activation, fix dropdown interaction
+
 ### January 2025 - Eleventh Bug Discovered
 - **🐛 BUG-011 DISCOVERED**
   - Performance Dashboard Export CSV Fails with "point.date.toISOString is not a function"
@@ -2904,7 +4518,7 @@ exportToCSV(
 
 **Last Updated:** January 2025  
 **Next Review:** As bugs are discovered during testing  
-**Status:** Bug tracking active - 11 bugs identified (2 High, 9 Medium priority) ✅  
+**Status:** Bug tracking active - 20 bugs identified (5 High, 15 Medium priority) ✅  
 
 ---
 

@@ -1,0 +1,5 @@
+This is not a CSV file at all
+It's just plain text
+With multiple lines
+No CSV structure whatsoever
+
