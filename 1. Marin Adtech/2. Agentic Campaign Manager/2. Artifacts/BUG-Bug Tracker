@@ -22,8 +22,8 @@
 ### Functional Bugs Breakdown
 
 - **🔴 Critical:** 0 bugs
-- **🟠 High Priority:** 2 bugs
-- **🟡 Medium Priority:** 9 bugs
+- **🟠 High Priority:** 1 bug (was 2, BUG-002 fixed)
+- **🟡 Medium Priority:** 7 bugs (was 9, BUG-001 and BUG-004 fixed)
 - **🟢 Low Priority:** 0 bugs
 - **📋 Known Limitations:** 0
 
@@ -43,7 +43,7 @@
 | Bug ID | Title | Priority | Category | Status | Fix Time |
 |--------|-------|----------|----------|--------|----------|
 | ✅ BUG-001 | Drag-and-Drop Zone Resizes During Drag Operation | 🟡 Medium | UI/UX | 🟢 Fixed | 30-60 min |
-| BUG-002 | CSV Upload Overwrites Existing Products Instead of Merging | 🟠 High | CSV Processing | 🔴 Open | 1-2 hours |
+| ✅ BUG-002 | CSV Upload Overwrites Existing Products Instead of Merging | 🟠 High | CSV Processing | 🟢 Fixed | 1-2 hours |
 | BUG-003 | Edit/Delete Buttons Scroll with Table Content Instead of Being Fixed | 🟡 Medium | UI/UX | 🔴 Open | 45-60 min |
 | ✅ BUG-004 | Product Tab Navigation Scrolls Off-Screen on Pattern Learning Page | 🟡 Medium | UI/UX | 🟢 Fixed | 30-45 min |
 | BUG-005 | URLs Not Verified to Exist/Be Reachable During CSV Upload | 🟡 Medium | CSV Processing | 🔴 Open | 1-2 hours |
@@ -175,11 +175,12 @@ The issue is caused by content changes between `isDragActive` states in `CSVUplo
 
 ### BUG-002: CSV Upload Overwrites Existing Products Instead of Merging
 
-**Priority:** 🟠 High  
-**Category:** CSV Processing  
-**Status:** 🔴 Open  
-**Discovered:** January 2025  
-**Component:** CSV Upload / Product Management  
+**Priority:** 🟠 High
+**Category:** CSV Processing
+**Status:** ✅ Fixed
+**Discovered:** January 2025
+**Fixed:** January 2025
+**Component:** CSV Upload / Product Management
 **Estimated Fix Time:** 1-2 hours
 
 **Description:**
@@ -2435,12 +2436,7 @@ exportToCSV(
 
 ### 🟠 High Priority (Fix Soon)
 
-**BUG-002: CSV Upload Overwrites Existing Products Instead of Merging**
-- CSV uploads overwrite existing products instead of merging/accumulating
-- Data loss issue - users lose previously uploaded products
-- Prevents combining products from multiple CSV files
-- Estimated fix time: 1-2 hours
-- Solution: Implement merge logic with URL-based deduplication
+*No high priority bugs remaining - all fixed!*
 
 ### 🟡 Medium Priority (Fix After MVP)
 
@@ -2712,6 +2708,19 @@ exportToCSV(
   - All sections prepared for upcoming testing phases
   - Demo strategy framework established for campaign generation features
   - Testing checklist tailored for CSV/URL campaign generation workflows
+
+### January 2025 - BUG-002 Fixed
+- **✅ BUG-002 FIXED**
+  - CSV Upload Overwrites Existing Products Instead of Merging
+  - Implemented merge logic with URL-based deduplication in handleParseComplete function
+  - Products from multiple CSV uploads now accumulate instead of overwriting
+  - New products are merged with existing ones, duplicates (by URL) are skipped
+  - Added URL normalization helper function for consistent deduplication
+  - Errors and warnings now accumulate across multiple uploads
+  - Users are notified when duplicates are skipped (e.g., "Added 3 new products. 2 duplicates skipped")
+  - Fixed in: src/components/csv-upload/CSVUploadScreen.tsx
+  - Fixes high priority data loss issue - users no longer lose previously uploaded products
+  - Users can now infinitely upload multiple CSV files and combine products from different sources
 
 ### January 2025 - Eleventh Bug Discovered
 - **🐛 BUG-011 DISCOVERED**

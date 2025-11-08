@@ -15,6 +15,7 @@ export interface ProductInput {
   price?: number;
   description?: string;
   source: 'csv' | 'url_list';
+  sourceFile?: string; // Track which file the product came from for multi-file uploads
 }
 
 /**
@@ -33,6 +34,7 @@ export interface ProductParsingResult {
   products: ProductInput[];
   errors: ProductValidationError[];
   warnings: string[];
+  fileName?: string; // Name of the uploaded file
 }
 
 /**

@@ -16,6 +16,21 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
 import { FileTextIcon, LinkIcon, AlertTriangleIcon, ArrowLeftIcon, SparklesIcon } from 'lucide-react';
 
 /**
+ * Helper function to normalize URLs for comparison
+ * Ensures URLs are compared consistently regardless of trailing slashes, protocol case, etc.
+ */
+const normalizeUrl = (url: string): string => {
+  try {
+    const urlObj = new URL(url);
+    // Normalize: lowercase hostname, remove trailing slash, sort query params
+    return urlObj.href.toLowerCase().trim().replace(/\/$/, '');
+  } catch {
+    // If URL parsing fails, just return normalized string
+    return url.toLowerCase().trim().replace(/\/$/, '');
+  }
+};
+
+/**
  * CSV Upload Screen Component
  * Main screen for CSV/URL-based campaign generation workflow
  */
@@ -26,11 +41,55 @@ const CSVUploadScreen: React.FC = () => {
   const [errors, setErrors] = useState<ProductValidationError[]>([]);
   const [warnings, setWarnings] = useState<string[]>([]);
   const [isValid, setIsValid] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
 
   const handleParseComplete = (result: ProductParsingResult) => {
-    setProducts(result.products);
-    setErrors(result.errors);
-    setWarnings(result.warnings);
+    const fileName = result.fileName || 'unknown.csv';
+
+    // Add the file to uploaded files list if not already present
+    setUploadedFiles(prevFiles => {
+      if (prevFiles.includes(fileName)) {
+        return prevFiles;
+      }
+      return [...prevFiles, fileName];
+    });
+
+    // Merge products with existing ones, using URL-based deduplication
+    setProducts(prevProducts => {
+      // Create a map of existing products by normalized URL
+      const existingProductsMap = new Map(
+        prevProducts.map(p => [normalizeUrl(p.url), p])
+      );
+
+      // Filter out new products that already exist (by URL)
+      // Tag new products with their source file
+      const newProducts = result.products
+        .filter(product => {
+          const normalizedUrl = normalizeUrl(product.url);
+          return !existingProductsMap.has(normalizedUrl);
+        })
+        .map(product => ({
+          ...product,
+          sourceFile: fileName,
+        }));
+
+      // Track duplicates for user notification
+      const duplicateCount = result.products.length - newProducts.length;
+
+      // Add notification about merge results if there are duplicates
+      if (duplicateCount > 0) {
+        const mergeMessage = `Added ${newProducts.length} new product${newProducts.length !== 1 ? 's' : ''}. ${duplicateCount} duplicate${duplicateCount !== 1 ? 's' : ''} skipped (already exists).`;
+        setWarnings(prevWarnings => [...prevWarnings, mergeMessage]);
+      }
+
+      // Combine existing and new products
+      return [...prevProducts, ...newProducts];
+    });
+
+    // Accumulate errors and warnings (don't replace)
+    setErrors(prevErrors => [...prevErrors, ...result.errors]);
+    setWarnings(prevWarnings => [...prevWarnings, ...result.warnings]);
+
     // Auto-validate products after parsing if no errors
     if (result.products.length > 0 && result.errors.length === 0) {
       setIsValid(true);
@@ -47,6 +106,25 @@ const CSVUploadScreen: React.FC = () => {
     setErrors([]);
     setWarnings([]);
     setIsValid(false);
+    setUploadedFiles([]);
+  };
+
+  const handleRemoveFile = (fileName: string) => {
+    // Remove products from this specific file
+    setProducts(prevProducts =>
+      prevProducts.filter(product => product.sourceFile !== fileName)
+    );
+
+    // Remove file from uploaded files list
+    setUploadedFiles(prevFiles =>
+      prevFiles.filter(file => file !== fileName)
+    );
+
+    // Add a notification
+    setWarnings(prevWarnings => [
+      ...prevWarnings,
+      `Removed all products from ${fileName}`,
+    ]);
   };
 
   const handleProductsChange = (updatedProducts: ProductInput[]) => {
@@ -134,6 +212,8 @@ const CSVUploadScreen: React.FC = () => {
               onParseComplete={handleParseComplete}
               onError={handleError}
               onClear={handleClear}
+              onRemoveFile={handleRemoveFile}
+              uploadedFiles={uploadedFiles}
             />
           </TabsContent>
 
