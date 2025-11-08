@@ -1,6 +1,8 @@
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { CampaignPlan } from '../types/ai.types';
+import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
+import { Label } from './ui/label';
 
 /**
  * BudgetBreakdown Component Props
@@ -26,31 +28,29 @@ const BudgetBreakdown: React.FC<BudgetBreakdownProps> = ({ campaignPlan }) => {
   // Calculate daily budget if not provided
   const dailyBudget = budget.daily || Math.round(budget.total / campaignPlan.timeline.duration);
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
-
   return (
-    <div className="budget-breakdown-card card">
-      <div className="card-header">
-        <h3>Budget Breakdown</h3>
-      </div>
-      <div className="card-content">
-        <div className="budget-summary">
-          <div className="budget-item">
-            <label>Total Budget</label>
-            <p className="budget-amount">
+    <Card>
+      <CardHeader>
+        <CardTitle>Budget Breakdown</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label>Total Budget</Label>
+            <p className="text-2xl font-bold">
               {budget.currency} {budget.total.toLocaleString()}
             </p>
           </div>
-          <div className="budget-item">
-            <label>Daily Budget</label>
-            <p className="budget-amount">
+          <div className="space-y-2">
+            <Label>Daily Budget</Label>
+            <p className="text-2xl font-bold">
               {budget.currency} {dailyBudget.toLocaleString()}
             </p>
           </div>
         </div>
 
         {platformData.length > 0 && (
-          <div className="budget-chart">
+          <div className="w-full">
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
                 <Pie
@@ -79,13 +79,13 @@ const BudgetBreakdown: React.FC<BudgetBreakdownProps> = ({ campaignPlan }) => {
         )}
 
         {campaignPlan.adGroups && campaignPlan.adGroups.length > 0 && (
-          <div className="ad-group-budget">
-            <h4>Budget by Ad Group</h4>
-            <div className="ad-group-budget-list">
+          <div className="space-y-3">
+            <h4 className="font-semibold">Budget by Ad Group</h4>
+            <div className="space-y-2">
               {campaignPlan.adGroups.map((adGroup, index) => (
-                <div key={index} className="ad-group-budget-item">
-                  <span className="ad-group-name">{adGroup.name}</span>
-                  <span className="ad-group-budget-amount">
+                <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted">
+                  <span className="text-sm font-medium">{adGroup.name}</span>
+                  <span className="text-sm font-semibold">
                     {budget.currency} {adGroup.budget.toLocaleString()}
                   </span>
                 </div>
@@ -93,8 +93,8 @@ const BudgetBreakdown: React.FC<BudgetBreakdownProps> = ({ campaignPlan }) => {
             </div>
           </div>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 

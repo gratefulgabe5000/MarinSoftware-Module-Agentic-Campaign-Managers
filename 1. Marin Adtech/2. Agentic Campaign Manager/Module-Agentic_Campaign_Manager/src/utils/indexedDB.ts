@@ -1,14 +1,16 @@
 /**
  * IndexedDB Utilities
- * Handles conversation history and performance metrics persistence in IndexedDB
+ * Handles conversation history, performance metrics, and campaign persistence in IndexedDB
  */
 
 import type { PerformanceMetrics, TimeRangeConfig } from '../types/performance.types';
+import type { Campaign } from '../types/campaign.types';
 
 const DB_NAME = 'AgenticCampaignManager';
-const DB_VERSION = 2; // Incremented for performance metrics store
+const DB_VERSION = 3; // Incremented for campaigns store
 const CONVERSATION_STORE = 'conversations';
 const PERFORMANCE_STORE = 'performance';
+const CAMPAIGNS_STORE = 'campaigns';
 const CACHE_TTL = 15 * 60 * 1000; // 15 minutes in milliseconds
 
 /**
@@ -28,7 +30,7 @@ export const initDB = (): Promise<IDBDatabase> => {
 
     request.onupgradeneeded = (event) => {
       const db = (event.target as IDBOpenDBRequest).result;
-      
+
       // Create conversation store if it doesn't exist
       if (!db.objectStoreNames.contains(CONVERSATION_STORE)) {
         const conversationStore = db.createObjectStore(CONVERSATION_STORE, {
@@ -46,6 +48,17 @@ export const initDB = (): Promise<IDBDatabase> => {
         });
         performanceStore.createIndex('campaignId', 'campaignId', { unique: false });
         performanceStore.createIndex('cachedAt', 'cachedAt', { unique: false });
+      }
+
+      // Create campaigns store if it doesn't exist
+      if (!db.objectStoreNames.contains(CAMPAIGNS_STORE)) {
+        const campaignsStore = db.createObjectStore(CAMPAIGNS_STORE, {
+          keyPath: 'id',
+          autoIncrement: false,
+        });
+        campaignsStore.createIndex('status', 'status', { unique: false });
+        campaignsStore.createIndex('createdAt', 'createdAt', { unique: false });
+        campaignsStore.createIndex('updatedAt', 'updatedAt', { unique: false });
       }
     };
   });
@@ -346,6 +359,130 @@ export const clearAllPerformanceCache = async (): Promise<void> => {
     await store.clear();
   } catch (error) {
     console.error('Failed to clear all performance cache:', error);
+    throw error;
+  }
+};
+
+/**
+ * Campaign Storage
+ */
+
+/**
+ * Save a campaign to IndexedDB
+ */
+export const saveCampaign = async (campaign: Campaign): Promise<void> => {
+  try {
+    const db = await initDB();
+    const transaction = db.transaction([CAMPAIGNS_STORE], 'readwrite');
+    const store = transaction.objectStore(CAMPAIGNS_STORE);
+
+    await store.put(campaign);
+  } catch (error) {
+    console.error('Failed to save campaign:', error);
+    throw error;
+  }
+};
+
+/**
+ * Save multiple campaigns to IndexedDB
+ */
+export const saveCampaigns = async (campaigns: Campaign[]): Promise<void> => {
+  try {
+    const db = await initDB();
+    const transaction = db.transaction([CAMPAIGNS_STORE], 'readwrite');
+    const store = transaction.objectStore(CAMPAIGNS_STORE);
+
+    for (const campaign of campaigns) {
+      await store.put(campaign);
+    }
+  } catch (error) {
+    console.error('Failed to save campaigns:', error);
+    throw error;
+  }
+};
+
+/**
+ * Load a campaign from IndexedDB
+ */
+export const loadCampaign = async (campaignId: string): Promise<Campaign | null> => {
+  try {
+    const db = await initDB();
+    const transaction = db.transaction([CAMPAIGNS_STORE], 'readonly');
+    const store = transaction.objectStore(CAMPAIGNS_STORE);
+
+    return new Promise((resolve, reject) => {
+      const request = store.get(campaignId);
+
+      request.onsuccess = () => {
+        resolve(request.result || null);
+      };
+
+      request.onerror = () => {
+        reject(request.error);
+      };
+    });
+  } catch (error) {
+    console.error('Failed to load campaign:', error);
+    return null;
+  }
+};
+
+/**
+ * Load all campaigns from IndexedDB
+ */
+export const loadAllCampaigns = async (): Promise<Campaign[]> => {
+  try {
+    const db = await initDB();
+    const transaction = db.transaction([CAMPAIGNS_STORE], 'readonly');
+    const store = transaction.objectStore(CAMPAIGNS_STORE);
+
+    return new Promise((resolve, reject) => {
+      const request = store.getAll();
+
+      request.onsuccess = () => {
+        const campaigns = request.result || [];
+        resolve(campaigns);
+      };
+
+      request.onerror = () => {
+        console.error('Error loading campaigns:', request.error);
+        reject(request.error);
+      };
+    });
+  } catch (error) {
+    console.error('Failed to load campaigns:', error);
+    return [];
+  }
+};
+
+/**
+ * Delete a campaign from IndexedDB
+ */
+export const deleteCampaign = async (campaignId: string): Promise<void> => {
+  try {
+    const db = await initDB();
+    const transaction = db.transaction([CAMPAIGNS_STORE], 'readwrite');
+    const store = transaction.objectStore(CAMPAIGNS_STORE);
+
+    await store.delete(campaignId);
+  } catch (error) {
+    console.error('Failed to delete campaign:', error);
+    throw error;
+  }
+};
+
+/**
+ * Clear all campaigns from IndexedDB
+ */
+export const clearAllCampaigns = async (): Promise<void> => {
+  try {
+    const db = await initDB();
+    const transaction = db.transaction([CAMPAIGNS_STORE], 'readwrite');
+    const store = transaction.objectStore(CAMPAIGNS_STORE);
+
+    await store.clear();
+  } catch (error) {
+    console.error('Failed to clear all campaigns:', error);
     throw error;
   }
 };

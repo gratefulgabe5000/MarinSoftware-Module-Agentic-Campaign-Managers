@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import AgenticCampaignManagerModule from './AgenticCampaignManagerModule';
 import ErrorBoundary from './components/ErrorBoundary';
-import ToastContainer from './components/ToastContainer';
+import { Toaster } from './components/ui/sonner';
 
 /**
  * Main App Component
@@ -18,11 +18,11 @@ const App: React.FC = () => {
     <ErrorBoundary>
       <BrowserRouter>
         <div className="app">
-          <AgenticCampaignManagerModule 
+          <AgenticCampaignManagerModule
             context={mockContext}
             isActive={true}
           />
-          <ToastContainer />
+          <Toaster />
         </div>
       </BrowserRouter>
     </ErrorBoundary>

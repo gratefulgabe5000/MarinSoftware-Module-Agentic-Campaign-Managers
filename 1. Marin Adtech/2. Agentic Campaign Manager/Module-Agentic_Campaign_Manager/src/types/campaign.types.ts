@@ -171,3 +171,14 @@ export interface CampaignUpdateRequest {
   metadata?: Partial<CampaignMetadata>;
 }
 
+/**
+ * Campaign Creation Response
+ */
+export interface CampaignCreationResponse {
+  campaignId: string;
+  status: CampaignStatus;
+  platformCampaignIds: PlatformCampaignIds;
+  createdAt: Date;
+  message?: string;
+}
+

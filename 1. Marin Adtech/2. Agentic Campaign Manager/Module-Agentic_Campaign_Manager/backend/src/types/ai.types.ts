@@ -3,8 +3,28 @@
  * Defines types for AI service interactions
  */
 
+/**
+ * Google Ads Campaign Types
+ */
+export type GoogleAdsCampaignType =
+  | 'SEARCH'
+  | 'PERFORMANCE_MAX'
+  | 'DEMAND_GEN'
+  | 'VIDEO'
+  | 'DISPLAY'
+  | 'SHOPPING';
+
+/**
+ * Platform-specific campaign type configuration
+ */
+export interface PlatformCampaignType {
+  googleAds?: GoogleAdsCampaignType;
+  // Future: Add other platforms (Meta, Microsoft, etc.)
+}
+
 export interface CampaignPlan {
   objective: string;
+  campaignType?: PlatformCampaignType; // Platform-specific campaign type
   targetAudience: {
     demographics?: {
       age?: string;

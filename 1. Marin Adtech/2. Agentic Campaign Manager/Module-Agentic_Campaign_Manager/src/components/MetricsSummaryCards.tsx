@@ -1,5 +1,6 @@
 import React from 'react';
 import { PerformanceMetrics } from '../types/performance.types';
+import { EyeIcon, MousePointerClickIcon, BarChart3Icon, CheckCircle2Icon, DollarSignIcon, TrendingUpIcon, CreditCardIcon, BanknoteIcon } from 'lucide-react';
 
 /**
  * Metrics Summary Cards Props
@@ -15,7 +16,7 @@ interface MetricCardProps {
   title: string;
   value: string | number;
   unit?: string;
-  icon?: string;
+  icon?: React.ReactNode;
   trend?: {
     value: number;
     isPositive: boolean;
@@ -44,20 +45,20 @@ const MetricCard: React.FC<MetricCardProps> = ({
   };
 
   return (
-    <div className="metric-card" style={{ borderLeft: `4px solid ${color}` }}>
-      <div className="metric-card-header">
-        {icon && <span className="metric-icon">{icon}</span>}
-        <h4 className="metric-title">{title}</h4>
+    <div className="flex flex-col border-l-4 p-4 rounded-md bg-card shadow-sm" style={{ borderLeftColor: color }}>
+      <div className="flex items-center gap-2 mb-2">
+        {icon && <div className="text-muted-foreground">{icon}</div>}
+        <h4 className="text-sm font-medium text-muted-foreground">{title}</h4>
       </div>
-      <div className="metric-card-body">
-        <p className="metric-value">
+      <div className="flex flex-col">
+        <p className="text-2xl font-bold">
           {formatValue(value)}
-          {unit && <span className="metric-unit">{unit}</span>}
+          {unit && <span className="text-lg text-muted-foreground ml-1">{unit}</span>}
         </p>
         {trend && (
-          <div className={`metric-trend ${trend.isPositive ? 'positive' : 'negative'}`}>
-            <span className="trend-icon">{trend.isPositive ? '↑' : '↓'}</span>
-            <span className="trend-value">{Math.abs(trend.value).toFixed(1)}%</span>
+          <div className={`flex items-center gap-1 text-sm font-medium ${trend.isPositive ? 'text-green-600' : 'text-red-600'}`}>
+            <span>{trend.isPositive ? '↑' : '↓'}</span>
+            <span>{Math.abs(trend.value).toFixed(1)}%</span>
           </div>
         )}
       </div>
@@ -71,50 +72,50 @@ const MetricCard: React.FC<MetricCardProps> = ({
  */
 const MetricsSummaryCards: React.FC<MetricsSummaryCardsProps> = ({ metrics }) => {
   return (
-    <div className="metrics-summary-cards">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       <MetricCard
         title="Impressions"
         value={metrics.impressions}
-        icon="👁️"
+        icon={<EyeIcon className="h-5 w-5" />}
         color="#4285F4"
       />
       <MetricCard
         title="Clicks"
         value={metrics.clicks}
-        icon="🖱️"
+        icon={<MousePointerClickIcon className="h-5 w-5" />}
         color="#34A853"
       />
       <MetricCard
         title="CTR"
         value={metrics.ctr}
         unit="%"
-        icon="📊"
+        icon={<BarChart3Icon className="h-5 w-5" />}
         color="#FBBC04"
       />
       <MetricCard
         title="Conversions"
         value={metrics.conversions}
-        icon="✅"
+        icon={<CheckCircle2Icon className="h-5 w-5" />}
         color="#EA4335"
       />
       <MetricCard
         title="CPA"
         value={metrics.cpa}
         unit="$"
-        icon="💰"
+        icon={<DollarSignIcon className="h-5 w-5" />}
         color="#9334E6"
       />
       <MetricCard
         title="ROAS"
         value={metrics.roas}
-        icon="📈"
+        icon={<TrendingUpIcon className="h-5 w-5" />}
         color="#00C49F"
       />
       <MetricCard
         title="Spend"
         value={metrics.spend}
         unit="$"
-        icon="💵"
+        icon={<CreditCardIcon className="h-5 w-5" />}
         color="#FF8042"
       />
       {metrics.revenue && (
@@ -122,7 +123,7 @@ const MetricsSummaryCards: React.FC<MetricsSummaryCardsProps> = ({ metrics }) =>
           title="Revenue"
           value={metrics.revenue}
           unit="$"
-          icon="💸"
+          icon={<BanknoteIcon className="h-5 w-5" />}
           color="#0088FE"
         />
       )}

@@ -6,11 +6,31 @@
 import { ClarifyingQuestion } from './message.types';
 
 /**
+ * Google Ads Campaign Types
+ */
+export type GoogleAdsCampaignType =
+  | 'SEARCH'
+  | 'PERFORMANCE_MAX'
+  | 'DEMAND_GEN'
+  | 'VIDEO'
+  | 'DISPLAY'
+  | 'SHOPPING';
+
+/**
+ * Platform-specific campaign type configuration
+ */
+export interface PlatformCampaignType {
+  googleAds?: GoogleAdsCampaignType;
+  // Future: Add other platforms (Meta, Microsoft, etc.)
+}
+
+/**
  * Campaign Plan Interface
  * Structured plan extracted from user's goal
  */
 export interface CampaignPlan {
   objective: string;
+  campaignType?: PlatformCampaignType; // Platform-specific campaign type
   targetAudience: {
     demographics?: {
       age?: string;
@@ -53,8 +73,18 @@ export interface AdGroupPlan {
     demographics?: Record<string, any>;
     interests?: string[];
     behaviors?: string[];
+    keywords?: string[];
   };
   adFormats?: string[];
+  ads?: Array<{
+    id: string;
+    adGroupId: string;
+    headlines: Array<{ text: string; pinned?: boolean; position?: number }>;
+    descriptions: Array<{ text: string }>;
+    finalUrl: string;
+    displayUrl?: string;
+    paths?: string[];
+  }>;
 }
 
 /**

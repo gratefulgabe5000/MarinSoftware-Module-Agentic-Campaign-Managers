@@ -1,5 +1,8 @@
 import React from 'react';
 import { CampaignPlan } from '../types/ai.types';
+import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
+import { Badge } from './ui/badge';
+import { Label } from './ui/label';
 
 /**
  * PerformanceEstimatesCard Component Props
@@ -50,52 +53,52 @@ const PerformanceEstimatesCard: React.FC<PerformanceEstimatesCardProps> = ({
   const estimates = calculateEstimates();
 
   return (
-    <div className="performance-estimates-card card">
-      <div className="card-header">
-        <h3>Performance Estimates</h3>
-        <span className="confidence-badge">
-          Confidence: {(estimates.confidence * 100).toFixed(0)}%
-        </span>
-      </div>
-      <div className="card-content">
-        <div className="performance-grid">
-          <div className="performance-metric">
-            <label>Estimated Impressions</label>
-            <p className="metric-value">{estimates.impressions.toLocaleString()}</p>
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle>Performance Estimates</CardTitle>
+          <Badge variant="secondary">
+            Confidence: {(estimates.confidence * 100).toFixed(0)}%
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="space-y-2">
+            <Label>Estimated Impressions</Label>
+            <p className="text-2xl font-bold">{estimates.impressions.toLocaleString()}</p>
           </div>
-          <div className="performance-metric">
-            <label>Estimated Clicks</label>
-            <p className="metric-value">{estimates.clicks.toLocaleString()}</p>
+          <div className="space-y-2">
+            <Label>Estimated Clicks</Label>
+            <p className="text-2xl font-bold">{estimates.clicks.toLocaleString()}</p>
           </div>
-          <div className="performance-metric">
-            <label>Estimated Conversions</label>
-            <p className="metric-value">{estimates.conversions.toLocaleString()}</p>
+          <div className="space-y-2">
+            <Label>Estimated Conversions</Label>
+            <p className="text-2xl font-bold">{estimates.conversions.toLocaleString()}</p>
           </div>
-          <div className="performance-metric">
-            <label>Estimated CTR</label>
-            <p className="metric-value">{estimates.ctr.toFixed(2)}%</p>
+          <div className="space-y-2">
+            <Label>Estimated CTR</Label>
+            <p className="text-2xl font-bold">{estimates.ctr.toFixed(2)}%</p>
           </div>
-          <div className="performance-metric">
-            <label>Estimated CPA</label>
-            <p className="metric-value">
+          <div className="space-y-2">
+            <Label>Estimated CPA</Label>
+            <p className="text-2xl font-bold">
               {campaignPlan.budget.currency} {estimates.cpa.toLocaleString()}
             </p>
           </div>
-          <div className="performance-metric">
-            <label>Estimated ROAS</label>
-            <p className="metric-value">{estimates.roas}x</p>
+          <div className="space-y-2">
+            <Label>Estimated ROAS</Label>
+            <p className="text-2xl font-bold">{estimates.roas}x</p>
           </div>
         </div>
 
-        <div className="performance-disclaimer">
-          <p>
-            <small>
-              * These are rough estimates based on industry averages. Actual performance may vary.
-            </small>
+        <div className="rounded-lg bg-muted/50 p-3">
+          <p className="text-xs text-muted-foreground">
+            * These are rough estimates based on industry averages. Actual performance may vary.
           </p>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 

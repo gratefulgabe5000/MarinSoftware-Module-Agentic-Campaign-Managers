@@ -4,6 +4,8 @@ import {
   GoalUnderstandingRequest,
   GoalUnderstandingResponse,
   CampaignPlan,
+  GoogleAdsCampaignType,
+  PlatformCampaignType,
 } from '../types/ai.types';
 
 /**
@@ -20,6 +22,77 @@ class AIService {
   }
 
   /**
+   * Determine Google Ads campaign type based on objective and user message
+   */
+  private determineCampaignType(
+    objective: string,
+    message: string,
+    platforms: string[]
+  ): PlatformCampaignType {
+    const messageLower = message.toLowerCase();
+    const objectiveLower = objective.toLowerCase();
+    const hasGoogleAds = platforms.some(
+      (p) => p.toLowerCase().includes('google') || p.toLowerCase().includes('ads')
+    );
+
+    if (!hasGoogleAds) {
+      return {};
+    }
+
+    // Shopping campaigns - check for product/merchant center mentions
+    if (
+      messageLower.includes('product') ||
+      messageLower.includes('merchant center') ||
+      messageLower.includes('shopping') ||
+      messageLower.includes('catalog')
+    ) {
+      return { googleAds: 'SHOPPING' };
+    }
+
+    // Video campaigns - check for video/YouTube mentions
+    if (
+      messageLower.includes('video') ||
+      messageLower.includes('youtube') ||
+      messageLower.includes('video ad')
+    ) {
+      return { googleAds: 'VIDEO' };
+    }
+
+    // Map objectives to campaign types
+    if (objectiveLower.includes('awareness')) {
+      return { googleAds: 'DEMAND_GEN' };
+    }
+
+    if (
+      objectiveLower.includes('sales') ||
+      objectiveLower.includes('conversions') ||
+      objectiveLower.includes('revenue')
+    ) {
+      // Prefer Performance Max for sales/conversions unless user specifies search
+      if (messageLower.includes('search') || messageLower.includes('text ad')) {
+        return { googleAds: 'SEARCH' };
+      }
+      return { googleAds: 'PERFORMANCE_MAX' };
+    }
+
+    if (
+      objectiveLower.includes('lead') ||
+      objectiveLower.includes('sign-up') ||
+      objectiveLower.includes('registration') ||
+      objectiveLower.includes('traffic')
+    ) {
+      // Prefer Search for leads/traffic unless user wants broad reach
+      if (messageLower.includes('broad') || messageLower.includes('reach')) {
+        return { googleAds: 'PERFORMANCE_MAX' };
+      }
+      return { googleAds: 'SEARCH' };
+    }
+
+    // Default to Search for most objectives
+    return { googleAds: 'SEARCH' };
+  }
+
+  /**
    * Understand campaign goal from user message
    */
   async understandGoal(
@@ -33,7 +106,16 @@ class AIService {
       const response = await this.callOpenAI(prompt, request);
 
       // Parse and validate response
-      const campaignPlan = this.parseCampaignPlan(response);
+      let campaignPlan = this.parseCampaignPlan(response);
+
+      // Ensure campaign type is set if not provided by AI
+      if (!campaignPlan.campaignType || Object.keys(campaignPlan.campaignType).length === 0) {
+        campaignPlan.campaignType = this.determineCampaignType(
+          campaignPlan.objective,
+          request.message,
+          campaignPlan.platforms
+        );
+      }
 
       // Determine if clarification is needed
       const needsClarification = this.needsClarification(campaignPlan);
@@ -68,7 +150,19 @@ class AIService {
 ${conversationContext ? `Conversation History:\n${conversationContext}\n\n` : ''}User Goal: ${request.message}
 
 Extract the following information and return it as valid JSON:
-- objective: Clear campaign objective
+- objective: Campaign objective (must be one of: "Drive product sign-ups", "Drive sales", "Generate leads", "Increase brand awareness", "Drive website traffic", "Promote event", "Drive registrations", or "Drive conversions")
+- campaignType: Platform-specific campaign type. For Google Ads, must be one of: "SEARCH", "PERFORMANCE_MAX", "DEMAND_GEN", "VIDEO", "DISPLAY", "SHOPPING". Map objectives to types:
+  * "Drive sales" → "SEARCH" or "PERFORMANCE_MAX" (prefer PERFORMANCE_MAX for broad reach)
+  * "Generate leads" → "SEARCH" or "PERFORMANCE_MAX"
+  * "Drive website traffic" → "SEARCH" or "PERFORMANCE_MAX"
+  * "Increase brand awareness" → "DEMAND_GEN" or "DISPLAY"
+  * "Drive product sign-ups" → "SEARCH" or "PERFORMANCE_MAX"
+  * "Promote event" → "SEARCH" or "DEMAND_GEN"
+  * "Drive registrations" → "SEARCH" or "PERFORMANCE_MAX"
+  * "Drive conversions" → "PERFORMANCE_MAX" or "SEARCH"
+  If user mentions products/merchant center → "SHOPPING"
+  If user mentions video/YouTube → "VIDEO" or "DEMAND_GEN"
+  Format as: {"googleAds": "SEARCH"} (only include platforms in the platforms array)
 - targetAudience: Demographics and psychographics
 - budget: Total budget and daily budget (if specified), currency (default to USD)
 - timeline: Start date, end date (if specified), duration in days
@@ -79,6 +173,9 @@ Extract the following information and return it as valid JSON:
 Return JSON in this exact format:
 {
   "objective": "...",
+  "campaignType": {
+    "googleAds": "SEARCH"
+  },
   "targetAudience": {
     "demographics": {...},
     "psychographics": {...}
@@ -140,7 +237,8 @@ Return JSON in this exact format:
         }
       );
 
-      return response.data.choices[0]?.message?.content || '';
+      const responseData = response.data as any;
+      return responseData.choices[0]?.message?.content || '';
     } catch (error) {
       console.error('OpenAI API error:', error);
       // Fallback to mock response on error
@@ -307,8 +405,16 @@ Return JSON in this exact format:
     startDate.setDate(startDate.getDate() + 1);
     const startDateStr = startDate.toISOString().split('T')[0];
     
+    // Determine campaign type based on objective and message
+    const campaignType = this.determineCampaignType(
+      objective,
+      request?.message || '',
+      platforms
+    );
+    
     return JSON.stringify({
       objective,
+      campaignType,
       targetAudience: {
         demographics: {
           age: targetAge,
@@ -360,6 +466,7 @@ Return JSON in this exact format:
 
     return {
       objective: plan.objective || 'Not specified',
+      campaignType: plan.campaignType || {}, // Campaign type is optional, will be determined if missing
       targetAudience: plan.targetAudience || {},
       budget: {
         total: plan.budget?.total || 0,

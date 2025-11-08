@@ -19,5 +19,9 @@ router.get('/microsoft/callback', authController.callbackMicrosoft);
 // Connection status
 router.get('/status', authController.getConnectionStatus);
 
+// Google Ads specific endpoints
+router.get('/google/status', authController.getGoogleStatus);
+router.post('/google/disconnect', authController.disconnectGoogle);
+
 export default router;
 

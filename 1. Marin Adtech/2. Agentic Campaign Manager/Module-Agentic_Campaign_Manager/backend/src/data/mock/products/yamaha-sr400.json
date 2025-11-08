@@ -1,0 +1,134 @@
+{
+  "campaigns": [
+    {
+      "id": "campaign-yamaha-sr400-001",
+      "name": "Yamaha SR400 - Retro Bikes",
+      "status": "ACTIVE",
+      "advertising_channel_type": "SEARCH",
+      "adGroups": [
+        {
+          "id": "adgroup-yamaha-sr400-001",
+          "name": "Yamaha SR400 - Classic Style",
+          "keywords": [
+            {
+              "text": "yamaha sr400",
+              "matchType": "EXACT",
+              "impressions": 12000,
+              "clicks": 600,
+              "ctr": 5.0,
+              "conversions": 18,
+              "cost": 1800.00,
+              "roas": 28.5,
+              "average_cpc": 3.00
+            },
+            {
+              "text": "yamaha sr400 for sale",
+              "matchType": "PHRASE",
+              "impressions": 9500,
+              "clicks": 665,
+              "ctr": 7.0,
+              "conversions": 16,
+              "cost": 1995.00,
+              "roas": 24.77,
+              "average_cpc": 3.00
+            },
+            {
+              "text": "retro yamaha motorcycle",
+              "matchType": "PHRASE",
+              "impressions": 8000,
+              "clicks": 400,
+              "ctr": 5.0,
+              "conversions": 10,
+              "cost": 1200.00,
+              "roas": 20.0,
+              "average_cpc": 3.00
+            },
+            {
+              "text": "classic yamaha bikes",
+              "matchType": "BROAD",
+              "impressions": 15000,
+              "clicks": 450,
+              "ctr": 3.0,
+              "conversions": 8,
+              "cost": 1350.00,
+              "roas": 18.5,
+              "average_cpc": 3.00
+            }
+          ],
+          "ads": [
+            {
+              "id": "ad-yamaha-sr400-001",
+              "type": "RESPONSIVE_SEARCH_AD",
+              "headlines": [
+                "Yamaha SR400 Classic",
+                "Retro Style SR400",
+                "Shop Yamaha SR400 Now",
+                "Timeless Yamaha Design",
+                "Classic SR400 Motorcycles",
+                "Authentic Retro Bike",
+                "Yamaha SR400 Deals",
+                "Vintage-Inspired SR400"
+              ],
+              "descriptions": [
+                "Experience timeless style with the Yamaha SR400. Classic design meets modern reliability.",
+                "Discover the iconic SR400. Simple, elegant, and built to last. Test rides available.",
+                "Shop our selection of Yamaha SR400 motorcycles. Authentic retro styling with modern performance."
+              ],
+              "final_urls": ["https://www.yamaha-motor.com/motorcycles/sr400"]
+            }
+          ]
+        },
+        {
+          "id": "adgroup-yamaha-sr400-002",
+          "name": "Yamaha - Cafe Racer Style",
+          "keywords": [
+            {
+              "text": "yamaha cafe racer",
+              "matchType": "PHRASE",
+              "impressions": 10000,
+              "clicks": 500,
+              "ctr": 5.0,
+              "conversions": 12,
+              "cost": 1500.00,
+              "roas": 22.0,
+              "average_cpc": 3.00
+            },
+            {
+              "text": "sr400 custom build",
+              "matchType": "PHRASE",
+              "impressions": 6000,
+              "clicks": 300,
+              "ctr": 5.0,
+              "conversions": 7,
+              "cost": 900.00,
+              "roas": 19.5,
+              "average_cpc": 3.00
+            }
+          ],
+          "ads": [
+            {
+              "id": "ad-yamaha-sr400-002",
+              "type": "RESPONSIVE_SEARCH_AD",
+              "headlines": [
+                "Yamaha SR400 Cafe Style",
+                "Custom SR400 Builds",
+                "Cafe Racer SR400",
+                "Personalize Your SR400",
+                "Yamaha Custom Motorcycles",
+                "Build Your Dream SR400",
+                "SR400 Customization",
+                "Unique Yamaha Style"
+              ],
+              "descriptions": [
+                "Transform your SR400 into a cafe racer masterpiece. Custom builds and accessories available.",
+                "Create your perfect cafe racer with the Yamaha SR400. Expert customization services.",
+                "Unleash your creativity with SR400 custom options. Quality parts and professional installation."
+              ],
+              "final_urls": ["https://www.yamaha-motor.com/motorcycles/sr400"]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

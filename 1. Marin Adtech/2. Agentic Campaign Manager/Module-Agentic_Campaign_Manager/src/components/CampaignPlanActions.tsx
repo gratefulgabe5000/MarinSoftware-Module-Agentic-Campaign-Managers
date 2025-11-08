@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useCampaignStore } from '../store/campaignStore';
 import { campaignService } from '../services/campaignService';
 import { toastService } from '../utils/toastService';
+import { Button } from './ui/button';
+import { EyeIcon, CheckCircle2Icon } from 'lucide-react';
 
 /**
  * Campaign Plan Actions Props
@@ -49,23 +51,44 @@ const CampaignPlanActions: React.FC<CampaignPlanActionsProps> = () => {
       setLoading(true);
       setError(null);
 
+      // Generate campaign name from plan
+      const campaignName = `Campaign - ${campaignPlan.objective.substring(0, 50)}`;
+
       // Create campaign from plan
-      const campaign = await campaignService.createCampaign({
-        name: `Campaign - ${campaignPlan.objective.substring(0, 50)}`,
-        description: `Campaign for ${campaignPlan.objective}`,
-        objective: campaignPlan.objective,
+      const response = await campaignService.createCampaign({
         campaignPlan,
+        name: campaignName,
+        description: `Campaign for ${campaignPlan.objective}`,
       });
+
+      // Transform response to Campaign object
+      const campaign = {
+        id: response.campaignId,
+        name: campaignName,
+        description: `Campaign for ${campaignPlan.objective}`,
+        campaignPlan,
+        status: response.status,
+        platformCampaignIds: response.platformCampaignIds,
+        createdAt: response.createdAt,
+        updatedAt: new Date(),
+      };
 
       // Add to store
       addCampaign(campaign);
       setCampaign(campaign);
 
-      // Show success message
-      toastService.success('Campaign created successfully!');
+      // Show success message if there are errors
+      if (response.errors && response.errors.length > 0) {
+        const errorMessage = response.errors
+          .map((e: any) => `${e.platform}: ${e.error}`)
+          .join('\n');
+        toastService.warning(`Campaign created with some errors:\n${errorMessage}`);
+      } else {
+        toastService.success('Campaign created successfully!');
+      }
 
       // Navigate to campaign detail page
-      navigate(`/campaign/${campaign.id}`);
+      navigate(`/campaign/${response.campaignId}`);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to create campaign';
       setError(errorMessage);
@@ -80,23 +103,24 @@ const CampaignPlanActions: React.FC<CampaignPlanActionsProps> = () => {
   }
 
   return (
-    <div className="campaign-plan-actions">
-      <button
-        className="btn btn-secondary"
+    <div className="flex flex-wrap gap-3">
+      <Button
+        variant="outline"
         onClick={handleViewPreview}
         type="button"
         disabled={isLoading}
       >
-        📋 View Preview
-      </button>
-      <button
-        className="btn btn-primary"
+        <EyeIcon className="h-4 w-4" />
+        View Preview
+      </Button>
+      <Button
         onClick={handleCreateCampaign}
         type="button"
         disabled={isLoading}
       >
-        {isLoading ? 'Creating...' : '✅ Create Campaign'}
-      </button>
+        <CheckCircle2Icon className="h-4 w-4" />
+        {isLoading ? 'Creating...' : 'Create Campaign'}
+      </Button>
     </div>
   );
 };

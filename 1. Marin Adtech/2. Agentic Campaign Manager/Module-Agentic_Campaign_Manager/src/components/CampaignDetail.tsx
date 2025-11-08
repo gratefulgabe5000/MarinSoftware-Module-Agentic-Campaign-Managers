@@ -3,9 +3,15 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useCampaignStore } from '../store/campaignStore';
 import { campaignService } from '../services/campaignService';
 import { Campaign } from '../types/campaign.types';
+import { CampaignStatus as StatusEnum } from '../types/status.types';
 import CampaignOverviewCard from './CampaignOverviewCard';
 import CampaignStatus from './CampaignStatus';
 import CampaignActions from './CampaignActions';
+import { Button } from './ui/button';
+import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
+import { Badge } from './ui/badge';
+import { Alert, AlertDescription } from './ui/alert';
+import { Loader2Icon, ArrowLeftIcon, AlertCircleIcon, ExternalLinkIcon } from 'lucide-react';
 
 /**
  * Campaign Detail Component
@@ -20,6 +26,32 @@ const CampaignDetail: React.FC = () => {
   
   const getCampaignById = useCampaignStore((state) => state.getCampaignById);
   const currentCampaign = useCampaignStore((state) => state.currentCampaign);
+  const initializeCampaigns = useCampaignStore((state) => state.initializeCampaigns);
+  const isInitialized = useCampaignStore((state) => state.isInitialized);
+
+  // Define mapping function BEFORE useEffect to avoid hoisting issues
+  const mapCampaignStatusToEnum = (status: string | undefined): StatusEnum | undefined => {
+    if (!status || typeof status !== 'string') return undefined;
+    const statusMap: Record<string, StatusEnum> = {
+      'draft': StatusEnum.DRAFT,
+      'creating': StatusEnum.CREATING,
+      'pending_approval': StatusEnum.PENDING_APPROVAL,
+      'approved': StatusEnum.APPROVED,
+      'active': StatusEnum.ACTIVE,
+      'paused': StatusEnum.PAUSED,
+      'completed': StatusEnum.COMPLETED,
+      'archived': StatusEnum.ARCHIVED,
+      'error': StatusEnum.ERROR,
+    };
+    return statusMap[status.toLowerCase()];
+  };
+
+  // Log when campaign state changes
+  useEffect(() => {
+    console.log('=== CampaignDetail: campaign state changed ===');
+    console.log('Campaign:', campaign);
+    console.log('Campaign status:', campaign?.status);
+  }, [campaign]);
 
   useEffect(() => {
     const loadCampaign = async () => {
@@ -29,25 +61,64 @@ const CampaignDetail: React.FC = () => {
         return;
       }
 
+      console.log('=== CampaignDetail: Loading campaign ===');
+      console.log('Campaign ID:', id);
+      console.log('Store initialized?', isInitialized);
+
       try {
         setIsLoading(true);
         setError(null);
 
-        // Try to get from store first
+        // Make sure store is initialized from IndexedDB
+        if (!isInitialized) {
+          console.log('Initializing campaign store from IndexedDB...');
+          await initializeCampaigns();
+          console.log('Store initialized');
+        }
+
+        // Try to get from store first (which now includes IndexedDB data)
         let campaignData = getCampaignById(id);
-        
+        console.log('Campaign from store:', campaignData);
+
         // If not in store, try current campaign
         if (!campaignData && currentCampaign?.id === id) {
           campaignData = currentCampaign;
+          console.log('Campaign from current campaign:', campaignData);
         }
 
-        // If still not found, fetch from API
+        // If still not found, try to fetch from API
         if (!campaignData) {
-          campaignData = await campaignService.getCampaign(id);
+          console.log('Fetching campaign from API...');
+          try {
+            const apiResponse = await campaignService.getCampaign(id);
+            console.log('Campaign from API:', apiResponse);
+
+            // Check if API returned a valid campaign (not just a "not implemented" message)
+            if (apiResponse && apiResponse.status && apiResponse.campaignPlan) {
+              campaignData = apiResponse;
+            } else {
+              console.warn('API returned incomplete campaign data:', apiResponse);
+              throw new Error('Campaign API endpoint not fully implemented');
+            }
+          } catch (apiError) {
+            console.error('API fetch failed, campaign only exists in memory/IndexedDB:', apiError);
+            // If API fails, campaign doesn't exist
+            campaignData = null;
+          }
         }
+
+        console.log('=== Final Campaign Data ===');
+        console.log('Campaign:', JSON.stringify(campaignData, null, 2));
+        console.log('Campaign Status:', campaignData?.status);
+        console.log('Campaign Status Type:', typeof campaignData?.status);
+        console.log('Campaign Plan:', campaignData?.campaignPlan);
+        console.log('Platform Campaign IDs:', campaignData?.platformCampaignIds);
+        console.log('Mapped Status to Enum:', mapCampaignStatusToEnum(campaignData?.status));
 
         setCampaign(campaignData);
+        console.log('Campaign state has been set');
       } catch (error) {
+        console.error('Error loading campaign:', error);
         setError(error instanceof Error ? error.message : 'Failed to load campaign');
       } finally {
         setIsLoading(false);
@@ -55,145 +126,235 @@ const CampaignDetail: React.FC = () => {
     };
 
     loadCampaign();
-  }, [id, getCampaignById, currentCampaign]);
+  }, [id, getCampaignById, currentCampaign, initializeCampaigns, isInitialized]);
 
   if (isLoading) {
     return (
-      <div className="campaign-detail loading">
-        <div className="loading-spinner">Loading campaign details...</div>
+      <div className="min-h-screen bg-background p-8">
+        <div className="flex flex-col items-center justify-center gap-4 py-12">
+          <Loader2Icon className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-muted-foreground">Loading campaign details...</p>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="campaign-detail error">
-        <div className="error-message">
-          <span>⚠️ {error}</span>
+      <div className="min-h-screen bg-background p-8">
+        <div className="mx-auto max-w-7xl space-y-4">
+          <Alert variant="destructive">
+            <AlertCircleIcon className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+          <Button onClick={() => navigate('/campaigns')} variant="outline">
+            <ArrowLeftIcon className="h-4 w-4" />
+            Back to Dashboard
+          </Button>
         </div>
-        <button onClick={() => navigate('/')} className="back-button">
-          Back to Dashboard
-        </button>
       </div>
     );
   }
 
   if (!campaign) {
     return (
-      <div className="campaign-detail empty">
-        <div className="empty-state">
-          <h2>Campaign Not Found</h2>
-          <p>The campaign you're looking for doesn't exist.</p>
-          <button onClick={() => navigate('/')} className="back-button">
-            Back to Dashboard
-          </button>
+      <div className="min-h-screen bg-background p-8">
+        <div className="mx-auto max-w-7xl">
+          <Card className="py-12">
+            <CardContent className="flex flex-col items-center justify-center gap-4 text-center">
+              <AlertCircleIcon className="h-12 w-12 text-muted-foreground" />
+              <div>
+                <h2 className="text-lg font-semibold">Campaign Not Found</h2>
+                <p className="text-muted-foreground mt-1">
+                  The campaign you're looking for doesn't exist.
+                </p>
+              </div>
+              <Button onClick={() => navigate('/campaigns')} variant="outline">
+                <ArrowLeftIcon className="h-4 w-4" />
+                Back to Dashboard
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
   }
 
-  return (
-    <div className="campaign-detail">
-      <div className="campaign-detail-header">
-        <button onClick={() => navigate('/')} className="back-button">
-          ← Back
-        </button>
-        <div>
-          <h2>{campaign.name}</h2>
-          <p className="campaign-status">
-            Status: <span className={`status-badge status-${campaign.status}`}>
-              {campaign.status.replace('_', ' ')}
-            </span>
-          </p>
-        </div>
-      </div>
+  const getStatusVariant = (status: string | undefined): 'default' | 'secondary' | 'destructive' | 'outline' => {
+    if (!status || typeof status !== 'string') return 'outline';
+    switch (status.toLowerCase()) {
+      case 'active':
+        return 'default';
+      case 'paused':
+        return 'secondary';
+      case 'creating':
+        return 'outline';
+      case 'error':
+        return 'destructive';
+      default:
+        return 'outline';
+    }
+  };
 
-      <div className="campaign-detail-content">
+  const getStatusLabel = (status: string | undefined): string => {
+    if (!status || typeof status !== 'string') return 'Unknown';
+    return status
+      .split('_')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
+  return (
+    <div className="min-h-screen bg-background p-8">
+      <div className="mx-auto max-w-7xl space-y-6">
+        {/* Header */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="space-y-2">
+            <Button
+              onClick={() => navigate('/campaigns')}
+              variant="ghost"
+              size="sm"
+              className="mb-2"
+            >
+              <ArrowLeftIcon className="h-4 w-4" />
+              Back
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">{campaign.name}</h1>
+              <div className="flex items-center gap-2 mt-2">
+                <span className="text-sm text-muted-foreground">Status:</span>
+                <Badge variant={getStatusVariant(campaign.status)}>
+                  {getStatusLabel(campaign.status)}
+                </Badge>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Campaign Overview */}
         {campaign.campaignPlan && (
           <CampaignOverviewCard campaignPlan={campaign.campaignPlan} />
         )}
 
-        <div className="campaign-status-card card">
-          <div className="card-header">
-            <h3>Campaign Status</h3>
-          </div>
-          <div className="card-content">
+        {/* Debug Info */}
+        <Card className="border-yellow-500 bg-yellow-50">
+          <CardHeader>
+            <CardTitle className="text-sm">🔧 Debug Info (Remove after testing)</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-xs">
+            <div className="flex justify-between">
+              <span className="font-semibold">Campaign Status (string):</span>
+              <span className="font-mono">{campaign.status}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="font-semibold">Mapped to Enum:</span>
+              <span className="font-mono">{mapCampaignStatusToEnum(campaign.status)?.toString() || 'undefined'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="font-semibold">Updated At:</span>
+              <span className="font-mono">{new Date(campaign.updatedAt).toLocaleTimeString()}</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Campaign Status */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Campaign Status</CardTitle>
+          </CardHeader>
+          <CardContent>
             <CampaignStatus
               campaignId={campaign.id}
-              initialStatus={campaign.status as 'draft' | 'creating' | 'pending_approval' | 'approved' | 'active' | 'paused' | 'completed' | 'archived' | 'error'}
+              initialStatus={mapCampaignStatusToEnum(campaign.status)}
               showHistory={true}
               pollingInterval={5000}
               enableNotifications={true}
               campaignName={campaign.name}
             />
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
-        <div className="campaign-info-card card">
-          <div className="card-header">
-            <h3>Campaign Information</h3>
-          </div>
-          <div className="card-content">
-            <div className="info-item">
-              <label>Campaign ID:</label>
-              <span>{campaign.id}</span>
+        {/* Campaign Information */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Campaign Information</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Campaign ID:</span>
+              <span className="font-medium">{campaign.id}</span>
             </div>
-            <div className="info-item">
-              <label>Created:</label>
-              <span>{new Date(campaign.createdAt).toLocaleString()}</span>
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Created:</span>
+              <span className="font-medium">{new Date(campaign.createdAt).toLocaleString()}</span>
             </div>
-            <div className="info-item">
-              <label>Updated:</label>
-              <span>{new Date(campaign.updatedAt).toLocaleString()}</span>
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Updated:</span>
+              <span className="font-medium">{new Date(campaign.updatedAt).toLocaleString()}</span>
             </div>
             {campaign.description && (
-              <div className="info-item">
-                <label>Description:</label>
-                <span>{campaign.description}</span>
+              <div className="flex flex-col gap-1 text-sm">
+                <span className="text-muted-foreground">Description:</span>
+                <span className="font-medium">{campaign.description}</span>
               </div>
             )}
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
+        {/* Platform Campaign IDs */}
         {campaign.platformCampaignIds && Object.keys(campaign.platformCampaignIds).length > 0 && (
-          <div className="platform-campaigns-card card">
-            <div className="card-header">
-              <h3>Platform Campaign IDs</h3>
-            </div>
-            <div className="card-content">
+          <Card>
+            <CardHeader>
+              <CardTitle>Platform Campaign IDs</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
               {Object.entries(campaign.platformCampaignIds).map(([platform, campaignId]) => (
-                <div key={platform} className="platform-item">
-                  <label>{platform}:</label>
-                  <span className="platform-id">{campaignId}</span>
-                  {campaignId && (
-                    <a
-                      href={`https://ads.google.com/campaigns/${campaignId}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="platform-link"
-                    >
-                      View in Platform →
-                    </a>
-                  )}
+                <div key={platform} className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">{platform}:</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-xs bg-muted px-2 py-1 rounded">{campaignId}</span>
+                    {campaignId && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        asChild
+                      >
+                        <a
+                          href={`https://ads.google.com/campaigns/${campaignId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <ExternalLinkIcon className="h-4 w-4" />
+                        </a>
+                      </Button>
+                    )}
+                  </div>
                 </div>
               ))}
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         )}
 
-        <div className="campaign-actions-card card">
-          <div className="card-header">
-            <h3>Campaign Actions</h3>
-          </div>
-          <div className="card-content">
+        {/* Campaign Actions */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Campaign Actions</CardTitle>
+          </CardHeader>
+          <CardContent>
             <CampaignActions
               campaign={campaign}
               onUpdate={(updatedCampaign) => {
+                console.log('=== CampaignDetail: onUpdate callback received ===');
+                console.log('Updated campaign:', updatedCampaign);
+                console.log('Old campaign status:', campaign.status);
+                console.log('New campaign status:', updatedCampaign.status);
+                console.log('Mapped enum status:', mapCampaignStatusToEnum(updatedCampaign.status));
                 setCampaign(updatedCampaign);
+                console.log('Campaign state updated in CampaignDetail');
               }}
             />
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

@@ -1,4 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Button } from './ui/button';
+import { Textarea } from './ui/textarea';
+import { Spinner } from './ui/spinner';
+import { cn } from '@/lib/utils';
 
 /**
  * MessageInput Component Props
@@ -65,9 +69,9 @@ const MessageInput: React.FC<MessageInputProps> = ({
   const isSendDisabled = !message.trim() || isLoading || disabled;
 
   return (
-    <div className="message-input">
-      <div className="message-input-wrapper">
-        <textarea
+    <div className="flex flex-col gap-2 p-4 border-t border-border bg-background">
+      <div className="flex gap-2 items-end">
+        <Textarea
           ref={textareaRef}
           value={message}
           onChange={handleChange}
@@ -75,27 +79,28 @@ const MessageInput: React.FC<MessageInputProps> = ({
           placeholder="Describe your campaign goals... (Press Enter to send, Shift+Enter for new line)"
           disabled={disabled}
           rows={1}
-          className="message-input-textarea"
+          className="min-h-[40px] max-h-[200px] resize-none"
         />
-        <button
+        <Button
           onClick={handleSend}
           disabled={isSendDisabled}
-          className="message-input-send-btn"
           aria-label="Send message"
+          size="icon"
+          className="shrink-0"
         >
           {isLoading ? (
-            <span className="send-btn-loading">...</span>
+            <Spinner className="size-4" />
           ) : (
-            <span className="send-btn-icon">→</span>
+            <span className="text-lg">→</span>
           )}
-        </button>
+        </Button>
       </div>
-      <div className="message-input-footer">
-        <span className="message-input-hint">
+      <div className="flex justify-between items-center text-xs text-muted-foreground">
+        <span>
           Press Enter to send, Shift+Enter for new line
         </span>
         {message.length > 0 && (
-          <span className="message-input-count">{message.length} characters</span>
+          <span>{message.length} characters</span>
         )}
       </div>
     </div>

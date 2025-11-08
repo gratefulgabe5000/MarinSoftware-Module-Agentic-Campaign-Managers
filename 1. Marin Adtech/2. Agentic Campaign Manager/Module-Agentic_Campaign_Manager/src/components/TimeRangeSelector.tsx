@@ -1,5 +1,6 @@
 import React from 'react';
 import { TimeRange, TimeRangeConfig } from '../types/performance.types';
+import { Button } from './ui/button';
 
 /**
  * Time Range Selector Props
@@ -48,29 +49,26 @@ const TimeRangeSelector: React.FC<TimeRangeSelectorProps> = ({
   };
 
   return (
-    <div className="time-range-selector">
-      <label className="time-range-label">Time Range:</label>
-      <div className="time-range-buttons">
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-sm font-medium text-muted-foreground">Time Range:</span>
         {timeRangeOptions.map((option) => (
-          <button
+          <Button
             key={option.value}
-            className={`time-range-button ${
-              selectedRange.type === option.value ? 'active' : ''
-            }`}
+            variant={selectedRange.type === option.value ? 'default' : 'outline'}
+            size="sm"
             onClick={() => handleRangeSelect(option.value)}
             type="button"
           >
             {option.label}
-          </button>
+          </Button>
         ))}
       </div>
       {selectedRange.type === 'custom' && selectedRange.start && selectedRange.end && (
-        <div className="custom-range-display">
-          <span className="custom-range-text">
-            {selectedRange.start.toLocaleDateString()} -{' '}
-            {selectedRange.end.toLocaleDateString()}
-          </span>
-        </div>
+        <span className="text-xs text-muted-foreground">
+          {selectedRange.start.toLocaleDateString()} -{' '}
+          {selectedRange.end.toLocaleDateString()}
+        </span>
       )}
     </div>
   );

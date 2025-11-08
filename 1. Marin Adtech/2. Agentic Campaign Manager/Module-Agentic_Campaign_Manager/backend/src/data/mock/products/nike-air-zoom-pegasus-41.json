@@ -1,0 +1,156 @@
+{
+  "campaigns": [
+    {
+      "id": "campaign-nike-pegasus-001",
+      "name": "Nike Air Zoom Pegasus 41 - Performance Running",
+      "status": "ACTIVE",
+      "advertising_channel_type": "SEARCH",
+      "adGroups": [
+        {
+          "id": "adgroup-nike-pegasus-001",
+          "name": "Nike Pegasus 41 - Product Specific",
+          "keywords": [
+            {
+              "text": "nike air zoom pegasus 41",
+              "matchType": "EXACT",
+              "impressions": 10000,
+              "clicks": 400,
+              "ctr": 4.0,
+              "conversions": 22,
+              "cost": 1000.00,
+              "roas": 3.08,
+              "average_cpc": 2.50
+            },
+            {
+              "text": "nike pegasus 41",
+              "matchType": "PHRASE",
+              "impressions": 8500,
+              "clicks": 340,
+              "ctr": 4.0,
+              "conversions": 18,
+              "cost": 952.00,
+              "roas": 2.65,
+              "average_cpc": 2.80
+            },
+            {
+              "text": "pegasus 41 running shoes",
+              "matchType": "PHRASE",
+              "impressions": 7200,
+              "clicks": 288,
+              "ctr": 4.0,
+              "conversions": 15,
+              "cost": 576.00,
+              "roas": 3.65,
+              "average_cpc": 2.00
+            },
+            {
+              "text": "buy nike pegasus 41",
+              "matchType": "PHRASE",
+              "impressions": 6500,
+              "clicks": 260,
+              "ctr": 4.0,
+              "conversions": 12,
+              "cost": 520.00,
+              "roas": 3.23,
+              "average_cpc": 2.00
+            }
+          ],
+          "ads": [
+            {
+              "id": "ad-nike-pegasus-001",
+              "type": "RESPONSIVE_SEARCH_AD",
+              "headlines": [
+                "Nike Air Zoom Pegasus 41",
+                "Responsive Zoom Air Cushioning",
+                "Versatile Daily Trainer",
+                "Shop Nike Running Shoes",
+                "Premium Performance Running",
+                "Trusted by Runners Worldwide",
+                "Free Shipping & Returns",
+                "Official Nike Store"
+              ],
+              "descriptions": [
+                "Experience responsive cushioning with Nike Air Zoom Pegasus 41. Perfect for daily training runs. Free shipping on all orders.",
+                "Shop the latest Nike running shoes. Responsive Zoom Air technology for versatile mileage. Free returns.",
+                "Trusted by runners worldwide. Premium cushioning and support for every mile. Shop now."
+              ],
+              "final_urls": ["https://www.nike.com/t/air-zoom-pegasus-41/FD0534-100"]
+            }
+          ]
+        },
+        {
+          "id": "adgroup-nike-pegasus-002",
+          "name": "Nike Pegasus 41 - Variations",
+          "keywords": [
+            {
+              "text": "pegasus 41 men's",
+              "matchType": "PHRASE",
+              "impressions": 5000,
+              "clicks": 200,
+              "ctr": 4.0,
+              "conversions": 15,
+              "cost": 440.00,
+              "roas": 4.77,
+              "average_cpc": 2.20
+            },
+            {
+              "text": "pegasus 41 women's",
+              "matchType": "PHRASE",
+              "impressions": 4200,
+              "clicks": 168,
+              "ctr": 4.0,
+              "conversions": 10,
+              "cost": 268.80,
+              "roas": 5.20,
+              "average_cpc": 1.60
+            },
+            {
+              "text": "nike pegasus 41 review",
+              "matchType": "PHRASE",
+              "impressions": 3800,
+              "clicks": 152,
+              "ctr": 4.0,
+              "conversions": 8,
+              "cost": 258.40,
+              "roas": 4.34,
+              "average_cpc": 1.70
+            },
+            {
+              "text": "air zoom pegasus 41 price",
+              "matchType": "PHRASE",
+              "impressions": 3200,
+              "clicks": 128,
+              "ctr": 4.0,
+              "conversions": 6,
+              "cost": 217.60,
+              "roas": 3.86,
+              "average_cpc": 1.70
+            }
+          ],
+          "ads": [
+            {
+              "id": "ad-nike-pegasus-002",
+              "type": "RESPONSIVE_SEARCH_AD",
+              "headlines": [
+                "Zoom Air Technology",
+                "Responsive Cushioning System",
+                "Nike Performance Running",
+                "Advanced Running Tech",
+                "Pegasus 41 Innovation",
+                "Run With Confidence",
+                "Premium Nike Quality",
+                "Engineered For Speed"
+              ],
+              "descriptions": [
+                "Nike Zoom Air delivers responsive cushioning that adapts to your stride. Perfect for tempo runs and long distances.",
+                "Advanced cushioning technology meets versatile design. The Pegasus 41 handles any workout with ease.",
+                "Experience Nike's most trusted daily trainer. Responsive, durable, and built for serious runners."
+              ],
+              "final_urls": ["https://www.nike.com/t/air-zoom-pegasus-41/FD0534-100"]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

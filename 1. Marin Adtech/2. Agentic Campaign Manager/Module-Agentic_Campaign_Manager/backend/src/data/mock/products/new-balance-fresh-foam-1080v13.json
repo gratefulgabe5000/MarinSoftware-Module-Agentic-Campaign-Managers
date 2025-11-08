@@ -1,0 +1,156 @@
+{
+  "campaigns": [
+    {
+      "id": "campaign-nb-1080v13-001",
+      "name": "New Balance Fresh Foam X 1080v13 - Premium Long-Run Comfort",
+      "status": "ACTIVE",
+      "advertising_channel_type": "SEARCH",
+      "adGroups": [
+        {
+          "id": "adgroup-nb-1080v13-001",
+          "name": "New Balance 1080v13 - Product Specific",
+          "keywords": [
+            {
+              "text": "new balance 1080v13",
+              "matchType": "EXACT",
+              "impressions": 8500,
+              "clicks": 340,
+              "ctr": 4.0,
+              "conversions": 28,
+              "cost": 612.00,
+              "roas": 8.24,
+              "average_cpc": 1.80
+            },
+            {
+              "text": "new balance fresh foam 1080v13",
+              "matchType": "PHRASE",
+              "impressions": 7200,
+              "clicks": 288,
+              "ctr": 4.0,
+              "conversions": 24,
+              "cost": 518.40,
+              "roas": 8.33,
+              "average_cpc": 1.80
+            },
+            {
+              "text": "fresh foam x 1080v13",
+              "matchType": "PHRASE",
+              "impressions": 6000,
+              "clicks": 240,
+              "ctr": 4.0,
+              "conversions": 20,
+              "cost": 432.00,
+              "roas": 8.33,
+              "average_cpc": 1.80
+            },
+            {
+              "text": "buy new balance 1080v13",
+              "matchType": "PHRASE",
+              "impressions": 5000,
+              "clicks": 200,
+              "ctr": 4.0,
+              "conversions": 16,
+              "cost": 360.00,
+              "roas": 8.00,
+              "average_cpc": 1.80
+            }
+          ],
+          "ads": [
+            {
+              "id": "ad-nb-1080v13-001",
+              "type": "RESPONSIVE_SEARCH_AD",
+              "headlines": [
+                "New Balance Fresh Foam 1080v13",
+                "Premium Long-Run Comfort",
+                "Soft Fresh Foam X Midsole",
+                "Flexible Knit Upper",
+                "Shop 1080v13 Now",
+                "Award-Winning Cushioning",
+                "Ultimate Marathon Trainer",
+                "Official New Balance Store"
+              ],
+              "descriptions": [
+                "Experience premium comfort with New Balance Fresh Foam X 1080v13. Soft midsole pairs with flexible knit upper for long-run excellence.",
+                "Shop the ultimate long-distance trainer. Fresh Foam X cushioning delivers plush comfort mile after mile.",
+                "Discover why runners choose the 1080v13 for marathons. Premium cushioning and supportive fit. Shop now."
+              ],
+              "final_urls": ["https://www.newbalance.com/pd/fresh-foam-x-1080v13/M1080V13.html"]
+            }
+          ]
+        },
+        {
+          "id": "adgroup-nb-1080v13-002",
+          "name": "New Balance 1080v13 - Variations",
+          "keywords": [
+            {
+              "text": "1080v13 mens",
+              "matchType": "PHRASE",
+              "impressions": 4400,
+              "clicks": 176,
+              "ctr": 4.0,
+              "conversions": 15,
+              "cost": 316.80,
+              "roas": 8.52,
+              "average_cpc": 1.80
+            },
+            {
+              "text": "1080v13 womens",
+              "matchType": "PHRASE",
+              "impressions": 3800,
+              "clicks": 152,
+              "ctr": 4.0,
+              "conversions": 13,
+              "cost": 273.60,
+              "roas": 8.55,
+              "average_cpc": 1.80
+            },
+            {
+              "text": "new balance 1080v13 review",
+              "matchType": "PHRASE",
+              "impressions": 3200,
+              "clicks": 128,
+              "ctr": 4.0,
+              "conversions": 10,
+              "cost": 230.40,
+              "roas": 7.81,
+              "average_cpc": 1.80
+            },
+            {
+              "text": "1080v13 vs 1080v12",
+              "matchType": "PHRASE",
+              "impressions": 2800,
+              "clicks": 112,
+              "ctr": 4.0,
+              "conversions": 8,
+              "cost": 201.60,
+              "roas": 7.14,
+              "average_cpc": 1.80
+            }
+          ],
+          "ads": [
+            {
+              "id": "ad-nb-1080v13-002",
+              "type": "RESPONSIVE_SEARCH_AD",
+              "headlines": [
+                "1080v13 Men's & Women's",
+                "Compare 1080v13 vs v12",
+                "Updated Fresh Foam X",
+                "Improved Fit & Comfort",
+                "Shop Latest 1080 Model",
+                "Best Long-Distance Trainer",
+                "Multiple Width Options",
+                "Free Shipping Over $99"
+              ],
+              "descriptions": [
+                "Find your perfect 1080v13 for men and women. Enhanced Fresh Foam X and improved fit over v12. Multiple widths available.",
+                "Read reviews and compare models. The 1080v13 features updated cushioning for superior long-run comfort.",
+                "Shop New Balance 1080v13 in multiple widths and colors. Premium marathon trainer. Free shipping over $99."
+              ],
+              "final_urls": ["https://www.newbalance.com/pd/fresh-foam-x-1080v13/M1080V13.html"]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

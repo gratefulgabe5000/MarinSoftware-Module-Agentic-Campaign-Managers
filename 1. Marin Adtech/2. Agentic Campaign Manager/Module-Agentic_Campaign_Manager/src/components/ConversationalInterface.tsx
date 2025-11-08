@@ -192,39 +192,41 @@ const ConversationalInterface: React.FC = () => {
   };
 
   return (
-    <div className="conversational-interface">
-      <div className="conversational-interface-header">
-        <h2>Create Your Campaign</h2>
-        <p>Describe your campaign goals and I'll help you create it</p>
-        {messages.length > 0 && (
-          <button
-            onClick={handleClearConversation}
-            className="clear-conversation-btn"
-          >
-            Clear Conversation
-          </button>
-        )}
-      </div>
+    <div className="min-h-screen bg-background p-8">
+      <div className="mx-auto max-w-4xl space-y-6">
+        <div className="space-y-2">
+          <h2 className="text-3xl font-bold tracking-tight">Create Your Campaign</h2>
+          <p className="text-muted-foreground">Describe your campaign goals and I'll help you create it</p>
+          {messages.length > 0 && (
+            <button
+              onClick={handleClearConversation}
+              className="text-sm text-muted-foreground hover:text-foreground underline"
+            >
+              Clear Conversation
+            </button>
+          )}
+        </div>
 
-      <div className="conversational-interface-content">
-        {showExamples && messages.length === 0 && (
-          <ExamplePrompts onSelectPrompt={handleExamplePrompt} />
-        )}
+        <div className="space-y-6">
+          {showExamples && messages.length === 0 && (
+            <ExamplePrompts onSelectPrompt={handleExamplePrompt} />
+          )}
 
-        {error && (
-          <div className="error-message">
-            <span>⚠️ {error}</span>
-          </div>
-        )}
+          {error && (
+            <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4">
+              <span className="text-sm text-destructive">⚠️ {error}</span>
+            </div>
+          )}
 
-        <MessageList messages={messages} />
-        <div ref={messagesEndRef} />
+          <MessageList messages={messages} />
+          <div ref={messagesEndRef} />
 
-        <MessageInput
-          onSendMessage={handleSendMessage}
-          isLoading={isLoading}
-          disabled={isLoading}
-        />
+          <MessageInput
+            onSendMessage={handleSendMessage}
+            isLoading={isLoading}
+            disabled={isLoading}
+          />
+        </div>
       </div>
     </div>
   );

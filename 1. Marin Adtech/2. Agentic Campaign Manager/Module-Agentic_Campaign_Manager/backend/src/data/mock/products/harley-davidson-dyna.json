@@ -1,0 +1,134 @@
+{
+  "campaigns": [
+    {
+      "id": "campaign-harley-dyna-001",
+      "name": "Harley-Davidson Dyna - Performance Cruisers",
+      "status": "ACTIVE",
+      "advertising_channel_type": "SEARCH",
+      "adGroups": [
+        {
+          "id": "adgroup-harley-dyna-001",
+          "name": "Harley Dyna - Power Cruisers",
+          "keywords": [
+            {
+              "text": "harley davidson dyna",
+              "matchType": "EXACT",
+              "impressions": 18000,
+              "clicks": 900,
+              "ctr": 5.0,
+              "conversions": 28,
+              "cost": 2700.00,
+              "roas": 33.0,
+              "average_cpc": 3.00
+            },
+            {
+              "text": "dyna for sale",
+              "matchType": "PHRASE",
+              "impressions": 14500,
+              "clicks": 1015,
+              "ctr": 7.0,
+              "conversions": 30,
+              "cost": 3045.00,
+              "roas": 36.5,
+              "average_cpc": 3.00
+            },
+            {
+              "text": "harley performance cruiser",
+              "matchType": "PHRASE",
+              "impressions": 11500,
+              "clicks": 575,
+              "ctr": 5.0,
+              "conversions": 16,
+              "cost": 1725.00,
+              "roas": 29.5,
+              "average_cpc": 3.00
+            },
+            {
+              "text": "buy harley dyna",
+              "matchType": "BROAD",
+              "impressions": 16000,
+              "clicks": 480,
+              "ctr": 3.0,
+              "conversions": 12,
+              "cost": 1440.00,
+              "roas": 26.0,
+              "average_cpc": 3.00
+            }
+          ],
+          "ads": [
+            {
+              "id": "ad-harley-dyna-001",
+              "type": "RESPONSIVE_SEARCH_AD",
+              "headlines": [
+                "Harley-Davidson Dyna",
+                "Power Cruiser Performance",
+                "Shop Dyna Models",
+                "V-Twin Performance",
+                "Dyna Wide Glide",
+                "Street Bob Performance",
+                "Iconic Dyna Style",
+                "Harley Performance Bikes"
+              ],
+              "descriptions": [
+                "Experience raw Harley-Davidson power with Dyna models. Legendary V-Twin performance and agile handling.",
+                "Find your perfect Dyna cruiser. From Street Bob to Wide Glide, we have the bike for you.",
+                "Unleash the road with a Harley Dyna. Powerful, responsive, and unmistakably Harley-Davidson."
+              ],
+              "final_urls": ["https://www.harley-davidson.com/us/en/motorcycles/dyna.html"]
+            }
+          ]
+        },
+        {
+          "id": "adgroup-harley-dyna-002",
+          "name": "Harley Dyna - Used Models",
+          "keywords": [
+            {
+              "text": "used harley dyna",
+              "matchType": "PHRASE",
+              "impressions": 12500,
+              "clicks": 625,
+              "ctr": 5.0,
+              "conversions": 18,
+              "cost": 1875.00,
+              "roas": 31.0,
+              "average_cpc": 3.00
+            },
+            {
+              "text": "pre owned dyna",
+              "matchType": "PHRASE",
+              "impressions": 9000,
+              "clicks": 450,
+              "ctr": 5.0,
+              "conversions": 13,
+              "cost": 1350.00,
+              "roas": 28.0,
+              "average_cpc": 3.00
+            }
+          ],
+          "ads": [
+            {
+              "id": "ad-harley-dyna-002",
+              "type": "RESPONSIVE_SEARCH_AD",
+              "headlines": [
+                "Certified Pre-Owned Dyna",
+                "Quality Used Harley Dyna",
+                "Inspected Dyna Models",
+                "Affordable Dyna Cruisers",
+                "Pre-Owned Harley Deals",
+                "Warranty-Backed Dyna",
+                "Quality Used Harleys",
+                "Certified Dyna Selection"
+              ],
+              "descriptions": [
+                "Shop certified pre-owned Harley Dyna models. Thoroughly inspected with warranty protection.",
+                "Quality used Dyna motorcycles at great prices. Trade-ins welcome and financing available.",
+                "Find exceptional value in our pre-owned Dyna collection. Expert service and support included."
+              ],
+              "final_urls": ["https://www.harley-davidson.com/us/en/motorcycles/dyna.html"]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

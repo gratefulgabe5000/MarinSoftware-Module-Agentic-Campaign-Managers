@@ -232,4 +232,52 @@ export class AuthController {
       });
     }
   };
+
+  /**
+   * Get Google Ads OAuth connection status
+   * GET /api/auth/google/status
+   */
+  getGoogleStatus = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const token = oauthService.getToken('google');
+      const isConnected = token !== null && !oauthService.isTokenExpired(token);
+
+      res.json({
+        platform: 'google',
+        connected: isConnected,
+        hasToken: token !== null,
+        tokenExpired: token ? oauthService.isTokenExpired(token) : false,
+        expiresAt: token?.expiresAt || null,
+      });
+    } catch (error) {
+      console.error('Error in getGoogleStatus:', error);
+      res.status(500).json({
+        error: 'Failed to get Google Ads connection status',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  };
+
+  /**
+   * Disconnect Google Ads OAuth
+   * POST /api/auth/google/disconnect
+   */
+  disconnectGoogle = async (req: Request, res: Response): Promise<void> => {
+    try {
+      // Remove token from storage
+      oauthService.removeToken('google');
+
+      res.json({
+        platform: 'google',
+        disconnected: true,
+        message: 'Google Ads OAuth connection disconnected successfully',
+      });
+    } catch (error) {
+      console.error('Error in disconnectGoogle:', error);
+      res.status(500).json({
+        error: 'Failed to disconnect Google Ads',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  };
 }

@@ -5,14 +5,14 @@ dotenv.config();
 
 export const config = {
   port: process.env.PORT || 3001,
-  corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:5173',
   openaiApiKey: process.env.OPENAI_API_KEY || '',
+  anthropicApiKey: process.env.ANTHROPIC_API_KEY || '',
   googleAdsClientId: process.env.GOOGLE_ADS_CLIENT_ID || '',
   googleAdsClientSecret: process.env.GOOGLE_ADS_CLIENT_SECRET || '',
-  metaAppId: process.env.META_APP_ID || '',
-  metaAppSecret: process.env.META_APP_SECRET || '',
-  microsoftAdsClientId: process.env.MICROSOFT_ADS_CLIENT_ID || '',
-  microsoftAdsClientSecret: process.env.MICROSOFT_ADS_CLIENT_SECRET || '',
+  googleAdsRefreshToken: process.env.GOOGLE_ADS_REFRESH_TOKEN || '',
+  googleAdsDeveloperToken: process.env.GOOGLE_ADS_DEVELOPER_TOKEN || '',
+  googleAdsCustomerId: process.env.GOOGLE_ADS_CUSTOMER_ID || '',
 };
 
 // Validate required environment variables (for production)

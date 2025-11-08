@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ADEContext, ADEEvent } from './types/ade.types';
 import ModuleContainer from './components/ModuleContainer';
+import ConnectedHeader from './components/layout/ConnectedHeader';
 
 /**
  * Agentic Campaign Manager Module Props
@@ -223,7 +224,13 @@ const AgenticCampaignManagerModule: React.FC<AgenticCampaignManagerModuleProps> 
   }
 
   return (
-    <div className="agentic-campaign-manager-module">
+    <div className="agentic-campaign-manager-module min-h-screen bg-gray-50 dark:bg-gray-900">
+      <ConnectedHeader
+        adeContext={context}
+        showSearch={false}
+        showNotifications={true}
+        showThemeToggle={true}
+      />
       <ModuleContainer />
     </div>
   );

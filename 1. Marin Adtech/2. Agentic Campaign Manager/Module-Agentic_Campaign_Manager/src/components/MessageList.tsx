@@ -1,6 +1,9 @@
 import React from 'react';
 import { Message } from '../types/message.types';
 import CampaignPlanActions from './CampaignPlanActions';
+import { Badge } from './ui/badge';
+import { Loader2Icon } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 /**
  * MessageList Component Props
@@ -16,47 +19,53 @@ interface MessageListProps {
 const MessageList: React.FC<MessageListProps> = ({ messages }) => {
   if (messages.length === 0) {
     return (
-      <div className="message-list empty">
-        <p>No messages yet. Start a conversation to begin creating your campaign.</p>
+      <div className="flex items-center justify-center py-12">
+        <p className="text-sm text-muted-foreground">No messages yet. Start a conversation to begin creating your campaign.</p>
       </div>
     );
   }
 
   return (
-    <div className="message-list">
+    <div className="space-y-4">
       {messages.map((message) => (
         <div
           key={message.id}
-          className={`message message-${message.role}`}
+          className={cn(
+            "flex flex-col gap-2",
+            message.role === 'user' && "items-end"
+          )}
         >
-          <div className="message-content">
+          <div
+            className={cn(
+              "rounded-lg px-4 py-3 max-w-[85%]",
+              message.role === 'user'
+                ? "bg-primary text-primary-foreground ml-auto"
+                : "bg-muted"
+            )}
+          >
             {message.isLoading ? (
-              <div className="message-loading">
-                <span className="typing-indicator">
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </span>
-                <span className="loading-text">Thinking...</span>
+              <div className="flex items-center gap-2">
+                <Loader2Icon className="h-4 w-4 animate-spin" />
+                <span className="text-sm">Thinking...</span>
               </div>
             ) : (
               <>
                 {message.isMockData && (
-                  <div className="mock-data-badge">
-                    <span className="badge-icon">⚠️</span>
-                    <span className="badge-text">Mock Data - Simulated Response</span>
-                  </div>
+                  <Badge variant="outline" className="mb-2 bg-yellow-500/10 text-yellow-700 border-yellow-500/20">
+                    <span className="mr-1">⚠️</span>
+                    Mock Data - Simulated Response
+                  </Badge>
                 )}
-                <div className="message-text">{message.content}</div>
+                <div className="text-sm whitespace-pre-wrap">{message.content}</div>
                 {(message as any).hasCampaignPlan && (
-                  <div className="message-actions">
+                  <div className="mt-4">
                     <CampaignPlanActions />
                   </div>
                 )}
               </>
             )}
           </div>
-          <div className="message-timestamp">
+          <div className="text-xs text-muted-foreground px-2">
             {new Date(message.timestamp).toLocaleTimeString([], {
               hour: '2-digit',
               minute: '2-digit',

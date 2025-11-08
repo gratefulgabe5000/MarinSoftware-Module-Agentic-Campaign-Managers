@@ -1,0 +1,105 @@
+{
+  "keywords": [
+    {
+      "keyword": "triumph motorcycle",
+      "matchType": "BROAD",
+      "ctr": 3.0,
+      "conversions": 12,
+      "roas": 3.2,
+      "impressions": 15000,
+      "clicks": 450,
+      "cost": 1350.00
+    },
+    {
+      "keyword": "triumph bonneville",
+      "matchType": "PHRASE",
+      "ctr": 4.0,
+      "conversions": 18,
+      "roas": 4.5,
+      "impressions": 8500,
+      "clicks": 340,
+      "cost": 1020.00
+    },
+    {
+      "keyword": "harley davidson",
+      "matchType": "BROAD",
+      "ctr": 3.0,
+      "conversions": 25,
+      "roas": 3.8,
+      "impressions": 22000,
+      "clicks": 660,
+      "cost": 1980.00
+    },
+    {
+      "keyword": "harley sportster",
+      "matchType": "PHRASE",
+      "ctr": 4.0,
+      "conversions": 22,
+      "roas": 4.2,
+      "impressions": 12000,
+      "clicks": 480,
+      "cost": 1440.00
+    },
+    {
+      "keyword": "motorcycle for sale",
+      "matchType": "BROAD",
+      "ctr": 2.5,
+      "conversions": 8,
+      "roas": 2.8,
+      "impressions": 18000,
+      "clicks": 450,
+      "cost": 1620.00
+    },
+    {
+      "keyword": "buy motorcycle",
+      "matchType": "BROAD",
+      "ctr": 3.2,
+      "conversions": 15,
+      "roas": 3.5,
+      "impressions": 14000,
+      "clicks": 448,
+      "cost": 1344.00
+    },
+    {
+      "keyword": "cruiser motorcycle",
+      "matchType": "BROAD",
+      "ctr": 2.8,
+      "conversions": 10,
+      "roas": 3.0,
+      "impressions": 16000,
+      "clicks": 448,
+      "cost": 1536.00
+    },
+    {
+      "keyword": "triumph t120",
+      "matchType": "EXACT",
+      "ctr": 5.2,
+      "conversions": 20,
+      "roas": 5.0,
+      "impressions": 5000,
+      "clicks": 260,
+      "cost": 780.00
+    },
+    {
+      "keyword": "harley davidson softail",
+      "matchType": "PHRASE",
+      "ctr": 4.5,
+      "conversions": 18,
+      "roas": 4.8,
+      "impressions": 8000,
+      "clicks": 360,
+      "cost": 1080.00
+    },
+    {
+      "keyword": "motorcycle dealership",
+      "matchType": "BROAD",
+      "ctr": 2.2,
+      "conversions": 6,
+      "roas": 2.5,
+      "impressions": 20000,
+      "clicks": 440,
+      "cost": 1800.00
+    }
+  ]
+}
+

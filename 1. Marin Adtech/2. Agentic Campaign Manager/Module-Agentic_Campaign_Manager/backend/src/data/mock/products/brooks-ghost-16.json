@@ -1,0 +1,156 @@
+{
+  "campaigns": [
+    {
+      "id": "campaign-brooks-ghost-001",
+      "name": "Brooks Ghost 16 - Reliable Daily Running",
+      "status": "ACTIVE",
+      "advertising_channel_type": "SEARCH",
+      "adGroups": [
+        {
+          "id": "adgroup-brooks-ghost-001",
+          "name": "Brooks Ghost 16 - Product Specific",
+          "keywords": [
+            {
+              "text": "brooks ghost 16",
+              "matchType": "EXACT",
+              "impressions": 11000,
+              "clicks": 440,
+              "ctr": 4.0,
+              "conversions": 22,
+              "cost": 880.00,
+              "roas": 3.52,
+              "average_cpc": 2.00
+            },
+            {
+              "text": "brooks ghost 16 mens",
+              "matchType": "PHRASE",
+              "impressions": 8800,
+              "clicks": 352,
+              "ctr": 4.0,
+              "conversions": 18,
+              "cost": 633.60,
+              "roas": 3.96,
+              "average_cpc": 1.80
+            },
+            {
+              "text": "ghost 16 running shoes",
+              "matchType": "PHRASE",
+              "impressions": 7200,
+              "clicks": 288,
+              "ctr": 4.0,
+              "conversions": 15,
+              "cost": 518.40,
+              "roas": 4.05,
+              "average_cpc": 1.80
+            },
+            {
+              "text": "buy brooks ghost 16",
+              "matchType": "PHRASE",
+              "impressions": 6000,
+              "clicks": 240,
+              "ctr": 4.0,
+              "conversions": 12,
+              "cost": 432.00,
+              "roas": 3.89,
+              "average_cpc": 1.80
+            }
+          ],
+          "ads": [
+            {
+              "id": "ad-brooks-ghost-001",
+              "type": "RESPONSIVE_SEARCH_AD",
+              "headlines": [
+                "Brooks Ghost 16",
+                "Reliable Neutral Running Shoe",
+                "DNA LOFT v3 Cushioning",
+                "Smooth Transitions Every Run",
+                "Shop Brooks Ghost 16",
+                "Trusted Daily Trainer",
+                "Award-Winning Comfort",
+                "Official Brooks Store"
+              ],
+              "descriptions": [
+                "Experience reliable comfort with Brooks Ghost 16. DNA LOFT v3 cushioning delivers smooth transitions for daily training.",
+                "Shop the most trusted neutral running shoe. Perfect for everyday runs with proven comfort and reliability.",
+                "Discover why runners love the Ghost 16. Balanced cushioning and smooth ride for any distance. Shop now."
+              ],
+              "final_urls": ["https://www.brooksrunning.com/en_us/ghost-16-mens"]
+            }
+          ]
+        },
+        {
+          "id": "adgroup-brooks-ghost-002",
+          "name": "Brooks Ghost 16 - Variations",
+          "keywords": [
+            {
+              "text": "brooks ghost 16 womens",
+              "matchType": "PHRASE",
+              "impressions": 5400,
+              "clicks": 216,
+              "ctr": 4.0,
+              "conversions": 13,
+              "cost": 388.80,
+              "roas": 4.68,
+              "average_cpc": 1.80
+            },
+            {
+              "text": "brooks ghost 16 review",
+              "matchType": "PHRASE",
+              "impressions": 4600,
+              "clicks": 184,
+              "ctr": 4.0,
+              "conversions": 10,
+              "cost": 331.20,
+              "roas": 4.23,
+              "average_cpc": 1.80
+            },
+            {
+              "text": "ghost 16 vs ghost 15",
+              "matchType": "PHRASE",
+              "impressions": 3800,
+              "clicks": 152,
+              "ctr": 4.0,
+              "conversions": 8,
+              "cost": 273.60,
+              "roas": 4.09,
+              "average_cpc": 1.80
+            },
+            {
+              "text": "brooks ghost 16 sale",
+              "matchType": "PHRASE",
+              "impressions": 3200,
+              "clicks": 128,
+              "ctr": 4.0,
+              "conversions": 7,
+              "cost": 230.40,
+              "roas": 4.26,
+              "average_cpc": 1.80
+            }
+          ],
+          "ads": [
+            {
+              "id": "ad-brooks-ghost-002",
+              "type": "RESPONSIVE_SEARCH_AD",
+              "headlines": [
+                "Ghost 16 Men's & Women's",
+                "Compare Ghost 16 vs 15",
+                "Brooks Ghost 16 On Sale",
+                "New Improved Fit & Feel",
+                "Shop Latest Ghost Model",
+                "Best Selling Daily Trainer",
+                "Multiple Colors Available",
+                "Free Shipping Over $100"
+              ],
+              "descriptions": [
+                "Find your perfect Ghost 16 for men and women. Improved fit and enhanced cushioning over Ghost 15.",
+                "Read reviews and compare models. The Ghost 16 features updated DNA LOFT v3 for smoother rides.",
+                "Shop Brooks Ghost 16 sale. America's best-selling running shoe. Free shipping on orders over $100."
+              ],
+              "final_urls": ["https://www.brooksrunning.com/en_us/ghost-16-mens"]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

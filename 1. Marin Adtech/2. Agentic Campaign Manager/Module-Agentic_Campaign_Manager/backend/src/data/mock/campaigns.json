@@ -1,0 +1,94 @@
+{
+  "campaigns": [
+    {
+      "id": "campaign-001",
+      "name": "Running Shoes Sales Campaign",
+      "status": "ACTIVE",
+      "adGroups": [
+        {
+          "id": "adgroup-001",
+          "name": "Nike - Performance Running",
+          "keywords": [
+            {
+              "text": "nike running shoes",
+              "matchType": "BROAD",
+              "impressions": 15000,
+              "clicks": 600,
+              "ctr": 4.0,
+              "conversions": 25,
+              "cost": 1500.00,
+              "roas": 3.5
+            },
+            {
+              "text": "nike air zoom pegasus",
+              "matchType": "PHRASE",
+              "impressions": 8500,
+              "clicks": 340,
+              "ctr": 4.0,
+              "conversions": 18,
+              "cost": 850.00,
+              "roas": 2.96
+            }
+          ],
+          "ads": [
+            {
+              "id": "ad-001",
+              "type": "RESPONSIVE_SEARCH_AD",
+              "headlines": [
+                "Nike Running Shoes - Premium Performance",
+                "Shop Nike Running Shoes Today",
+                "Trusted by Runners Worldwide"
+              ],
+              "descriptions": [
+                "Discover the perfect running shoe for your training. Quality craftsmanship meets modern technology.",
+                "Find your ideal shoe. Browse our selection of premium running shoes."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "adgroup-002",
+          "name": "Adidas + ASICS - Cushioned Comfort",
+          "keywords": [
+            {
+              "text": "adidas ultraboost",
+              "matchType": "PHRASE",
+              "impressions": 12000,
+              "clicks": 480,
+              "ctr": 4.0,
+              "conversions": 25,
+              "cost": 960.00,
+              "roas": 4.95
+            },
+            {
+              "text": "asics gel nimbus",
+              "matchType": "PHRASE",
+              "impressions": 10000,
+              "clicks": 400,
+              "ctr": 4.0,
+              "conversions": 20,
+              "cost": 800.00,
+              "roas": 4.0
+            }
+          ],
+          "ads": [
+            {
+              "id": "ad-002",
+              "type": "RESPONSIVE_SEARCH_AD",
+              "headlines": [
+                "Premium Cushioned Running Shoes",
+                "Shop Adidas & ASICS Now",
+                "Maximum Comfort Technology"
+              ],
+              "descriptions": [
+                "Experience supreme comfort with every stride. Premium cushioning technology for long runs.",
+                "Discover the perfect blend of comfort and performance. Shop now."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

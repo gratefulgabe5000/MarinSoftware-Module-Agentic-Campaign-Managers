@@ -1,0 +1,156 @@
+{
+  "campaigns": [
+    {
+      "id": "campaign-hoka-clifton-001",
+      "name": "Hoka Clifton 9 - Lightweight Cushioned Running",
+      "status": "ACTIVE",
+      "advertising_channel_type": "SEARCH",
+      "adGroups": [
+        {
+          "id": "adgroup-hoka-clifton-001",
+          "name": "Hoka Clifton 9 - Product Specific",
+          "keywords": [
+            {
+              "text": "hoka clifton 9",
+              "matchType": "EXACT",
+              "impressions": 9500,
+              "clicks": 380,
+              "ctr": 4.0,
+              "conversions": 24,
+              "cost": 684.00,
+              "roas": 5.09,
+              "average_cpc": 1.80
+            },
+            {
+              "text": "hoka clifton 9 mens",
+              "matchType": "PHRASE",
+              "impressions": 7600,
+              "clicks": 304,
+              "ctr": 4.0,
+              "conversions": 19,
+              "cost": 547.20,
+              "roas": 5.04,
+              "average_cpc": 1.80
+            },
+            {
+              "text": "clifton 9 running shoes",
+              "matchType": "PHRASE",
+              "impressions": 6200,
+              "clicks": 248,
+              "ctr": 4.0,
+              "conversions": 16,
+              "cost": 446.40,
+              "roas": 5.21,
+              "average_cpc": 1.80
+            },
+            {
+              "text": "buy hoka clifton 9",
+              "matchType": "PHRASE",
+              "impressions": 5000,
+              "clicks": 200,
+              "ctr": 4.0,
+              "conversions": 13,
+              "cost": 360.00,
+              "roas": 5.25,
+              "average_cpc": 1.80
+            }
+          ],
+          "ads": [
+            {
+              "id": "ad-hoka-clifton-001",
+              "type": "RESPONSIVE_SEARCH_AD",
+              "headlines": [
+                "Hoka Clifton 9",
+                "Lightweight Cushioned Trainer",
+                "Early Stage Rocker Design",
+                "CMEVA Foam Technology",
+                "Shop Hoka Clifton 9",
+                "Efficient Smooth Strides",
+                "Premium Lightweight Comfort",
+                "Official Hoka Store"
+              ],
+              "descriptions": [
+                "Experience lightweight comfort with Hoka Clifton 9. Early stage rocker and CMEVA foam for efficient strides.",
+                "Shop the award-winning lightweight trainer. Maximum cushioning in a surprisingly light package.",
+                "Discover Hoka's most popular running shoe. Perfect for daily training with smooth, efficient ride."
+              ],
+              "final_urls": ["https://www.hoka.com/en/us/mens-road/clifton-9"]
+            }
+          ]
+        },
+        {
+          "id": "adgroup-hoka-clifton-002",
+          "name": "Hoka Clifton 9 - Variations",
+          "keywords": [
+            {
+              "text": "hoka clifton 9 womens",
+              "matchType": "PHRASE",
+              "impressions": 4500,
+              "clicks": 180,
+              "ctr": 4.0,
+              "conversions": 12,
+              "cost": 324.00,
+              "roas": 5.40,
+              "average_cpc": 1.80
+            },
+            {
+              "text": "hoka clifton 9 review",
+              "matchType": "PHRASE",
+              "impressions": 3800,
+              "clicks": 152,
+              "ctr": 4.0,
+              "conversions": 10,
+              "cost": 273.60,
+              "roas": 5.33,
+              "average_cpc": 1.80
+            },
+            {
+              "text": "clifton 9 vs clifton 8",
+              "matchType": "PHRASE",
+              "impressions": 3200,
+              "clicks": 128,
+              "ctr": 4.0,
+              "conversions": 8,
+              "cost": 230.40,
+              "roas": 5.04,
+              "average_cpc": 1.80
+            },
+            {
+              "text": "hoka clifton 9 wide",
+              "matchType": "PHRASE",
+              "impressions": 2800,
+              "clicks": 112,
+              "ctr": 4.0,
+              "conversions": 7,
+              "cost": 201.60,
+              "roas": 5.06,
+              "average_cpc": 1.80
+            }
+          ],
+          "ads": [
+            {
+              "id": "ad-hoka-clifton-002",
+              "type": "RESPONSIVE_SEARCH_AD",
+              "headlines": [
+                "Clifton 9 Men's & Women's",
+                "Compare Clifton 9 vs 8",
+                "Wide Widths Available",
+                "Updated Lighter Design",
+                "Shop Latest Clifton Model",
+                "Best-Selling Hoka Shoe",
+                "Multiple Color Options",
+                "Free Shipping & Returns"
+              ],
+              "descriptions": [
+                "Find your perfect Clifton 9 for men and women. Lighter and more responsive than Clifton 8. Wide widths available.",
+                "Read reviews and compare models. The Clifton 9 is lighter with improved cushioning and better fit.",
+                "Shop Hoka Clifton 9 in multiple colors and widths. Best-selling lightweight trainer. Free returns."
+              ],
+              "final_urls": ["https://www.hoka.com/en/us/mens-road/clifton-9"]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

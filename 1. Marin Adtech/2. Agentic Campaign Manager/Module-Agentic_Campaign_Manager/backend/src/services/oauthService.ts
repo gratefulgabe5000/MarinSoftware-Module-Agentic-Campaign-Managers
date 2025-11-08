@@ -306,6 +306,13 @@ class OAuthService {
   }
 
   /**
+   * Remove token
+   */
+  removeToken(platform: string): void {
+    this.tokens.delete(platform);
+  }
+
+  /**
    * Check if token is expired
    */
   isTokenExpired(token: OAuthToken): boolean {
