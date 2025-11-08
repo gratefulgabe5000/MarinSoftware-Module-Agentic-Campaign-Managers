@@ -2,7 +2,7 @@
 
 **Version:** 1.0  
 **Created:** January 2025  
-**Last Updated:** January 2025 - Initialized for Development  
+**Last Updated:** November 7, 2025 - BUG-018, BUG-019 Fixed  
 **Project:** Agentic Campaign Manager Module  
 **Environment:** Development  
 **Status:** Ready for Bug Tracking  
@@ -22,8 +22,8 @@
 ### Functional Bugs Breakdown
 
 - **🔴 Critical:** 0 bugs
-- **🟠 High Priority:** 1 bug (was 5, BUG-002 fixed, 4 remaining: BUG-011, BUG-014, BUG-017, BUG-018)
-- **🟡 Medium Priority:** 9 bugs (was 15, BUG-001, BUG-003, BUG-004, BUG-006, BUG-009 fixed, 10 remaining)
+- **🟠 High Priority:** 3 bugs (was 5, BUG-002, BUG-018 fixed, 3 remaining: BUG-011, BUG-014, BUG-017)
+- **🟡 Medium Priority:** 8 bugs (was 15, BUG-001, BUG-003, BUG-004, BUG-006, BUG-009, BUG-019, BUG-020 fixed, 8 remaining)
 - **🟢 Low Priority:** 0 bugs
 - **📋 Known Limitations:** 0
 
@@ -34,7 +34,7 @@
 - **Testing:** ⏳ In Progress
 - **Production Deployment:** ⏳ Pending
 
-**Estimated Fix Time:** 13.75-22.5 hours (10 bugs remaining: 1 High, 9 Medium)
+**Estimated Fix Time:** 10.5-17.5 hours (11 bugs remaining: 3 High, 8 Medium)
 
 ---
 
@@ -59,9 +59,9 @@
 | BUG-015 | Validation Errors Not Linked to Elements on Page in Campaign Preview | 🟡 Medium | UI/UX, Functionality | 🔴 Open | 1-2 hours |
 | BUG-016 | Ad Group Name Display Not Updated After Inline Edit | 🟡 Medium | UI/UX, Functionality | 🔴 Open | 30-60 min |
 | BUG-017 | Export Validation Fails with Empty Errors Array | 🟠 High | Export, Validation | 🔴 Open | 30-60 min |
-| BUG-018 | CSV Upload Errors Not Displayed in UI | 🟠 High | CSV Processing, UI/UX | 🔴 Open | 30-60 min |
-| BUG-019 | Empty CSV Files Not Detected and Rejected with Error Messages | 🟡 Medium | CSV Processing, Validation | 🔴 Open | 30-45 min |
-| BUG-020 | Missing Optional Columns Not Validated or Warned About | 🟡 Medium | CSV Processing, Validation | 🔴 Open | 45-60 min |
+| ✅ BUG-018 | CSV Upload Errors Not Displayed in UI | 🟠 High | CSV Processing, UI/UX | 🟢 Fixed | 30-60 min |
+| ✅ BUG-019 | Empty CSV Files Not Detected and Rejected with Error Messages | 🟡 Medium | CSV Processing, Validation | 🟢 Fixed | 30-45 min |
+| ✅ BUG-020 | Missing Optional Columns Not Validated or Warned About | 🟡 Medium | CSV Processing, Validation | 🟢 Fixed | 45-60 min |
 
 **Legend:**
 - 🔴 Critical = Blocking deployment/demo
@@ -72,10 +72,10 @@
 **Totals:**
 
 - 🔴 Critical: 0 bugs
-- 🟠 High: 1 bug (4 remaining: BUG-011, BUG-014, BUG-017, BUG-018)
-- 🟡 Medium: 9 bugs (10 remaining: BUG-005, BUG-007, BUG-008, BUG-010, BUG-012, BUG-013, BUG-015, BUG-016, BUG-019, BUG-020)
+- 🟠 High: 3 bugs (3 remaining: BUG-011, BUG-014, BUG-017)
+- 🟡 Medium: 8 bugs (8 remaining: BUG-005, BUG-007, BUG-008, BUG-010, BUG-012, BUG-013, BUG-015, BUG-016)
 - 🟢 Low: 0 bugs
-- ✅ Fixed: 6 bugs (BUG-001, BUG-002, BUG-003, BUG-004, BUG-006, BUG-009)
+- ✅ Fixed: 9 bugs (BUG-001, BUG-002, BUG-003, BUG-004, BUG-006, BUG-009, BUG-018, BUG-019, BUG-020)
 
 ---
 
@@ -3535,8 +3535,9 @@ Then ExportButton can call: `validateCampaign(dataToExport)`
 
 **Priority:** 🟠 High  
 **Category:** CSV Processing, UI/UX  
-**Status:** 🔴 Open  
+**Status:** 🟢 Fixed  
 **Discovered:** January 2025  
+**Fixed:** November 7, 2025  
 **Component:** CSV Upload Screen  
 **Estimated Fix Time:** 30-60 minutes
 
@@ -3653,6 +3654,39 @@ const handleError = (error: string) => {
 - Test errors are cleared when new upload succeeds
 - Test error display is visible and prominent
 
+**Fix Summary:**
+
+✅ **Fixed on November 7, 2025**
+
+**Changes Made:**
+1. **Added Error Display Section** (`CSVUploadScreen.tsx`):
+   - Added dedicated error Alert component with red styling and AlertCircleIcon
+   - Errors now display prominently above warnings section
+   - Errors show row numbers when available
+
+2. **Improved Error Message Handling** (`productService.ts`):
+   - Enhanced error extraction from backend responses
+   - Filtered out verbose PapaParse auto-detect messages
+   - Prioritized specific error messages (e.g., empty CSV)
+   - Added prefixes for parsing errors: "Something is wrong with your CSV file:"
+   - Simplified empty CSV message: "CSV file is empty. Please upload a CSV file with at least one product row."
+
+3. **File Type Validation** (`CSVUploadComponent.tsx`):
+   - Added `onDropRejected` handler for file type and size validation
+   - Displays clear error: "Only CSV files are allowed." for wrong file types
+   - Displays clear error: "File size must be less than 5MB" for oversized files
+
+4. **Error State Management** (`CSVUploadScreen.tsx`, `CSVUploadComponent.tsx`):
+   - Errors and warnings are cleared when new files are dropped
+   - Products are preserved when errors occur (only errors/warnings are cleared)
+   - New products from valid CSVs are appended to existing products (no duplication)
+
+**Result:**
+- All CSV upload errors are now displayed in the UI with clear, human-readable messages
+- Error messages are properly formatted and prioritized
+- Product list is preserved across multiple CSV uploads
+- Users receive immediate feedback for all error scenarios (empty CSV, wrong file type, malformed CSV, etc.)
+
 **Known Limitations:**
 - May need to handle different error types (file type, size, parsing, validation)
 - May need to format error messages for better readability
@@ -3664,8 +3698,9 @@ const handleError = (error: string) => {
 
 **Priority:** 🟡 Medium  
 **Category:** CSV Processing, Validation  
-**Status:** 🔴 Open  
+**Status:** 🟢 Fixed  
 **Discovered:** January 2025  
+**Fixed:** November 7, 2025  
 **Component:** CSV Upload / Backend Parsing Service  
 **Estimated Fix Time:** 30-45 minutes
 
@@ -3765,6 +3800,39 @@ reader.readAsText(file);
 - Test error message is clear and helpful
 - Test error is displayed in UI (after BUG-018 fix)
 
+**Fix Summary:**
+
+✅ **Fixed on November 7, 2025**
+
+**Changes Made:**
+1. **Empty CSV Detection** (`productParsingService.ts`):
+   - Added check for empty CSV files (no data rows) before processing
+   - Check occurs immediately after column validation and before row processing
+   - Returns clear error message: "CSV file is empty. Please upload a CSV file with at least one product row."
+   - Error is returned early, preventing unnecessary processing
+
+2. **Error Message Handling** (`productService.ts`):
+   - Enhanced error extraction to prioritize empty CSV error message
+   - Simplified and standardized empty CSV error message format
+   - Error message is displayed prominently in UI (via BUG-018 fix)
+
+3. **Error Display** (`CSVUploadScreen.tsx`):
+   - Empty CSV errors are now displayed in the error Alert component
+   - Error shows clear, actionable message to user
+   - Error is cleared when new files are dropped
+
+**Key Changes:**
+- Check `parsedResults.data.length === 0` after column validation
+- Add error to result.errors array with clear message
+- Return early with error (don't process rows)
+- Error is displayed in UI via error Alert component (BUG-018 fix)
+
+**Result:**
+- Empty CSV files are now detected and rejected with clear error messages
+- Users receive immediate feedback when uploading empty CSV files
+- Error message is clear and actionable: "CSV file is empty. Please upload a CSV file with at least one product row."
+- Error is displayed prominently in the UI with red styling and AlertCircleIcon
+
 **Known Limitations:**
 - May need to handle edge cases (CSV with only headers, whitespace-only rows)
 - May need to distinguish between empty file and file with no valid rows
@@ -3775,8 +3843,9 @@ reader.readAsText(file);
 
 **Priority:** 🟡 Medium  
 **Category:** CSV Processing, Validation  
-**Status:** 🔴 Open  
+**Status:** 🟢 Fixed  
 **Discovered:** January 2025  
+**Fixed:** November 7, 2025  
 **Component:** CSV Upload / Backend Parsing Service  
 **Estimated Fix Time:** 45-60 minutes
 
@@ -4255,6 +4324,19 @@ if (!hasName || !hasURL || !hasCategory) {
   - Fixed in: src/components/csv-upload/CSVUploadScreen.tsx
   - Fixes high priority data loss issue - users no longer lose previously uploaded products
   - Users can now infinitely upload multiple CSV files and combine products from different sources
+
+### November 2025 - BUG-020 Fixed
+- **✅ BUG-020 FIXED**
+  - Missing Optional Columns Not Validated or Warned About
+  - Added validation to detect missing optional columns (Category, Price, Description) in CSV parsing
+  - Generates warnings (not errors) when optional columns are missing
+  - Warning message: "The following optional columns are missing: [columns]. Products will be added without this data."
+  - Fixed warning section styling to display with yellow background, yellow border, and yellow warning icon
+  - Fixed in: backend/src/services/productParsingService.ts (lines 209-223)
+  - Fixed in: src/components/csv-upload/CSVUploadScreen.tsx (lines 228-241)
+  - Warnings are displayed in UI with proper yellow styling and AlertTriangleIcon
+  - Products are still added successfully when optional columns are missing (warnings don't block upload)
+  - Fixes medium priority CSV Processing, Validation issue - users are now informed when optional data is missing
 
 ### January 2025 - Twentieth Bug Discovered
 - **🐛 BUG-020 DISCOVERED**

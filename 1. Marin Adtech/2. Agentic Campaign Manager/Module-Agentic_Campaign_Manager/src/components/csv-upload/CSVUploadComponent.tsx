@@ -13,6 +13,7 @@ import { cn } from '../../lib/utils';
 interface CSVUploadComponentProps {
   onParseComplete: (result: ProductParsingResult) => void;
   onError: (error: string) => void;
+  onClearErrorsWarnings?: () => void;
   onClear?: () => void;
   onRemoveFile?: (fileName: string) => void;
   uploadedFiles?: string[];
@@ -25,6 +26,7 @@ interface CSVUploadComponentProps {
 const CSVUploadComponent: React.FC<CSVUploadComponentProps> = ({
   onParseComplete,
   onError,
+  onClearErrorsWarnings,
   onClear,
   onRemoveFile,
   uploadedFiles = [],
@@ -45,24 +47,46 @@ const CSVUploadComponent: React.FC<CSVUploadComponentProps> = ({
     }
   }, [onRemoveFile]);
 
+  const onDropRejected = useCallback((fileRejections: any[]) => {
+    // Clear previous errors/warnings when new files are rejected (preserve products)
+    if (onClearErrorsWarnings) {
+      onClearErrorsWarnings();
+    }
+    
+    fileRejections.forEach(({ file, errors }) => {
+      if (errors.some((e: any) => e.code === 'file-invalid-type')) {
+        onError('Only CSV files are allowed.');
+      } else if (errors.some((e: any) => e.code === 'file-too-large')) {
+        onError('File size must be less than 5MB');
+      } else {
+        onError(`File rejected: ${errors.map((e: any) => e.message).join(', ')}`);
+      }
+    });
+  }, [onError, onClearErrorsWarnings]);
+
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
       if (acceptedFiles.length === 0) return;
+
+      // Clear previous errors and warnings when new files are dropped (preserve products)
+      if (onClearErrorsWarnings) {
+        onClearErrorsWarnings();
+      }
 
       setIsUploading(true);
 
       // Process all files sequentially
       for (const file of acceptedFiles) {
-        // Validate file type
+        // Validate file type (double check)
         if (!file.name.endsWith('.csv') && file.type !== 'text/csv') {
-          onError(`${file.name}: Please upload a CSV file`);
+          onError('Only CSV files are allowed.');
           continue;
         }
 
         // Validate file size (5MB limit)
         const maxSize = 5 * 1024 * 1024; // 5MB
         if (file.size > maxSize) {
-          onError(`${file.name}: File size must be less than 5MB`);
+          onError('File size must be less than 5MB');
           continue;
         }
 
@@ -75,8 +99,8 @@ const CSVUploadComponent: React.FC<CSVUploadComponentProps> = ({
         } catch (error) {
           onError(
             error instanceof Error
-              ? `${file.name}: ${error.message}`
-              : `${file.name}: Failed to parse CSV file`
+              ? error.message
+              : 'Failed to parse CSV file'
           );
         }
       }
@@ -84,11 +108,12 @@ const CSVUploadComponent: React.FC<CSVUploadComponentProps> = ({
       setCurrentFileName(null);
       setIsUploading(false);
     },
-    [onParseComplete, onError]
+    [onParseComplete, onError, onClearErrorsWarnings]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
+    onDropRejected,
     accept: {
       'text/csv': ['.csv'],
     },

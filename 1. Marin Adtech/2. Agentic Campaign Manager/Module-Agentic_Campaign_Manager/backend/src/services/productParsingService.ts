@@ -183,6 +183,16 @@ export async function parseCSV(
           });
         }
 
+        // Check for empty CSV (no data rows) - do this FIRST before column validation
+        if (parsedResults.data.length === 0) {
+          result.errors.push({
+            field: 'csv',
+            message: 'CSV file is empty. Please upload a CSV file with at least one product row.',
+          });
+          resolve(result);
+          return;
+        }
+
         // Check for required columns
         const headers = parsedResults.meta.fields || [];
         const hasName = headers.some((h) => normalizeColumnName(h) === 'name');
@@ -205,6 +215,22 @@ export async function parseCSV(
             columnMapping[normalized as keyof CSVColumnMapping] = header;
           }
         });
+
+        // Check for missing optional columns and generate warnings
+        const hasCategory = headers.some((h) => normalizeColumnName(h) === 'category');
+        const hasPrice = headers.some((h) => normalizeColumnName(h) === 'price');
+        const hasDescription = headers.some((h) => normalizeColumnName(h) === 'description');
+
+        const missingColumns: string[] = [];
+        if (!hasCategory) missingColumns.push('Category');
+        if (!hasPrice) missingColumns.push('Price');
+        if (!hasDescription) missingColumns.push('Description');
+
+        if (missingColumns.length > 0) {
+          result.warnings.push(
+            `The following optional columns are missing: ${missingColumns.join(', ')}. Products will be added without this data.`
+          );
+        }
 
         // Process each row
         parsedResults.data.forEach((row: any, index: number) => {

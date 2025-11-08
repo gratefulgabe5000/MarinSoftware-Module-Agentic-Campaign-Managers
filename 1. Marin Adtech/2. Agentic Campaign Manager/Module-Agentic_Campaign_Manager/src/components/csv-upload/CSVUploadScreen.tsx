@@ -13,7 +13,7 @@ import { Card, CardContent } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
-import { FileTextIcon, LinkIcon, AlertTriangleIcon, ArrowLeftIcon, SparklesIcon } from 'lucide-react';
+import { FileTextIcon, LinkIcon, AlertTriangleIcon, AlertCircleIcon, ArrowLeftIcon, SparklesIcon } from 'lucide-react';
 
 /**
  * Helper function to normalize URLs for comparison
@@ -45,6 +45,10 @@ const CSVUploadScreen: React.FC = () => {
 
   const handleParseComplete = (result: ProductParsingResult) => {
     const fileName = result.fileName || 'unknown.csv';
+
+    // Clear previous errors and warnings when processing a new file
+    setErrors([]);
+    setWarnings([]);
 
     // Add the file to uploaded files list if not already present
     setUploadedFiles(prevFiles => {
@@ -79,16 +83,19 @@ const CSVUploadScreen: React.FC = () => {
       // Add notification about merge results if there are duplicates
       if (duplicateCount > 0) {
         const mergeMessage = `Added ${newProducts.length} new product${newProducts.length !== 1 ? 's' : ''}. ${duplicateCount} duplicate${duplicateCount !== 1 ? 's' : ''} skipped (already exists).`;
-        setWarnings(prevWarnings => [...prevWarnings, mergeMessage]);
+        // Add merge message to warnings from result
+        setWarnings([...result.warnings, mergeMessage]);
+      } else {
+        // Set warnings from result (no merge message needed)
+        setWarnings(result.warnings);
       }
 
       // Combine existing and new products
       return [...prevProducts, ...newProducts];
     });
 
-    // Accumulate errors and warnings (don't replace)
-    setErrors(prevErrors => [...prevErrors, ...result.errors]);
-    setWarnings(prevWarnings => [...prevWarnings, ...result.warnings]);
+    // Set errors for this file (replacing previous ones)
+    setErrors(result.errors);
 
     // Auto-validate products after parsing if no errors
     if (result.products.length > 0 && result.errors.length === 0) {
@@ -97,8 +104,17 @@ const CSVUploadScreen: React.FC = () => {
   };
 
   const handleError = (error: string) => {
+    // Clear previous errors and warnings when a new error occurs
+    // DO NOT clear products - preserve existing products from previous valid uploads
     setErrors([{ field: 'general', message: error }]);
-    setProducts([]);
+    setWarnings([]);
+    // Products are preserved - do not clear them
+  };
+
+  // Clear only errors and warnings (preserve products)
+  const handleClearErrorsWarnings = () => {
+    setErrors([]);
+    setWarnings([]);
   };
 
   const handleClear = () => {
@@ -211,6 +227,7 @@ const CSVUploadScreen: React.FC = () => {
             <CSVUploadComponent
               onParseComplete={handleParseComplete}
               onError={handleError}
+              onClearErrorsWarnings={handleClearErrorsWarnings}
               onClear={handleClear}
               onRemoveFile={handleRemoveFile}
               uploadedFiles={uploadedFiles}
@@ -225,15 +242,33 @@ const CSVUploadScreen: React.FC = () => {
           </TabsContent>
         </Tabs>
 
+        {/* Errors */}
+        {errors.length > 0 && (
+          <Alert variant="destructive" className="border-red-500/50 bg-red-500/5">
+            <AlertCircleIcon className="h-4 w-4 text-red-600" />
+            <AlertTitle className="text-red-600">Errors</AlertTitle>
+            <AlertDescription>
+              <ul className="mt-2 list-disc pl-4 space-y-1 text-red-600">
+                {errors.map((error, index) => (
+                  <li key={index} className="text-sm">
+                    {error.row ? `Row ${error.row}: ` : ''}
+                    {error.message}
+                  </li>
+                ))}
+              </ul>
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Warnings */}
         {warnings.length > 0 && (
-          <Alert>
-            <AlertTriangleIcon className="h-4 w-4" />
-            <AlertTitle>Warnings</AlertTitle>
+          <Alert className="border-yellow-500/50 bg-yellow-500/5">
+            <AlertTriangleIcon className="h-4 w-4 text-yellow-600" />
+            <AlertTitle className="text-yellow-600">Warnings</AlertTitle>
             <AlertDescription>
-              <ul className="mt-2 list-disc pl-4 space-y-1">
+              <ul className="mt-2 list-disc pl-4 space-y-1 text-yellow-600">
                 {warnings.map((warning, index) => (
-                  <li key={index}>{warning}</li>
+                  <li key={index} className="text-sm">{warning}</li>
                 ))}
               </ul>
             </AlertDescription>
