@@ -219,21 +219,11 @@ const CampaignActions: React.FC<CampaignActionsProps> = ({
    * Check if delete is available
    */
   const canDelete = (): boolean => {
-    return campaign.status !== 'deleted';
+    return true;
   };
 
   return (
     <div className="space-y-4">
-      {/* Debug Info */}
-      <div className="p-3 bg-blue-50 border border-blue-200 rounded text-xs space-y-1">
-        <div className="font-semibold text-blue-900">🔍 Action Debug:</div>
-        <div className="font-mono">Current Status: {campaign.status}</div>
-        <div className="font-mono">Can Activate: {canActivate().toString()}</div>
-        <div className="font-mono">Can Pause: {canPause().toString()}</div>
-        <div className="font-mono">Can Resume: {canResume().toString()}</div>
-        <div className="font-mono">Can Delete: {canDelete().toString()}</div>
-      </div>
-
       {/* Error Alert */}
       {error && (
         <Alert variant="destructive">

@@ -95,12 +95,7 @@ const ConversationalInterface: React.FC = () => {
 
       // Build response message
       let responseContent = '';
-      
-      // Add mock data badge if this is mock data
-      if (response.isMockData) {
-        responseContent += `⚠️ **Mock Data** - This is a simulated response for demonstration purposes.\n\n`;
-      }
-      
+
       responseContent += `I've analyzed your campaign goal. Here's what I understand:\n\n`;
       responseContent += `**Objective:** ${response.campaignPlan.objective}\n\n`;
       

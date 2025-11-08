@@ -1,7 +1,6 @@
 import React from 'react';
 import { Message } from '../types/message.types';
 import CampaignPlanActions from './CampaignPlanActions';
-import { Badge } from './ui/badge';
 import { Loader2Icon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -50,12 +49,6 @@ const MessageList: React.FC<MessageListProps> = ({ messages }) => {
               </div>
             ) : (
               <>
-                {message.isMockData && (
-                  <Badge variant="outline" className="mb-2 bg-yellow-500/10 text-yellow-700 border-yellow-500/20">
-                    <span className="mr-1">⚠️</span>
-                    Mock Data - Simulated Response
-                  </Badge>
-                )}
                 <div className="text-sm whitespace-pre-wrap">{message.content}</div>
                 {(message as any).hasCampaignPlan && (
                   <div className="mt-4">
