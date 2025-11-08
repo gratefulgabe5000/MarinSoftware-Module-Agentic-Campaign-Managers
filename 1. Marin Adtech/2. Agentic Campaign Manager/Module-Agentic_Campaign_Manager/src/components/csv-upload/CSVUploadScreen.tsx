@@ -42,6 +42,13 @@ const CSVUploadScreen: React.FC = () => {
     setProducts([]);
   };
 
+  const handleClear = () => {
+    setProducts([]);
+    setErrors([]);
+    setWarnings([]);
+    setIsValid(false);
+  };
+
   const handleProductsChange = (updatedProducts: ProductInput[]) => {
     // Limit to 10 products for MVP
     const limitedProducts = updatedProducts.length > 10 
@@ -126,6 +133,7 @@ const CSVUploadScreen: React.FC = () => {
             <CSVUploadComponent
               onParseComplete={handleParseComplete}
               onError={handleError}
+              onClear={handleClear}
             />
           </TabsContent>
 

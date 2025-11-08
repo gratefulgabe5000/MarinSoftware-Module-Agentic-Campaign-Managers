@@ -42,7 +42,7 @@
 
 | Bug ID | Title | Priority | Category | Status | Fix Time |
 |--------|-------|----------|----------|--------|----------|
-| BUG-001 | Drag-and-Drop Zone Resizes During Drag Operation | 🟡 Medium | UI/UX | 🔴 Open | 30-60 min |
+| ✅ BUG-001 | Drag-and-Drop Zone Resizes During Drag Operation | 🟡 Medium | UI/UX | 🔴 Open | 30-60 min |
 | BUG-002 | CSV Upload Overwrites Existing Products Instead of Merging | 🟠 High | CSV Processing | 🔴 Open | 1-2 hours |
 | BUG-003 | Edit/Delete Buttons Scroll with Table Content Instead of Being Fixed | 🟡 Medium | UI/UX | 🔴 Open | 45-60 min |
 | BUG-004 | Product Tab Navigation Scrolls Off-Screen on Pattern Learning Page | 🟡 Medium | UI/UX | 🔴 Open | 30-45 min |
