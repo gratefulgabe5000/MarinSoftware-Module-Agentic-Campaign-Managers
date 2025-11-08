@@ -192,7 +192,7 @@ const ProductPreview: React.FC<ProductPreviewProps> = ({
                 <TableHead className="min-w-[120px]">Category</TableHead>
                 <TableHead className="min-w-[100px]">Price</TableHead>
                 <TableHead className="min-w-[200px]">Description</TableHead>
-                <TableHead className="min-w-[120px] text-right">Actions</TableHead>
+                <TableHead className="min-w-[120px] text-right sticky right-0 bg-background shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.1)]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -300,7 +300,7 @@ const ProductPreview: React.FC<ProductPreviewProps> = ({
                         </span>
                       )}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right sticky right-0 bg-background shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.1)]">
                       {isEditing ? (
                         <div className="flex justify-end gap-1">
                           <Button

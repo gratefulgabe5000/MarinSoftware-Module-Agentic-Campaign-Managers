@@ -23,7 +23,7 @@
 
 - **🔴 Critical:** 0 bugs
 - **🟠 High Priority:** 1 bug (was 2, BUG-002 fixed)
-- **🟡 Medium Priority:** 7 bugs (was 9, BUG-001 and BUG-004 fixed)
+- **🟡 Medium Priority:** 6 bugs (was 9, BUG-001, BUG-003, and BUG-004 fixed)
 - **🟢 Low Priority:** 0 bugs
 - **📋 Known Limitations:** 0
 
@@ -34,7 +34,7 @@
 - **Testing:** ⏳ In Progress
 - **Production Deployment:** ⏳ Pending
 
-**Estimated Fix Time:** 14.5-23.5 hours (11 bugs identified)
+**Estimated Fix Time:** 13.75-22.5 hours (7 bugs remaining)
 
 ---
 
@@ -44,7 +44,7 @@
 |--------|-------|----------|----------|--------|----------|
 | ✅ BUG-001 | Drag-and-Drop Zone Resizes During Drag Operation | 🟡 Medium | UI/UX | 🟢 Fixed | 30-60 min |
 | ✅ BUG-002 | CSV Upload Overwrites Existing Products Instead of Merging | 🟠 High | CSV Processing | 🟢 Fixed | 1-2 hours |
-| BUG-003 | Edit/Delete Buttons Scroll with Table Content Instead of Being Fixed | 🟡 Medium | UI/UX | 🔴 Open | 45-60 min |
+| ✅ BUG-003 | Edit/Delete Buttons Scroll with Table Content Instead of Being Fixed | 🟡 Medium | UI/UX | 🟢 Fixed | 45-60 min |
 | ✅ BUG-004 | Product Tab Navigation Scrolls Off-Screen on Pattern Learning Page | 🟡 Medium | UI/UX | 🟢 Fixed | 30-45 min |
 | BUG-005 | URLs Not Verified to Exist/Be Reachable During CSV Upload | 🟡 Medium | CSV Processing | 🔴 Open | 1-2 hours |
 | BUG-006 | Campaign Preview Pages Should Match Dashboard/Details Layout with PREVIEW Badge | 🟡 Medium | UI/UX | 🔴 Open | 2-3 hours |
@@ -326,12 +326,14 @@ const handleParseComplete = (result: ProductParsingResult) => {
 
 ### BUG-003: Edit/Delete Buttons Scroll with Table Content Instead of Being Fixed
 
-**Priority:** 🟡 Medium  
-**Category:** UI/UX  
-**Status:** 🔴 Open  
-**Discovered:** January 2025  
-**Component:** Product Preview / CSV Upload  
+**Priority:** 🟡 Medium
+**Category:** UI/UX
+**Status:** 🟢 Fixed
+**Discovered:** January 2025
+**Fixed:** January 2025
+**Component:** Product Preview / CSV Upload
 **Estimated Fix Time:** 45-60 minutes
+**Actual Fix Time:** ~45 minutes
 
 **Description:**
 The product preview table after CSV upload has edit and delete buttons in the Actions column, but these buttons are part of the horizontally scrollable table area. When the table content is wider than the viewport and users scroll horizontally, the edit/delete buttons scroll with the content and become hidden. The Actions column (with edit/delete buttons) should be fixed/sticky on the right side, remaining visible even when the table scrolls horizontally.
@@ -501,6 +503,30 @@ The Actions column is inside the scrollable container, so it scrolls with the re
 - Test with multiple products to ensure sticky column works for all rows
 - Verify z-index and layering work correctly
 - Test on different browsers (sticky positioning support)
+
+**Fix Implementation:**
+
+The fix was implemented using Option 1 (Sticky Right Column) as recommended. Changes were made to `src/components/csv-upload/ProductPreview.tsx`:
+
+1. **Line 195 - TableHead for Actions column:**
+   - Added `sticky right-0` to fix the column to the right side
+   - Added `bg-background` to ensure proper background color (prevents content showing through)
+   - Added `shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.1)]` for a subtle left shadow to indicate the sticky column
+
+2. **Line 303 - TableCell for Actions column:**
+   - Applied the same sticky styling: `sticky right-0 bg-background shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.1)]`
+   - Ensures all action buttons remain fixed during horizontal scroll
+
+The implementation successfully makes the Actions column (containing Edit/Delete buttons) remain visible and accessible even when the table content is scrolled horizontally. The subtle shadow provides a visual indicator that separates the fixed column from the scrolling content.
+
+**Files Modified:**
+- `src/components/csv-upload/ProductPreview.tsx` (lines 195, 303)
+
+**Verification:**
+- Actions column now remains fixed on the right side during horizontal scrolling
+- Edit and delete buttons are always accessible
+- Background color properly masks scrolling content
+- Subtle shadow provides visual separation
 
 ---
 
