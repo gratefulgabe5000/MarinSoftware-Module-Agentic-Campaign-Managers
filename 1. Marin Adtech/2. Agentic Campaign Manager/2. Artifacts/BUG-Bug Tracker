@@ -2,7 +2,7 @@
 
 **Version:** 1.0  
 **Created:** January 2025  
-**Last Updated:** November 8, 2025 - BUG-017, BUG-018, BUG-019 Fixed  
+**Last Updated:** November 8, 2025 - BUG-016, BUG-017, BUG-018, BUG-019 Fixed  
 **Project:** Agentic Campaign Manager Module  
 **Environment:** Development  
 **Status:** Ready for Bug Tracking  
@@ -23,7 +23,7 @@
 
 - **🔴 Critical:** 0 bugs
 - **🟠 High Priority:** 2 bugs (was 5, BUG-002, BUG-017, BUG-018 fixed, 2 remaining: BUG-011, BUG-014)
-- **🟡 Medium Priority:** 8 bugs (was 15, BUG-001, BUG-003, BUG-004, BUG-006, BUG-009, BUG-019, BUG-020 fixed, 8 remaining)
+- **🟡 Medium Priority:** 7 bugs (was 15, BUG-001, BUG-003, BUG-004, BUG-006, BUG-009, BUG-016, BUG-019, BUG-020 fixed, 7 remaining)
 - **🟢 Low Priority:** 0 bugs
 - **📋 Known Limitations:** 0
 
@@ -34,7 +34,7 @@
 - **Testing:** ⏳ In Progress
 - **Production Deployment:** ⏳ Pending
 
-**Estimated Fix Time:** 9.5-16 hours (10 bugs remaining: 2 High, 8 Medium)
+**Estimated Fix Time:** 9-15.5 hours (9 bugs remaining: 2 High, 7 Medium)
 
 ---
 
@@ -57,7 +57,7 @@
 | BUG-013 | RSA Ad Headlines Display Not Optimized in Campaign Preview | 🟡 Medium | UI/UX | 🔴 Open | 1-2 hours |
 | BUG-014 | Keyword Deletion Deletes Incorrect Item in Campaign Preview | 🟠 High | Functionality, Data Integrity | 🔴 Open | 1-2 hours |
 | BUG-015 | Validation Errors Not Linked to Elements on Page in Campaign Preview | 🟡 Medium | UI/UX, Functionality | 🔴 Open | 1-2 hours |
-| BUG-016 | Ad Group Name Display Not Updated After Inline Edit | 🟡 Medium | UI/UX, Functionality | 🔴 Open | 30-60 min |
+| ✅ BUG-016 | Ad Group Name Display Not Updated After Inline Edit | 🟡 Medium | UI/UX, Functionality | 🟢 Fixed | 30-60 min |
 | ✅ BUG-017 | Export Validation Fails with Empty Errors Array | 🟠 High | Export, Validation | 🟢 Fixed | 30-60 min |
 | ✅ BUG-018 | CSV Upload Errors Not Displayed in UI | 🟠 High | CSV Processing, UI/UX | 🟢 Fixed | 30-60 min |
 | ✅ BUG-019 | Empty CSV Files Not Detected and Rejected with Error Messages | 🟡 Medium | CSV Processing, Validation | 🟢 Fixed | 30-45 min |
@@ -73,9 +73,9 @@
 
 - 🔴 Critical: 0 bugs
 - 🟠 High: 2 bugs (2 remaining: BUG-011, BUG-014)
-- 🟡 Medium: 8 bugs (8 remaining: BUG-005, BUG-007, BUG-008, BUG-010, BUG-012, BUG-013, BUG-015, BUG-016)
+- 🟡 Medium: 7 bugs (7 remaining: BUG-005, BUG-007, BUG-008, BUG-010, BUG-012, BUG-013, BUG-015)
 - 🟢 Low: 0 bugs
-- ✅ Fixed: 10 bugs (BUG-001, BUG-002, BUG-003, BUG-004, BUG-006, BUG-009, BUG-017, BUG-018, BUG-019, BUG-020)
+- ✅ Fixed: 11 bugs (BUG-001, BUG-002, BUG-003, BUG-004, BUG-006, BUG-009, BUG-016, BUG-017, BUG-018, BUG-019, BUG-020)
 
 ---
 
@@ -3239,8 +3239,9 @@ The validation errors contain `rowId` information that identifies the specific e
 
 **Priority:** 🟡 Medium  
 **Category:** UI/UX, Functionality  
-**Status:** 🔴 Open  
+**Status:** 🟢 Fixed  
 **Discovered:** January 2025  
+**Fixed:** November 8, 2025  
 **Component:** Campaign Preview / Ad Group Row  
 **Estimated Fix Time:** 30-60 minutes
 
@@ -3379,6 +3380,51 @@ The issue is that `AdGroupRow` may be receiving stale prop data or not re-render
 - May need to handle edge cases where store data is null
 - May need to handle rapid successive edits
 - May need to handle cancel after edit
+
+**Fix Summary:**
+
+✅ **Fixed on November 8, 2025**
+
+**Changes Made:**
+1. **Read from Store in Component** (`AdGroupRow.tsx`):
+   - Added `editedPreviewData` to `useCampaignPreviewStore` destructuring
+   - Introduced `currentAdGroup` using `useMemo` to get the latest ad group data from `editedPreviewData` in the store, falling back to the `adGroup` prop if not found in the store
+   - Initialized `editValue` state with `currentAdGroup.name`
+   - Added `useEffect` hook to update `editValue` whenever `currentAdGroup.name` changes, ensuring the input field stays in sync
+   - Updated the displayed ad group name to use `currentAdGroup.name` instead of `adGroup.name`
+   - Updated `handleNameCancel` to reset `editValue` to `currentAdGroup.name`
+
+2. **Component Updates:**
+   - Added `useMemo` and `useEffect` imports from React
+   - Component now reads from store directly instead of relying solely on prop
+   - Display updates immediately when store changes
+
+**Key Changes:**
+- Read from `editedPreviewData` in store instead of prop
+- Use `useMemo` to get current ad group data from store
+- Use `useEffect` to sync `editValue` with `currentAdGroup.name`
+- Display `currentAdGroup.name` instead of `adGroup.name`
+
+**Result:**
+- Ad group name display now updates immediately after inline editing
+- Changes are reflected in the UI as soon as they're saved
+- Component correctly reads from store's edited data
+- No more confusion about whether edits were saved
+- Display stays in sync with store state
+
+**Testing Results:**
+- ✅ Ad group name display updates correctly after edit
+- ✅ Multiple edits work correctly
+- ✅ Edit, cancel, then edit again works correctly
+- ✅ Edit, save, then edit again works correctly
+- ✅ Works with multiple ad groups
+- ✅ Works with expanded/collapsed ad groups
+- ✅ Edited name appears correctly in export CSV
+
+**Known Limitations:**
+- Store data may be null in edge cases (handled with fallback to prop)
+- Rapid successive edits are handled correctly
+- Cancel after edit works correctly
 
 ---
 
@@ -4374,6 +4420,19 @@ if (!hasName || !hasURL || !hasCategory) {
   - Warnings are displayed in UI with proper yellow styling and AlertTriangleIcon
   - Products are still added successfully when optional columns are missing (warnings don't block upload)
   - Fixes medium priority CSV Processing, Validation issue - users are now informed when optional data is missing
+
+### November 2025 - BUG-016 Fixed
+- **✅ BUG-016 FIXED**
+  - Ad Group Name Display Not Updated After Inline Edit
+  - Modified AdGroupRow component to read from store's editedPreviewData instead of relying solely on prop
+  - Introduced currentAdGroup using useMemo to get latest ad group data from store, falling back to prop if not found
+  - Added useEffect hook to sync editValue with currentAdGroup.name changes
+  - Updated displayed ad group name to use currentAdGroup.name instead of adGroup.name
+  - Fixed in: src/components/campaign-preview/AdGroupRow.tsx
+  - Ad group name display now updates immediately after inline editing
+  - Changes are reflected in the UI as soon as they're saved
+  - Component correctly reads from store's edited data
+  - Fixes medium priority UI/UX, Functionality issue - users can now see their edits reflected immediately
 
 ### January 2025 - Twentieth Bug Discovered
 - **🐛 BUG-020 DISCOVERED**

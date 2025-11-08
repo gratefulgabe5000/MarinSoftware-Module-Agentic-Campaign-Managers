@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { AdGroupPreviewRow } from '../../types/campaign-preview.types';
 import { useCampaignPreviewStore } from '../../store/campaignPreviewStore';
 import { handleAdGroupNameEdit } from '../../utils/inlineEditing';
@@ -22,11 +22,27 @@ interface AdGroupRowProps {
 }
 
 const AdGroupRow: React.FC<AdGroupRowProps> = ({ adGroup, isExpanded, onToggle }) => {
+  const { editedPreviewData, updateAdGroup } = useCampaignPreviewStore();
+
+  // Get current ad group data from store if available, otherwise use prop
+  const currentAdGroup = useMemo(() => {
+    if (editedPreviewData) {
+      const storeAdGroup = editedPreviewData.adGroups.find(ag => ag.id === adGroup.id);
+      if (storeAdGroup) {
+        return storeAdGroup;
+      }
+    }
+    return adGroup;
+  }, [editedPreviewData, adGroup]);
+
   const [isEditing, setIsEditing] = useState(false);
-  const [editValue, setEditValue] = useState(adGroup.name);
+  const [editValue, setEditValue] = useState(currentAdGroup.name);
   const [error, setError] = useState<string | null>(null);
 
-  const { updateAdGroup } = useCampaignPreviewStore();
+  // Sync editValue when currentAdGroup.name changes
+  useEffect(() => {
+    setEditValue(currentAdGroup.name);
+  }, [currentAdGroup.name]);
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEditValue(e.target.value);
@@ -53,7 +69,7 @@ const AdGroupRow: React.FC<AdGroupRowProps> = ({ adGroup, isExpanded, onToggle }
   };
 
   const handleNameCancel = () => {
-    setEditValue(adGroup.name);
+    setEditValue(currentAdGroup.name);
     setIsEditing(false);
     setError(null);
   };
@@ -107,7 +123,7 @@ const AdGroupRow: React.FC<AdGroupRowProps> = ({ adGroup, isExpanded, onToggle }
               onClick={() => setIsEditing(true)}
               type="button"
             >
-              {adGroup.name}
+              {currentAdGroup.name}
             </button>
           )}
         </TableCell>
