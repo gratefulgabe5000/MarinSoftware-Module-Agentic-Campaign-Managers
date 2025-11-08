@@ -308,13 +308,13 @@ export const mockUpdateCampaignResponse: MutateCampaignsResponse = {
 };
 
 /**
- * Mock campaign query results with metrics - MOTORCYCLE SPECIFIC
+ * Mock campaign query results with metrics - RUNNING SHOES SPECIFIC
  */
 export const mockCampaignQueryResults: CampaignWithMetrics[] = [
   {
     resourceName: `customers/${mockCustomerId}/campaigns/1111111111`,
     id: '1111111111',
-    name: 'Motorcycle Sales - Search Campaign',
+    name: 'Running Shoes Sales - Search Campaign',
     status: CampaignStatus.ENABLED,
     advertisingChannelType: AdvertisingChannelType.SEARCH,
     campaignBudget: `customers/${mockCustomerId}/campaignBudgets/2222222222`,
@@ -346,7 +346,7 @@ export const mockCampaignQueryResults: CampaignWithMetrics[] = [
   {
     resourceName: `customers/${mockCustomerId}/campaigns/3333333333`,
     id: '3333333333',
-    name: 'Motorcycle Brand Awareness',
+    name: 'Running Shoes Brand Awareness',
     status: CampaignStatus.ENABLED,
     advertisingChannelType: AdvertisingChannelType.DISPLAY,
     campaignBudget: `customers/${mockCustomerId}/campaignBudgets/4444444444`,
@@ -373,7 +373,7 @@ export const mockCampaignQueryResults: CampaignWithMetrics[] = [
   {
     resourceName: `customers/${mockCustomerId}/campaigns/5555555555`,
     id: '5555555555',
-    name: 'Spring Riding Season - Performance Max',
+    name: 'Marathon Season - Performance Max',
     status: CampaignStatus.PAUSED,
     advertisingChannelType: AdvertisingChannelType.PERFORMANCE_MAX,
     campaignBudget: `customers/${mockCustomerId}/campaignBudgets/6666666666`,
@@ -408,13 +408,13 @@ export const mockCreateAdGroupResponse: MutateAdGroupsResponse = {
 };
 
 /**
- * Mock ad group query results with metrics - MOTORCYCLE SPECIFIC
+ * Mock ad group query results with metrics - RUNNING SHOES SPECIFIC
  */
 export const mockAdGroupQueryResults: AdGroupWithMetrics[] = [
   {
     resourceName: `customers/${mockCustomerId}/adGroups/7777777777`,
     id: '7777777777',
-    name: 'Harley-Davidson - Cruisers',
+    name: 'Nike - Performance Running',
     status: AdGroupStatus.ENABLED,
     type: AdGroupType.SEARCH_STANDARD,
     campaign: `customers/${mockCustomerId}/campaigns/1111111111`,
@@ -433,7 +433,7 @@ export const mockAdGroupQueryResults: AdGroupWithMetrics[] = [
   {
     resourceName: `customers/${mockCustomerId}/adGroups/8888888888`,
     id: '8888888888',
-    name: 'Triumph - Cafe Racers',
+    name: 'Adidas + ASICS - Premium Cushioning',
     status: AdGroupStatus.ENABLED,
     type: AdGroupType.SEARCH_STANDARD,
     campaign: `customers/${mockCustomerId}/campaigns/1111111111`,
@@ -452,7 +452,7 @@ export const mockAdGroupQueryResults: AdGroupWithMetrics[] = [
   {
     resourceName: `customers/${mockCustomerId}/adGroups/9999999999`,
     id: '9999999999',
-    name: 'Honda + Yamaha - Classic Bikes',
+    name: 'Brooks + Hoka - Daily Trainers',
     status: AdGroupStatus.ENABLED,
     type: AdGroupType.SEARCH_STANDARD,
     campaign: `customers/${mockCustomerId}/campaigns/1111111111`,
@@ -509,7 +509,7 @@ export const mockBulkCreateKeywordsResponse: MutateAdGroupCriteriaResponse = {
 };
 
 /**
- * Mock keyword query results with performance metrics - MOTORCYCLE SPECIFIC
+ * Mock keyword query results with performance metrics - RUNNING SHOES SPECIFIC
  */
 export const mockKeywordQueryResults: KeywordWithMetrics[] = [
   {
@@ -519,19 +519,19 @@ export const mockKeywordQueryResults: KeywordWithMetrics[] = [
     type: CriterionType.KEYWORD,
     cpcBidMicros: 2500000, // $2.50
     keyword: {
-      text: 'harley davidson cruiser',
+      text: 'nike air zoom pegasus',
       matchType: KeywordMatchType.PHRASE,
     },
     metrics: {
       impressions: 10000,
-      clicks: 700,
-      conversions: 35,
-      costMicros: 1750000000, // $1,750
+      clicks: 400,
+      conversions: 22,
+      costMicros: 1000000000, // $1,000
       averageCpc: 2.5,
-      ctr: 7.0,
-      conversionsValue: 52500.0,
-      conversionsFromInteractionsRate: 5.0,
-      costPerConversion: 50.0,
+      ctr: 4.0,
+      conversionsValue: 3080.0,
+      conversionsFromInteractionsRate: 5.5,
+      costPerConversion: 45.45,
       qualityScore: 8,
     },
   },
@@ -542,19 +542,19 @@ export const mockKeywordQueryResults: KeywordWithMetrics[] = [
     type: CriterionType.KEYWORD,
     cpcBidMicros: 2800000, // $2.80
     keyword: {
-      text: 'buy harley davidson',
+      text: 'buy nike running shoes',
       matchType: KeywordMatchType.BROAD,
     },
     metrics: {
       impressions: 8500,
-      clicks: 510,
-      conversions: 26,
-      costMicros: 1428000000, // $1,428
+      clicks: 340,
+      conversions: 18,
+      costMicros: 952000000, // $952
       averageCpc: 2.8,
-      ctr: 6.0,
-      conversionsValue: 39000.0,
-      conversionsFromInteractionsRate: 5.1,
-      costPerConversion: 54.92,
+      ctr: 4.0,
+      conversionsValue: 2520.0,
+      conversionsFromInteractionsRate: 5.29,
+      costPerConversion: 52.89,
       qualityScore: 7,
     },
   },
@@ -565,19 +565,19 @@ export const mockKeywordQueryResults: KeywordWithMetrics[] = [
     type: CriterionType.KEYWORD,
     cpcBidMicros: 2200000, // $2.20
     keyword: {
-      text: 'triumph cafe racer',
+      text: 'adidas ultraboost',
       matchType: KeywordMatchType.EXACT,
     },
     metrics: {
       impressions: 5000,
-      clicks: 400,
-      conversions: 24,
-      costMicros: 880000000, // $880
+      clicks: 200,
+      conversions: 25,
+      costMicros: 440000000, // $440
       averageCpc: 2.2,
-      ctr: 8.0,
-      conversionsValue: 28800.0,
-      conversionsFromInteractionsRate: 6.0,
-      costPerConversion: 36.67,
+      ctr: 4.0,
+      conversionsValue: 4750.0,
+      conversionsFromInteractionsRate: 12.5,
+      costPerConversion: 17.60,
       qualityScore: 9,
     },
   },
@@ -588,19 +588,19 @@ export const mockKeywordQueryResults: KeywordWithMetrics[] = [
     type: CriterionType.KEYWORD,
     cpcBidMicros: 2000000, // $2.00
     keyword: {
-      text: 'triumph thruxton motorcycle',
+      text: 'asics gel nimbus',
       matchType: KeywordMatchType.PHRASE,
     },
     metrics: {
       impressions: 6500,
-      clicks: 455,
-      conversions: 27,
-      costMicros: 910000000, // $910
+      clicks: 260,
+      conversions: 12,
+      costMicros: 520000000, // $520
       averageCpc: 2.0,
-      ctr: 7.0,
-      conversionsValue: 35100.0,
-      conversionsFromInteractionsRate: 5.93,
-      costPerConversion: 33.70,
+      ctr: 4.0,
+      conversionsValue: 1920.0,
+      conversionsFromInteractionsRate: 4.62,
+      costPerConversion: 43.33,
       qualityScore: 8,
     },
   },
@@ -611,19 +611,19 @@ export const mockKeywordQueryResults: KeywordWithMetrics[] = [
     type: CriterionType.KEYWORD,
     cpcBidMicros: 1800000, // $1.80
     keyword: {
-      text: 'classic motorcycle for sale',
+      text: 'brooks ghost running shoes',
       matchType: KeywordMatchType.BROAD,
     },
     metrics: {
       impressions: 12000,
-      clicks: 720,
-      conversions: 36,
-      costMicros: 1296000000, // $1,296
+      clicks: 480,
+      conversions: 12,
+      costMicros: 864000000, // $864
       averageCpc: 1.8,
-      ctr: 6.0,
-      conversionsValue: 21600.0,
-      conversionsFromInteractionsRate: 5.0,
-      costPerConversion: 36.0,
+      ctr: 4.0,
+      conversionsValue: 1680.0,
+      conversionsFromInteractionsRate: 2.5,
+      costPerConversion: 72.0,
       qualityScore: 7,
     },
   },
@@ -634,19 +634,19 @@ export const mockKeywordQueryResults: KeywordWithMetrics[] = [
     type: CriterionType.KEYWORD,
     cpcBidMicros: 1600000, // $1.60
     keyword: {
-      text: 'honda cb350',
+      text: 'hoka clifton',
       matchType: KeywordMatchType.EXACT,
     },
     metrics: {
       impressions: 4200,
-      clicks: 336,
-      conversions: 21,
-      costMicros: 537600000, // $537.60
+      clicks: 168,
+      conversions: 18,
+      costMicros: 268800000, // $268.80
       averageCpc: 1.6,
-      ctr: 8.0,
-      conversionsValue: 11550.0,
-      conversionsFromInteractionsRate: 6.25,
-      costPerConversion: 25.60,
+      ctr: 4.0,
+      conversionsValue: 2610.0,
+      conversionsFromInteractionsRate: 10.71,
+      costPerConversion: 14.93,
       qualityScore: 9,
     },
   },
@@ -657,19 +657,19 @@ export const mockKeywordQueryResults: KeywordWithMetrics[] = [
     type: CriterionType.KEYWORD,
     cpcBidMicros: 1700000, // $1.70
     keyword: {
-      text: 'yamaha sr400 for sale',
+      text: 'new balance fresh foam',
       matchType: KeywordMatchType.PHRASE,
     },
     metrics: {
       impressions: 3800,
-      clicks: 266,
-      conversions: 16,
-      costMicros: 452200000, // $452.20
+      clicks: 152,
+      conversions: 25,
+      costMicros: 258400000, // $258.40
       averageCpc: 1.7,
-      ctr: 7.0,
-      conversionsValue: 11200.0,
-      conversionsFromInteractionsRate: 6.02,
-      costPerConversion: 28.26,
+      ctr: 4.0,
+      conversionsValue: 4500.0,
+      conversionsFromInteractionsRate: 16.45,
+      costPerConversion: 10.34,
       qualityScore: 8,
     },
   },
@@ -691,7 +691,7 @@ export const mockCreateRSAResponse: MutateAdGroupAdsResponse = {
 };
 
 /**
- * Mock RSA query results - MOTORCYCLE SPECIFIC
+ * Mock RSA query results - RUNNING SHOES SPECIFIC
  */
 export const mockRSAQueryResults: AdGroupAd[] = [
   {
@@ -702,25 +702,25 @@ export const mockRSAQueryResults: AdGroupAd[] = [
       id: '2000000001',
       resourceName: `customers/${mockCustomerId}/ads/2000000001`,
       type: AdType.RESPONSIVE_SEARCH_AD,
-      finalUrls: ['https://example.com/harley-davidson-cruisers'],
+      finalUrls: ['https://www.nike.com/t/air-zoom-pegasus-41/FD0534-100'],
       responsiveSearchAd: {
         headlines: [
-          { text: 'Harley-Davidson Cruisers' },
-          { text: 'Legendary V-Twin Power' },
-          { text: 'American Icon Motorcycles' },
-          { text: 'Shop Harley Cruisers Now' },
-          { text: 'Premium Harley-Davidson' },
-          { text: 'Authentic Riding Experience' },
-          { text: 'Financing Available' },
-          { text: 'Authorized Dealer' },
+          { text: 'Nike Air Zoom Pegasus 41' },
+          { text: 'Responsive Zoom Air Cushioning' },
+          { text: 'Versatile Daily Trainer' },
+          { text: 'Shop Nike Running Shoes' },
+          { text: 'Premium Performance Running' },
+          { text: 'Trusted by Runners Worldwide' },
+          { text: 'Free Shipping & Returns' },
+          { text: 'Official Nike Store' },
         ],
         descriptions: [
-          { text: 'Experience the freedom of the open road with legendary Harley-Davidson cruisers. Financing available.' },
-          { text: 'Shop our premium selection of Harley cruisers. Authorized dealer with expert service.' },
-          { text: 'Join the Harley family. Test rides available. Trade-ins welcome.' },
+          { text: 'Experience responsive cushioning with Nike Air Zoom Pegasus 41. Perfect for daily training runs. Free shipping on all orders.' },
+          { text: 'Shop the latest Nike running shoes. Responsive Zoom Air technology for versatile mileage. Free returns.' },
+          { text: 'Trusted by runners worldwide. Premium cushioning and support for every mile. Shop now.' },
         ],
-        path1: 'harley',
-        path2: 'cruisers',
+        path1: 'running',
+        path2: 'pegasus',
       },
     },
   },
@@ -732,25 +732,25 @@ export const mockRSAQueryResults: AdGroupAd[] = [
       id: '2000000002',
       resourceName: `customers/${mockCustomerId}/ads/2000000002`,
       type: AdType.RESPONSIVE_SEARCH_AD,
-      finalUrls: ['https://example.com/triumph-cafe-racers'],
+      finalUrls: ['https://www.adidas.com/us/ultraboost-light-shoes/HQ6339'],
       responsiveSearchAd: {
         headlines: [
-          { text: 'Triumph Cafe Racers' },
-          { text: 'British Engineering Excellence' },
-          { text: 'Thruxton & Street Twin' },
-          { text: 'Classic Style Modern Tech' },
-          { text: 'Premium Cafe Racer Bikes' },
-          { text: 'Iconic Triumph Design' },
-          { text: 'Test Ride Today' },
-          { text: 'Authorized Triumph Dealer' },
+          { text: 'Adidas Ultraboost Light' },
+          { text: 'Premium BOOST Foam Cushioning' },
+          { text: 'ASICS Gel-Nimbus 26' },
+          { text: 'Soft Yet Energetic Ride' },
+          { text: 'Premium Cushioned Shoes' },
+          { text: 'Max Comfort Running' },
+          { text: 'Free Shipping Available' },
+          { text: 'Official Retailer' },
         ],
         descriptions: [
-          { text: 'Discover Triumph cafe racers combining timeless British style with modern performance. Test rides available.' },
-          { text: 'Shop Thruxton and Street Twin models. Premium quality with comprehensive warranty.' },
-          { text: 'Experience British motorcycle heritage. Expert service and financing options available.' },
+          { text: 'Discover Adidas Ultraboost Light with Light BOOST foam for soft yet energetic rides. Free shipping on orders over $50.' },
+          { text: 'Shop ASICS Gel-Nimbus 26 with FF BLAST PLUS ECO foam and PureGEL technology. Maximum plush comfort.' },
+          { text: 'Experience premium cushioning technology. Perfect for long runs and daily training. Shop now.' },
         ],
-        path1: 'triumph',
-        path2: 'cafe-racer',
+        path1: 'running',
+        path2: 'cushioned',
       },
     },
   },
@@ -762,25 +762,25 @@ export const mockRSAQueryResults: AdGroupAd[] = [
       id: '2000000003',
       resourceName: `customers/${mockCustomerId}/ads/2000000003`,
       type: AdType.RESPONSIVE_SEARCH_AD,
-      finalUrls: ['https://example.com/classic-motorcycles'],
+      finalUrls: ['https://www.brooksrunning.com/en_us/ghost-16-mens'],
       responsiveSearchAd: {
         headlines: [
-          { text: 'Classic Motorcycles For Sale' },
-          { text: 'Honda CB350 & Yamaha SR400' },
-          { text: 'Retro Style Modern Reliability' },
-          { text: 'Affordable Classic Bikes' },
-          { text: 'Japanese Motorcycle Quality' },
-          { text: 'Perfect First Motorcycle' },
-          { text: 'Starting Under $7,000' },
-          { text: 'Low Insurance Rates' },
+          { text: 'Brooks Ghost 16 & Hoka Clifton' },
+          { text: 'Reliable Daily Trainers' },
+          { text: 'DNA LOFT v3 Cushioning' },
+          { text: 'Lightweight Running Shoes' },
+          { text: 'Smooth Ride Technology' },
+          { text: 'Perfect For Every Run' },
+          { text: 'Starting At $140' },
+          { text: 'Free Shipping & Returns' },
         ],
         descriptions: [
-          { text: 'Shop Honda CB350 and Yamaha SR400 classic motorcycles. Timeless design with legendary reliability.' },
-          { text: 'Affordable classics starting under $7,000. Perfect for new and experienced riders.' },
-          { text: 'Low maintenance, easy to ride, classic style. Financing and trade-ins available.' },
+          { text: 'Shop Brooks Ghost 16 with DNA LOFT v3 cushioning for smooth transitions. Trusted by daily runners everywhere.' },
+          { text: 'Lightweight Hoka Clifton 9 with early stage rocker and CMEVA foam for efficient strides. Free shipping.' },
+          { text: 'Reliable neutral trainers for daily runs. Smooth ride, responsive cushioning. Shop now and save.' },
         ],
-        path1: 'classic',
-        path2: 'motorcycles',
+        path1: 'running',
+        path2: 'trainers',
       },
     },
   },

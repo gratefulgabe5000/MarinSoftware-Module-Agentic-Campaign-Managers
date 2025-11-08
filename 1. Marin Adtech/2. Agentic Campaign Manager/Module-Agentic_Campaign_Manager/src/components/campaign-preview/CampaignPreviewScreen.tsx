@@ -11,7 +11,7 @@ import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
 import { ArrowLeftIcon, SparklesIcon, CheckCircle2Icon, AlertCircleIcon, AlertTriangleIcon, SaveIcon, Loader2Icon } from 'lucide-react';
 
 /**
@@ -22,7 +22,7 @@ const CampaignPreviewScreen: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
-  const [selectedCampaign, setSelectedCampaign] = useState<CampaignPreviewData | null>(null);
+  const [activeCampaignTab, setActiveCampaignTab] = useState<string>('0');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,13 +42,16 @@ const CampaignPreviewScreen: React.FC = () => {
     }
   }, [location.state, storeCampaigns]);
 
-  // Set preview data when campaign is selected
+  // Set preview data when active campaign tab changes
   useEffect(() => {
-    if (selectedCampaign) {
-      setPreviewData(selectedCampaign);
+    const campaignIndex = parseInt(activeCampaignTab, 10);
+    if (campaigns.length > 0 && campaignIndex >= 0 && campaignIndex < campaigns.length) {
+      const campaign = campaigns[campaignIndex];
+      const previewData = transformCampaignToPreview(campaign);
+      setPreviewData(previewData);
       validateCampaign();
     }
-  }, [selectedCampaign, setPreviewData, validateCampaign]);
+  }, [activeCampaignTab, campaigns, setPreviewData, validateCampaign]);
 
   // Transform campaign to preview data
   const transformCampaignToPreview = (campaign: Campaign): CampaignPreviewData => {
@@ -110,14 +113,6 @@ const CampaignPreviewScreen: React.FC = () => {
     };
   };
 
-  // Handle campaign selection
-  const handleCampaignSelect = (campaignId: string) => {
-    const campaign = campaigns.find(c => c.id === campaignId);
-    if (campaign) {
-      setSelectedCampaign(transformCampaignToPreview(campaign));
-    }
-  };
-
   // Handle back to dashboard
   const handleBackToDashboard = () => {
     navigate('/campaigns');
@@ -169,39 +164,53 @@ const CampaignPreviewScreen: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background p-8">
-      <div className="mx-auto max-w-7xl space-y-8">
+      <div className="mx-auto max-w-7xl space-y-6">
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Campaign Preview & Edit</h1>
+            <div className="flex items-center gap-3 mb-1">
+              <h1 className="text-3xl font-bold tracking-tight">Campaign Preview & Edit</h1>
+              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-300 text-sm px-3 py-1">
+                PREVIEW
+              </Badge>
+            </div>
             <p className="text-muted-foreground mt-1">
               Review and edit your generated campaigns before exporting
             </p>
           </div>
           <div className="flex gap-2">
-            {campaigns.length > 1 && (
-              <Select
-                value={selectedCampaign?.campaignId || ''}
-                onValueChange={handleCampaignSelect}
-              >
-                <SelectTrigger className="w-[250px]">
-                  <SelectValue placeholder="Select a campaign..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {campaigns.map((campaign) => (
-                    <SelectItem key={campaign.id} value={campaign.id}>
-                      {campaign.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
             <Button variant="outline" onClick={handleBackToDashboard} type="button">
               <ArrowLeftIcon className="h-4 w-4" />
               Back to Dashboard
             </Button>
           </div>
         </div>
+
+        {/* Campaign Tabs */}
+        {campaigns.length > 1 && (
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Select Campaign to Preview</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <Tabs value={activeCampaignTab} onValueChange={setActiveCampaignTab}>
+                <div className="overflow-x-auto pb-2">
+                  <TabsList className="inline-flex w-auto">
+                    {campaigns.map((campaign, index) => (
+                      <TabsTrigger
+                        key={campaign.id}
+                        value={index.toString()}
+                        className="whitespace-nowrap"
+                      >
+                        {campaign.name}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </div>
+              </Tabs>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Error Alert */}
         {error && (
@@ -285,22 +294,8 @@ const CampaignPreviewScreen: React.FC = () => {
           </Card>
         )}
 
-        {selectedCampaign ? (
-          <CampaignPreviewTable previewData={selectedCampaign} />
-        ) : campaigns.length === 1 ? (
-          <CampaignPreviewTable previewData={transformCampaignToPreview(campaigns[0])} />
-        ) : (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="rounded-full bg-muted p-4 mb-4">
-                <AlertCircleIcon className="h-8 w-8 text-muted-foreground" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Select a Campaign</h3>
-              <p className="text-muted-foreground">
-                Please select a campaign from the dropdown above to preview and edit.
-              </p>
-            </CardContent>
-          </Card>
+        {campaigns.length > 0 && (
+          <CampaignPreviewTable previewData={transformCampaignToPreview(campaigns[parseInt(activeCampaignTab, 10)])} />
         )}
       </div>
     </div>

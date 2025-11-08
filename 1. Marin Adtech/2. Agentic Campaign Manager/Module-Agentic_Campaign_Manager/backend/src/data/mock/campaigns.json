@@ -2,32 +2,32 @@
   "campaigns": [
     {
       "id": "campaign-001",
-      "name": "Motorcycle Sales Campaign",
+      "name": "Running Shoes Sales Campaign",
       "status": "ACTIVE",
       "adGroups": [
         {
           "id": "adgroup-001",
-          "name": "Triumph Motorcycles",
+          "name": "Nike - Performance Running",
           "keywords": [
             {
-              "text": "triumph motorcycle",
+              "text": "nike running shoes",
               "matchType": "BROAD",
               "impressions": 15000,
-              "clicks": 450,
-              "ctr": 3.0,
-              "conversions": 12,
-              "cost": 1350.00,
-              "roas": 3.2
+              "clicks": 600,
+              "ctr": 4.0,
+              "conversions": 25,
+              "cost": 1500.00,
+              "roas": 3.5
             },
             {
-              "text": "triumph bonneville",
+              "text": "nike air zoom pegasus",
               "matchType": "PHRASE",
               "impressions": 8500,
               "clicks": 340,
               "ctr": 4.0,
               "conversions": 18,
-              "cost": 1020.00,
-              "roas": 4.5
+              "cost": 850.00,
+              "roas": 2.96
             }
           ],
           "ads": [
@@ -35,40 +35,40 @@
               "id": "ad-001",
               "type": "RESPONSIVE_SEARCH_AD",
               "headlines": [
-                "Triumph Motorcycles - Classic Style",
-                "Shop Triumph Motorcycles Today",
-                "Premium Motorcycle Experience"
+                "Nike Running Shoes - Premium Performance",
+                "Shop Nike Running Shoes Today",
+                "Trusted by Runners Worldwide"
               ],
               "descriptions": [
-                "Discover the perfect motorcycle for your ride. Quality craftsmanship meets modern performance.",
-                "Find your dream bike. Browse our selection of premium motorcycles."
+                "Discover the perfect running shoe for your training. Quality craftsmanship meets modern technology.",
+                "Find your ideal shoe. Browse our selection of premium running shoes."
               ]
             }
           ]
         },
         {
           "id": "adgroup-002",
-          "name": "Harley-Davidson Motorcycles",
+          "name": "Adidas + ASICS - Cushioned Comfort",
           "keywords": [
             {
-              "text": "harley davidson",
-              "matchType": "BROAD",
-              "impressions": 22000,
-              "clicks": 660,
-              "ctr": 3.0,
-              "conversions": 25,
-              "cost": 1980.00,
-              "roas": 3.8
-            },
-            {
-              "text": "harley sportster",
+              "text": "adidas ultraboost",
               "matchType": "PHRASE",
               "impressions": 12000,
               "clicks": 480,
               "ctr": 4.0,
-              "conversions": 22,
-              "cost": 1440.00,
-              "roas": 4.2
+              "conversions": 25,
+              "cost": 960.00,
+              "roas": 4.95
+            },
+            {
+              "text": "asics gel nimbus",
+              "matchType": "PHRASE",
+              "impressions": 10000,
+              "clicks": 400,
+              "ctr": 4.0,
+              "conversions": 20,
+              "cost": 800.00,
+              "roas": 4.0
             }
           ],
           "ads": [
@@ -76,13 +76,13 @@
               "id": "ad-002",
               "type": "RESPONSIVE_SEARCH_AD",
               "headlines": [
-                "Harley-Davidson Motorcycles",
-                "Shop Harley-Davidson Now",
-                "American Icon Motorcycles"
+                "Premium Cushioned Running Shoes",
+                "Shop Adidas & ASICS Now",
+                "Maximum Comfort Technology"
               ],
               "descriptions": [
-                "Experience the freedom of the open road. Iconic American motorcycles.",
-                "Join the Harley-Davidson family. Find your perfect ride today."
+                "Experience supreme comfort with every stride. Premium cushioning technology for long runs.",
+                "Discover the perfect blend of comfort and performance. Shop now."
               ]
             }
           ]

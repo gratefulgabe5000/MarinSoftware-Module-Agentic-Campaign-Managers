@@ -1,0 +1,156 @@
+{
+  "campaigns": [
+    {
+      "id": "campaign-asics-nimbus-001",
+      "name": "ASICS Gel-Nimbus 26 - Max Cushion Running",
+      "status": "ACTIVE",
+      "advertising_channel_type": "SEARCH",
+      "adGroups": [
+        {
+          "id": "adgroup-asics-nimbus-001",
+          "name": "ASICS Gel-Nimbus 26 - Product Specific",
+          "keywords": [
+            {
+              "text": "asics gel nimbus 26",
+              "matchType": "EXACT",
+              "impressions": 10000,
+              "clicks": 400,
+              "ctr": 4.0,
+              "conversions": 20,
+              "cost": 800.00,
+              "roas": 4.00,
+              "average_cpc": 2.00
+            },
+            {
+              "text": "asics nimbus 26",
+              "matchType": "PHRASE",
+              "impressions": 8200,
+              "clicks": 328,
+              "ctr": 4.0,
+              "conversions": 16,
+              "cost": 656.00,
+              "roas": 3.90,
+              "average_cpc": 2.00
+            },
+            {
+              "text": "gel nimbus 26 running shoes",
+              "matchType": "PHRASE",
+              "impressions": 6800,
+              "clicks": 272,
+              "ctr": 4.0,
+              "conversions": 14,
+              "cost": 544.00,
+              "roas": 4.12,
+              "average_cpc": 2.00
+            },
+            {
+              "text": "buy asics gel nimbus 26",
+              "matchType": "PHRASE",
+              "impressions": 5500,
+              "clicks": 220,
+              "ctr": 4.0,
+              "conversions": 12,
+              "cost": 440.00,
+              "roas": 4.36,
+              "average_cpc": 2.00
+            }
+          ],
+          "ads": [
+            {
+              "id": "ad-asics-nimbus-001",
+              "type": "RESPONSIVE_SEARCH_AD",
+              "headlines": [
+                "ASICS Gel-Nimbus 26",
+                "Max-Cushion Running Shoes",
+                "FF BLAST PLUS ECO Foam",
+                "PureGEL Technology",
+                "Shop ASICS Nimbus 26",
+                "Plush Comfort Every Mile",
+                "Premium Max-Cushion Trainer",
+                "Official ASICS Store"
+              ],
+              "descriptions": [
+                "Experience maximum cushioning with ASICS Gel-Nimbus 26. FF BLAST PLUS ECO foam and PureGEL technology for plush comfort.",
+                "Shop the premium max-cushion trainer. Advanced cushioning technology for long-distance comfort. Free shipping available.",
+                "Discover ASICS' most cushioned running shoe. Perfect for high-mileage training and marathon preparation."
+              ],
+              "final_urls": ["https://www.asics.com/us/en-us/gel-nimbus-26/p/ANA_1012B601-100.html"]
+            }
+          ]
+        },
+        {
+          "id": "adgroup-asics-nimbus-002",
+          "name": "ASICS Gel-Nimbus 26 - Variations",
+          "keywords": [
+            {
+              "text": "gel nimbus 26 men's",
+              "matchType": "PHRASE",
+              "impressions": 4800,
+              "clicks": 192,
+              "ctr": 4.0,
+              "conversions": 11,
+              "cost": 384.00,
+              "roas": 4.58,
+              "average_cpc": 2.00
+            },
+            {
+              "text": "gel nimbus 26 women's",
+              "matchType": "PHRASE",
+              "impressions": 4200,
+              "clicks": 168,
+              "ctr": 4.0,
+              "conversions": 9,
+              "cost": 336.00,
+              "roas": 4.29,
+              "average_cpc": 2.00
+            },
+            {
+              "text": "asics nimbus 26 review",
+              "matchType": "PHRASE",
+              "impressions": 3800,
+              "clicks": 152,
+              "ctr": 4.0,
+              "conversions": 8,
+              "cost": 304.00,
+              "roas": 4.21,
+              "average_cpc": 2.00
+            },
+            {
+              "text": "nimbus 26 vs nimbus 25",
+              "matchType": "PHRASE",
+              "impressions": 3200,
+              "clicks": 128,
+              "ctr": 4.0,
+              "conversions": 6,
+              "cost": 256.00,
+              "roas": 3.75,
+              "average_cpc": 2.00
+            }
+          ],
+          "ads": [
+            {
+              "id": "ad-asics-nimbus-002",
+              "type": "RESPONSIVE_SEARCH_AD",
+              "headlines": [
+                "Gel-Nimbus 26 Men's & Women's",
+                "New & Improved Cushioning",
+                "Compare Nimbus 26 vs 25",
+                "Maximum Comfort Technology",
+                "Shop Latest ASICS Nimbus",
+                "Premium Neutral Running Shoe",
+                "Multiple Widths Available",
+                "Free Shipping & Returns"
+              ],
+              "descriptions": [
+                "Find your perfect fit with Gel-Nimbus 26 for men and women. Enhanced cushioning and improved fit over Nimbus 25.",
+                "Read reviews and compare models. The Nimbus 26 features upgraded FF BLAST PLUS ECO foam for superior comfort.",
+                "Shop the latest Gel-Nimbus 26. Available in multiple widths and colors. Free returns on all ASICS orders."
+              ],
+              "final_urls": ["https://www.asics.com/us/en-us/gel-nimbus-26/p/ANA_1012B601-100.html"]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

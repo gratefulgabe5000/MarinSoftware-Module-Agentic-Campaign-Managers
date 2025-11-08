@@ -3,6 +3,14 @@ import { GeneratedRSA } from '../../types/rsa-generation.types';
 import { useCampaignPreviewStore } from '../../store/campaignPreviewStore';
 import { handleHeadlineEdit, handleDescriptionEdit, handleUrlEdit } from '../../utils/inlineEditing';
 import { validateHeadline, validateDescription, validateUrl } from '../../services/validationService';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Input } from '../ui/input';
+import { Textarea } from '../ui/textarea';
+import { Button } from '../ui/button';
+import { Label } from '../ui/label';
+import { Badge } from '../ui/badge';
+import { Alert, AlertDescription } from '../ui/alert';
+import { TrashIcon, PlusIcon } from 'lucide-react';
 
 /**
  * Ad Copy Editor Component
@@ -125,132 +133,164 @@ const AdCopyEditor: React.FC<AdCopyEditorProps> = ({ ad, adGroupId, onUpdate }) 
   };
 
   return (
-    <div className="ad-copy-editor">
+    <div className="space-y-6">
       {/* Headlines Section */}
-      <div className="ad-section">
-        <div className="section-header">
-          <h4>Headlines ({ad.headlines.length}/15)</h4>
-          {ad.headlines.length < 15 && (
-            <button
-              className="btn btn-sm btn-primary"
-              onClick={handleAddHeadline}
-              type="button"
-            >
-              + Add Headline
-            </button>
-          )}
-        </div>
-        <div className="headlines-list">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base">
+              Headlines ({ad.headlines.length}/15)
+            </CardTitle>
+            {ad.headlines.length < 15 && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleAddHeadline}
+                type="button"
+              >
+                <PlusIcon className="h-4 w-4 mr-1" />
+                Add Headline
+              </Button>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3">
           {ad.headlines.map((headline, index) => (
-            <div key={index} className="headline-item">
-              <div className="headline-input-wrapper">
-                <input
-                  type="text"
-                  value={headline.text}
-                  maxLength={30}
-                  onChange={(e) => handleHeadlineChange(index, e.target.value)}
-                  onFocus={() => setEditingHeadlineIndex(index)}
-                  onBlur={() => setEditingHeadlineIndex(null)}
-                  className={headlineErrors[index] ? 'error' : ''}
-                  placeholder={`Headline ${index + 1} (max 30 chars)`}
-                />
-                <div className="headline-actions">
-                  <span className={`char-count ${headline.text.length > 30 ? 'error' : ''}`}>
+            <div key={index} className="space-y-2">
+              <div className="flex items-start gap-2">
+                <div className="flex-1 space-y-1">
+                  <Input
+                    type="text"
+                    value={headline.text}
+                    maxLength={30}
+                    onChange={(e) => handleHeadlineChange(index, e.target.value)}
+                    onFocus={() => setEditingHeadlineIndex(index)}
+                    onBlur={() => setEditingHeadlineIndex(null)}
+                    className={headlineErrors[index] ? 'border-destructive' : ''}
+                    placeholder={`Headline ${index + 1}`}
+                  />
+                  {headlineErrors[index] && (
+                    <p className="text-sm text-destructive">{headlineErrors[index]}</p>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 pt-2">
+                  <Badge
+                    variant={headline.text.length > 30 ? 'destructive' : 'secondary'}
+                    className="font-mono text-xs"
+                  >
                     {headline.text.length}/30
-                  </span>
+                  </Badge>
                   {ad.headlines.length > 3 && (
-                    <button
-                      className="btn-icon btn-danger"
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => handleDeleteHeadline(index)}
                       type="button"
                       title="Delete headline"
+                      className="h-8 w-8 p-0 text-destructive hover:text-destructive"
                     >
-                      🗑️
-                    </button>
+                      <TrashIcon className="h-4 w-4" />
+                    </Button>
                   )}
                 </div>
               </div>
-              {headlineErrors[index] && (
-                <div className="error-message">{headlineErrors[index]}</div>
-              )}
             </div>
           ))}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Descriptions Section */}
-      <div className="ad-section">
-        <div className="section-header">
-          <h4>Descriptions ({ad.descriptions.length}/4)</h4>
-          {ad.descriptions.length < 4 && (
-            <button
-              className="btn btn-sm btn-primary"
-              onClick={handleAddDescription}
-              type="button"
-            >
-              + Add Description
-            </button>
-          )}
-        </div>
-        <div className="descriptions-list">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base">
+              Descriptions ({ad.descriptions.length}/4)
+            </CardTitle>
+            {ad.descriptions.length < 4 && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleAddDescription}
+                type="button"
+              >
+                <PlusIcon className="h-4 w-4 mr-1" />
+                Add Description
+              </Button>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3">
           {ad.descriptions.map((description, index) => (
-            <div key={index} className="description-item">
-              <div className="description-input-wrapper">
-                <textarea
-                  value={description.text}
-                  maxLength={90}
-                  onChange={(e) => handleDescriptionChange(index, e.target.value)}
-                  onFocus={() => setEditingDescriptionIndex(index)}
-                  onBlur={() => setEditingDescriptionIndex(null)}
-                  className={descriptionErrors[index] ? 'error' : ''}
-                  placeholder={`Description ${index + 1} (max 90 chars)`}
-                  rows={2}
-                />
-                <div className="description-actions">
-                  <span className={`char-count ${description.text.length > 90 ? 'error' : ''}`}>
+            <div key={index} className="space-y-2">
+              <div className="flex items-start gap-2">
+                <div className="flex-1 space-y-1">
+                  <Textarea
+                    value={description.text}
+                    maxLength={90}
+                    onChange={(e) => handleDescriptionChange(index, e.target.value)}
+                    onFocus={() => setEditingDescriptionIndex(index)}
+                    onBlur={() => setEditingDescriptionIndex(null)}
+                    className={descriptionErrors[index] ? 'border-destructive' : ''}
+                    placeholder={`Description ${index + 1}`}
+                    rows={2}
+                  />
+                  {descriptionErrors[index] && (
+                    <p className="text-sm text-destructive">{descriptionErrors[index]}</p>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 pt-2">
+                  <Badge
+                    variant={description.text.length > 90 ? 'destructive' : 'secondary'}
+                    className="font-mono text-xs"
+                  >
                     {description.text.length}/90
-                  </span>
+                  </Badge>
                   {ad.descriptions.length > 2 && (
-                    <button
-                      className="btn-icon btn-danger"
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => handleDeleteDescription(index)}
                       type="button"
                       title="Delete description"
+                      className="h-8 w-8 p-0 text-destructive hover:text-destructive"
                     >
-                      🗑️
-                    </button>
+                      <TrashIcon className="h-4 w-4" />
+                    </Button>
                   )}
                 </div>
               </div>
-              {descriptionErrors[index] && (
-                <div className="error-message">{descriptionErrors[index]}</div>
-              )}
             </div>
           ))}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* URLs Section */}
-      <div className="ad-section">
-        <h4>URLs</h4>
-        <div className="url-inputs">
-          <div className="url-item">
-            <label>Final URL:</label>
-            <input
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">URLs</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="final-url">Final URL</Label>
+            <Input
+              id="final-url"
               type="url"
               value={ad.finalUrl}
               onChange={(e) => handleUrlChange(e.target.value)}
               onFocus={() => setEditingUrl(true)}
               onBlur={() => setEditingUrl(false)}
-              className={urlError ? 'error' : ''}
+              className={urlError ? 'border-destructive' : ''}
               placeholder="https://example.com"
             />
-            {urlError && <div className="error-message">{urlError}</div>}
+            {urlError && (
+              <p className="text-sm text-destructive">{urlError}</p>
+            )}
           </div>
           {ad.displayUrl && (
-            <div className="url-item">
-              <label>Display URL:</label>
-              <input
+            <div className="space-y-2">
+              <Label htmlFor="display-url">Display URL</Label>
+              <Input
+                id="display-url"
                 type="text"
                 value={ad.displayUrl}
                 onChange={(e) => {
@@ -258,11 +298,12 @@ const AdCopyEditor: React.FC<AdCopyEditorProps> = ({ ad, adGroupId, onUpdate }) 
                   // TODO: Add updateDisplayUrl to store if needed
                 }}
                 placeholder="example.com"
+                disabled
               />
             </div>
           )}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

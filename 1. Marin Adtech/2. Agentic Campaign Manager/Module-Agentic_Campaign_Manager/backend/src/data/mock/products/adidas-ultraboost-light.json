@@ -1,0 +1,156 @@
+{
+  "campaigns": [
+    {
+      "id": "campaign-adidas-ultraboost-001",
+      "name": "Adidas Ultraboost Light - Premium Cushioned Running",
+      "status": "ACTIVE",
+      "advertising_channel_type": "SEARCH",
+      "adGroups": [
+        {
+          "id": "adgroup-adidas-ultraboost-001",
+          "name": "Adidas Ultraboost Light - Product Specific",
+          "keywords": [
+            {
+              "text": "adidas ultraboost light",
+              "matchType": "EXACT",
+              "impressions": 12000,
+              "clicks": 480,
+              "ctr": 4.0,
+              "conversions": 25,
+              "cost": 960.00,
+              "roas": 4.95,
+              "average_cpc": 2.00
+            },
+            {
+              "text": "ultraboost light shoes",
+              "matchType": "PHRASE",
+              "impressions": 9500,
+              "clicks": 380,
+              "ctr": 4.0,
+              "conversions": 20,
+              "cost": 836.00,
+              "roas": 4.56,
+              "average_cpc": 2.20
+            },
+            {
+              "text": "buy adidas ultraboost light",
+              "matchType": "PHRASE",
+              "impressions": 7200,
+              "clicks": 288,
+              "ctr": 4.0,
+              "conversions": 18,
+              "cost": 633.60,
+              "roas": 5.40,
+              "average_cpc": 2.20
+            },
+            {
+              "text": "adidas light boost running shoes",
+              "matchType": "PHRASE",
+              "impressions": 6000,
+              "clicks": 240,
+              "ctr": 4.0,
+              "conversions": 12,
+              "cost": 432.00,
+              "roas": 5.28,
+              "average_cpc": 1.80
+            }
+          ],
+          "ads": [
+            {
+              "id": "ad-adidas-ultraboost-001",
+              "type": "RESPONSIVE_SEARCH_AD",
+              "headlines": [
+                "Adidas Ultraboost Light",
+                "Premium BOOST Foam Cushioning",
+                "Soft Yet Energetic Ride",
+                "Shop Ultraboost Light Now",
+                "Lightweight Performance Shoes",
+                "Revolutionary BOOST Technology",
+                "Free Shipping Available",
+                "Official Adidas Store"
+              ],
+              "descriptions": [
+                "Experience premium cushioning with Adidas Ultraboost Light. Light BOOST foam delivers soft yet energetic rides for every run.",
+                "Shop the revolutionary Ultraboost Light. Premium comfort meets lightweight performance. Free shipping on orders over $50.",
+                "Discover Adidas' most advanced cushioning technology. Perfect for long runs and daily training. Order now."
+              ],
+              "final_urls": ["https://www.adidas.com/us/ultraboost-light-shoes/HQ6339"]
+            }
+          ]
+        },
+        {
+          "id": "adgroup-adidas-ultraboost-002",
+          "name": "Adidas Ultraboost Light - Variations",
+          "keywords": [
+            {
+              "text": "ultraboost light men's",
+              "matchType": "PHRASE",
+              "impressions": 5500,
+              "clicks": 220,
+              "ctr": 4.0,
+              "conversions": 16,
+              "cost": 484.00,
+              "roas": 6.28,
+              "average_cpc": 2.20
+            },
+            {
+              "text": "ultraboost light women's",
+              "matchType": "PHRASE",
+              "impressions": 4800,
+              "clicks": 192,
+              "ctr": 4.0,
+              "conversions": 14,
+              "cost": 345.60,
+              "roas": 7.71,
+              "average_cpc": 1.80
+            },
+            {
+              "text": "adidas ultraboost light review",
+              "matchType": "PHRASE",
+              "impressions": 4200,
+              "clicks": 168,
+              "ctr": 4.0,
+              "conversions": 10,
+              "cost": 302.40,
+              "roas": 6.29,
+              "average_cpc": 1.80
+            },
+            {
+              "text": "ultraboost light price",
+              "matchType": "PHRASE",
+              "impressions": 3600,
+              "clicks": 144,
+              "ctr": 4.0,
+              "conversions": 8,
+              "cost": 316.80,
+              "roas": 4.80,
+              "average_cpc": 2.20
+            }
+          ],
+          "ads": [
+            {
+              "id": "ad-adidas-ultraboost-002",
+              "type": "RESPONSIVE_SEARCH_AD",
+              "headlines": [
+                "Ultraboost Light Men's & Women's",
+                "Premium Cushioned Running Shoes",
+                "Light BOOST Foam Technology",
+                "Soft Yet Responsive Feel",
+                "Shop Ultraboost Collection",
+                "Award-Winning Design",
+                "Available in Multiple Colors",
+                "Free Returns & Exchanges"
+              ],
+              "descriptions": [
+                "Find your perfect fit with Ultraboost Light for men and women. Premium BOOST cushioning in a lightweight package.",
+                "Read reviews and compare prices. The Ultraboost Light delivers unmatched comfort for serious runners.",
+                "Shop the full Ultraboost Light collection. Multiple colors and sizes available. Free returns on all orders."
+              ],
+              "final_urls": ["https://www.adidas.com/us/ultraboost-light-shoes/HQ6339"]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
