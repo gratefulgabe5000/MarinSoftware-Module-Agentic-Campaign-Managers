@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { GeneratedKeyword } from '../../types/keyword-generation.types';
 import { useCampaignPreviewStore } from '../../store/campaignPreviewStore';
 import { handleKeywordEdit } from '../../utils/inlineEditing';
@@ -76,11 +76,40 @@ const KeywordRow: React.FC<KeywordRowProps> = ({ keyword, adGroupId, keywordInde
     setError(null);
   };
 
-  const handleDelete = () => {
-    const keywordId = (keyword as any).id || keyword.text;
-    deleteKeyword(keywordId, adGroupId);
+  const handleDelete = useCallback(() => {
+    // Find the keyword's current index in the store at deletion time
+    // This ensures we get the correct index even if the list has changed
+    const { editedPreviewData } = useCampaignPreviewStore.getState();
+    
+    if (editedPreviewData) {
+      const adGroup = editedPreviewData.adGroups.find(ag => ag.id === adGroupId);
+      if (adGroup && adGroup.keywords.length > 0) {
+        // Find the keyword by matching the exact keyword object
+        // First try to match at the expected index
+        if (keywordIndex >= 0 && keywordIndex < adGroup.keywords.length) {
+          const keywordAtIndex = adGroup.keywords[keywordIndex];
+          if (keywordAtIndex.text === keyword.text && keywordAtIndex.matchType === keyword.matchType) {
+            // Perfect match at expected index
+            deleteKeyword(adGroupId, keywordIndex);
+            setShowDeleteDialog(false);
+            return;
+          }
+        }
+        // If not at expected index, find it by text and matchType
+        const currentIndex = adGroup.keywords.findIndex(
+          kw => kw.text === keyword.text && kw.matchType === keyword.matchType
+        );
+        if (currentIndex !== -1) {
+          deleteKeyword(adGroupId, currentIndex);
+          setShowDeleteDialog(false);
+          return;
+        }
+      }
+    }
+    // Fallback: use the passed index
+    deleteKeyword(adGroupId, keywordIndex);
     setShowDeleteDialog(false);
-  };
+  }, [adGroupId, keyword, keywordIndex, deleteKeyword]);
 
   const getMatchTypeBadgeVariant = (type: string): "default" | "secondary" | "outline" => {
     switch (type) {

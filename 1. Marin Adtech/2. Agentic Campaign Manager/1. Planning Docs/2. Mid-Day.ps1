@@ -98,7 +98,7 @@ if ([string]::IsNullOrEmpty($git_editor) -or $git_editor -notmatch 'cursor') {
     }
 }
 
-# Temporarily disable the hook by renaming it (git on Windows has issues with --no-verify for prepare-commit-msg)
+# Temporarily disable the hook by renaming it (git on Windows has issues with prepare-commit-msg)
 $hook_path = Join-Path $repo_root ".git\hooks\prepare-commit-msg"
 $hook_backup_path = Join-Path $repo_root ".git\hooks\prepare-commit-msg.bak"
 if (Test-Path $hook_path) {
@@ -106,16 +106,29 @@ if (Test-Path $hook_path) {
     Write-Host "[*] Temporarily disabled prepare-commit-msg hook" -ForegroundColor Cyan
 }
 
-# Commit using the prepared message file
-Write-Host "[*] Committing changes (Cursor editor will open)..." -ForegroundColor Cyan
-Write-Host "[INFO] Cursor's AI commit message generator will be available in the editor." -ForegroundColor Cyan
-Write-Host "[INFO] Review the AI-generated message, edit if needed, then save and close to complete the commit." -ForegroundColor Cyan
-
-# Use git commit -F to use the prepared message file
+# Commit using the prepared message file (bypasses hook)
+Write-Host "[*] Committing changes with prepared message..." -ForegroundColor Cyan
 $commit_output = git commit -F $temp_commit_msg_file 2>&1 | Out-String
 $commit_exit_code = $LASTEXITCODE
 
-# Restore the hook
+# If commit succeeded, amend to open Cursor's editor for AI enhancement
+if ($commit_exit_code -eq 0) {
+    Write-Host "[*] Opening Cursor editor to enhance commit message with AI..." -ForegroundColor Cyan
+    Write-Host "[INFO] Cursor's AI commit message generator will be available in the editor." -ForegroundColor Cyan
+    Write-Host "[INFO] Review the AI-generated message, edit if needed, then save and close to complete the amend." -ForegroundColor Cyan
+    
+    # Amend the commit to open Cursor's editor
+    $amend_output = git commit --amend 2>&1 | Out-String
+    $amend_exit_code = $LASTEXITCODE
+    
+    if ($amend_exit_code -ne 0) {
+        Write-Host "[WARNING] Failed to amend commit. Original commit was successful." -ForegroundColor Yellow
+        Write-Host "Output: $amend_output" -ForegroundColor Yellow
+        # Don't fail - the commit was already successful
+    }
+}
+
+# Restore the original hook
 if (Test-Path $hook_backup_path) {
     Move-Item $hook_backup_path $hook_path -Force -ErrorAction SilentlyContinue
     Write-Host "[*] Restored prepare-commit-msg hook" -ForegroundColor Cyan
