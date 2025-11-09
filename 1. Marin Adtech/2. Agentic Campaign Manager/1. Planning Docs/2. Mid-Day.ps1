@@ -31,7 +31,103 @@ if ([string]::IsNullOrEmpty($current_branch)) {
 
 Write-Host "[*] Mid-day commit and push routine for $today" -ForegroundColor Cyan
 
-# Check if there are changes to commit
+# Update BUG log first
+$bug_log_path = Join-Path $repo_root "1. Marin Adtech\2. Agentic Campaign Manager\2. Artifacts\BUG-Bug Tracker"
+if (Test-Path $bug_log_path) {
+    Write-Host "[*] Updating BUG log..." -ForegroundColor Cyan
+    $bug_log_content = Get-Content $bug_log_path -Raw
+    
+    # Update "Last Updated" field
+    $bug_log_content = $bug_log_content -replace '(\*\*Last Updated:\*\*).*', "`$1 $today - Mid-Day Update"
+    
+    # Add changelog entry at the end of CHANGELOG section
+    # Format it to match the existing pretty, icon-driven formatting
+    $date_formatted = Get-Date -Format "MMMM yyyy"
+    # Use here-string to avoid emoji encoding issues in PowerShell
+    $emoji_chart = [char]0x1F4CA  # 📊 emoji as Unicode character
+    $changelog_entry = @"
+
+### $date_formatted - Mid-Day Status Update
+- **$emoji_chart MID-DAY STATUS UPDATE**
+  - Mid-day status update for $today
+  - Current branch: $current_branch
+  - Status file generated: $status_file
+  - BUG log updated with mid-day progress
+  - All changes committed and pushed to remote
+
+"@
+    
+    # Find the end of the CHANGELOG section (before the "---" separator)
+    # Insert the new entry right after the last changelog entry, before the "---"
+    # Workaround: Use pattern that matches CHANGELOG header without requiring emoji in regex
+    # Pattern matches "## " followed by any characters (including emojis) and "CHANGELOG"
+    # Use single quotes for regex to avoid PowerShell string interpolation issues
+    $changelog_header_pattern = '##\s+[^\n]*CHANGELOG'
+    
+    # Build regex patterns - use simpler approach to avoid PowerShell escape sequence issues
+    # Find the position of CHANGELOG section and insert before "---" separator
+    # Use string manipulation instead of complex regex to avoid escape sequence issues
+    $changelog_marker = "## "
+    $changelog_section_end = "`n---`n`n**Last Updated:"
+    
+    # Find the last occurrence of "---" before "Last Updated" (this is after CHANGELOG section)
+    $last_separator_index = $bug_log_content.LastIndexOf($changelog_section_end)
+    
+    if ($last_separator_index -ge 0) {
+        # Insert changelog entry before the separator
+        $before = $bug_log_content.Substring(0, $last_separator_index)
+        $after = $bug_log_content.Substring($last_separator_index)
+        $bug_log_content = $before + $changelog_entry + $after
+    } else {
+        # Fallback: try to find just "---" separator
+        $separator_index = $bug_log_content.LastIndexOf("`n---`n")
+        if ($separator_index -ge 0) {
+            $before = $bug_log_content.Substring(0, $separator_index)
+            $after = $bug_log_content.Substring($separator_index)
+            $bug_log_content = $before + $changelog_entry + $after
+        } else {
+            # Last resort: append before final "---" separator
+            $bug_log_content = $bug_log_content -replace '(\n---\n\n\*\*Last Updated:)', "$changelog_entry`$1"
+        }
+    }
+    
+    # Write with UTF-8 encoding (no BOM) to preserve emojis properly
+    [System.IO.File]::WriteAllText($bug_log_path, $bug_log_content, [System.Text.UTF8Encoding]::new($false))
+    Write-Host "[OK] BUG log updated." -ForegroundColor Green
+} else {
+    Write-Host "[WARNING] BUG log not found at: $bug_log_path" -ForegroundColor Yellow
+}
+
+# Create status directory if it doesn't exist
+$status_dir_full = Join-Path $repo_root "1. Marin Adtech\2. Agentic Campaign Manager\$status_dir"
+if (-not (Test-Path $status_dir_full)) {
+    New-Item -ItemType Directory -Path $status_dir_full -Force | Out-Null
+}
+
+# Generate status file BEFORE committing
+Write-Host "[*] Generating status file..." -ForegroundColor Cyan
+$status_path = Join-Path $status_dir_full $status_file
+
+# Get recent commits for status
+$recent_commits = git log -n 5 --oneline 2>&1 | Out-String
+$git_status = git status 2>&1 | Out-String
+
+$status_content = @"
+# Mid-Day Status: $today
+
+## Branch: $current_branch
+
+## Recent Commits:
+$recent_commits
+
+## Current Status:
+$git_status
+"@
+
+Set-Content -Path $status_path -Value $status_content -Encoding UTF8
+Write-Host "[OK] Status file created: $status_path" -ForegroundColor Green
+
+# Check if there are changes to commit (including BUG log and status file)
 Write-Host "[*] Checking for changes to commit..." -ForegroundColor Cyan
 git diff --quiet 2>&1 | Out-Null
 $has_unstaged = $LASTEXITCODE -ne 0
@@ -43,7 +139,7 @@ if (-not $has_unstaged -and -not $has_staged) {
     exit 0
 }
 
-# Stage all changes
+# Stage all changes (including BUG log and status file)
 Write-Host "[*] Staging all changes..." -ForegroundColor Cyan
 $add_output = git add . 2>&1 | Out-String
 if ($LASTEXITCODE -ne 0) {
@@ -164,45 +260,33 @@ if ($confirm_push -match '^[Yy]$') {
     Write-Host "[*] Push skipped. Changes remain local." -ForegroundColor Yellow
 }
 
-# Create status directory if it doesn't exist
-if (-not (Test-Path $status_dir)) {
-    New-Item -ItemType Directory -Path $status_dir -Force | Out-Null
-}
-
-# Generate status file
-Write-Host "[*] Generating status file..." -ForegroundColor Cyan
-$status_path = Join-Path $status_dir $status_file
-
-$status_content = @"
-# Mid-Day Status: $today
-
-## Branch: $current_branch
+# Status file was already created before commit, now update it with commit message
+if (Test-Path $status_path) {
+    Write-Host "[*] Updating status file with commit message..." -ForegroundColor Cyan
+    $status_content = Get-Content $status_path -Raw
+    
+    # Add commit message section after branch
+    $commit_section = @"
 
 ## Commit Message:
 $commit_msg
-
-## Recent Commits:
 "@
-
-$recent_commits = git log -n 5 --oneline 2>&1 | Out-String
-$status_content += "`n$recent_commits`n"
-
-$status_content += @"
-## Current Status:
-"@
-
-$git_status = git status 2>&1 | Out-String
-$status_content += "`n$git_status`n"
-
-Set-Content -Path $status_path -Value $status_content -Encoding UTF8
-Write-Host "[OK] Status file created: $status_path" -ForegroundColor Green
+    
+    $status_content = $status_content -replace '(## Branch:.*\n)', "`$1$commit_section`n"
+    
+    Set-Content -Path $status_path -Value $status_content -Encoding UTF8
+    Write-Host "[OK] Status file updated with commit message." -ForegroundColor Green
+}
 
 # Update README with link to status file (if README exists)
-if (Test-Path "README.md") {
-    $readme_content = Get-Content "README.md" -Raw
+$readme_path = Join-Path $repo_root "README.md"
+if (Test-Path $readme_path) {
+    $readme_content = Get-Content $readme_path -Raw
     if ($readme_content -notmatch [regex]::Escape($status_file)) {
-        $link = "- [$today Mid-Day Status](./$status_path)"
-        Add-Content -Path "README.md" -Value $link
+        # Calculate relative path from repo root to status file for the link
+        $status_relative_path = $status_path.Replace($repo_root, "").TrimStart("\")
+        $link = "- [$today Mid-Day Status](./$status_relative_path)"
+        Add-Content -Path $readme_path -Value $link
         Write-Host "[OK] README updated with mid-day status." -ForegroundColor Green
     } else {
         Write-Host "[INFO] README already contains today's status link." -ForegroundColor Cyan
@@ -212,11 +296,12 @@ if (Test-Path "README.md") {
 }
 
 # Update CHANGELOG (if it exists)
-if (Test-Path "CHANGELOG.md") {
-    Add-Content -Path "CHANGELOG.md" -Value "`n## [$today] - $commit_msg`n"
+$changelog_path = Join-Path $repo_root "CHANGELOG.md"
+if (Test-Path $changelog_path) {
+    Add-Content -Path $changelog_path -Value "`n## [$today] - $commit_msg`n"
     $recent_commits = git log -n 5 --oneline 2>&1 | Out-String
-    Add-Content -Path "CHANGELOG.md" -Value $recent_commits
-    Add-Content -Path "CHANGELOG.md" -Value "`n"
+    Add-Content -Path $changelog_path -Value $recent_commits
+    Add-Content -Path $changelog_path -Value "`n"
     Write-Host "[OK] CHANGELOG.md updated." -ForegroundColor Green
 } else {
     Write-Host "[WARNING] CHANGELOG.md not found, skipping CHANGELOG update." -ForegroundColor Yellow
