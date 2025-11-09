@@ -41,29 +41,58 @@ if (Test-Path $bug_log_path) {
     $bug_log_content = $bug_log_content -replace '(\*\*Last Updated:\*\*).*', "`$1 $today - Mid-Day Update"
     
     # Add changelog entry at the end of CHANGELOG section
+    # Format it to match the existing pretty, icon-driven formatting
+    $date_formatted = Get-Date -Format "MMMM yyyy"
+    # Use here-string to avoid emoji encoding issues in PowerShell
+    $emoji_chart = [char]0x1F4CA  # 📊 emoji as Unicode character
     $changelog_entry = @"
 
-### $today - Mid-Day Update
-- **📝 MID-DAY STATUS UPDATE**
+### $date_formatted - Mid-Day Status Update
+- **$emoji_chart MID-DAY STATUS UPDATE**
   - Mid-day status update for $today
-  - Branch: $current_branch
-  - Status file: $status_file
+  - Current branch: $current_branch
+  - Status file generated: $status_file
+  - BUG log updated with mid-day progress
+  - All changes committed and pushed to remote
+
 "@
     
     # Find the end of the CHANGELOG section (before the "---" separator)
     # Insert the new entry right after the last changelog entry, before the "---"
-    # Look for the pattern: end of CHANGELOG section followed by "---" and "Last Updated"
-    if ($bug_log_content -match '(## 📅 CHANGELOG[\s\S]*?)(\n---\n\n\*\*Last Updated:)') {
-        $bug_log_content = $bug_log_content -replace '(## 📅 CHANGELOG[\s\S]*?)(\n---\n\n\*\*Last Updated:)', "`$1$changelog_entry`n`$2"
-    } elseif ($bug_log_content -match '(## 📅 CHANGELOG[\s\S]*?)(\n---)') {
-        # Fallback: just look for CHANGELOG section followed by "---"
-        $bug_log_content = $bug_log_content -replace '(## 📅 CHANGELOG[\s\S]*?)(\n---)', "`$1$changelog_entry`n`$2"
+    # Workaround: Use pattern that matches CHANGELOG header without requiring emoji in regex
+    # Pattern matches "## " followed by any characters (including emojis) and "CHANGELOG"
+    # Use single quotes for regex to avoid PowerShell string interpolation issues
+    $changelog_header_pattern = '##\s+[^\n]*CHANGELOG'
+    
+    # Build regex patterns - use simpler approach to avoid PowerShell escape sequence issues
+    # Find the position of CHANGELOG section and insert before "---" separator
+    # Use string manipulation instead of complex regex to avoid escape sequence issues
+    $changelog_marker = "## "
+    $changelog_section_end = "`n---`n`n**Last Updated:"
+    
+    # Find the last occurrence of "---" before "Last Updated" (this is after CHANGELOG section)
+    $last_separator_index = $bug_log_content.LastIndexOf($changelog_section_end)
+    
+    if ($last_separator_index -ge 0) {
+        # Insert changelog entry before the separator
+        $before = $bug_log_content.Substring(0, $last_separator_index)
+        $after = $bug_log_content.Substring($last_separator_index)
+        $bug_log_content = $before + $changelog_entry + $after
     } else {
-        # If pattern doesn't match, append before the final "---" separator
-        $bug_log_content = $bug_log_content -replace '(\n---\n\n\*\*Last Updated:)', "$changelog_entry`n`$1"
+        # Fallback: try to find just "---" separator
+        $separator_index = $bug_log_content.LastIndexOf("`n---`n")
+        if ($separator_index -ge 0) {
+            $before = $bug_log_content.Substring(0, $separator_index)
+            $after = $bug_log_content.Substring($separator_index)
+            $bug_log_content = $before + $changelog_entry + $after
+        } else {
+            # Last resort: append before final "---" separator
+            $bug_log_content = $bug_log_content -replace '(\n---\n\n\*\*Last Updated:)', "$changelog_entry`$1"
+        }
     }
     
-    Set-Content -Path $bug_log_path -Value $bug_log_content -Encoding UTF8
+    # Write with UTF-8 encoding (no BOM) to preserve emojis properly
+    [System.IO.File]::WriteAllText($bug_log_path, $bug_log_content, [System.Text.UTF8Encoding]::new($false))
     Write-Host "[OK] BUG log updated." -ForegroundColor Green
 } else {
     Write-Host "[WARNING] BUG log not found at: $bug_log_path" -ForegroundColor Yellow
@@ -250,11 +279,14 @@ $commit_msg
 }
 
 # Update README with link to status file (if README exists)
-if (Test-Path "README.md") {
-    $readme_content = Get-Content "README.md" -Raw
+$readme_path = Join-Path $repo_root "README.md"
+if (Test-Path $readme_path) {
+    $readme_content = Get-Content $readme_path -Raw
     if ($readme_content -notmatch [regex]::Escape($status_file)) {
-        $link = "- [$today Mid-Day Status](./$status_path)"
-        Add-Content -Path "README.md" -Value $link
+        # Calculate relative path from repo root to status file for the link
+        $status_relative_path = $status_path.Replace($repo_root, "").TrimStart("\")
+        $link = "- [$today Mid-Day Status](./$status_relative_path)"
+        Add-Content -Path $readme_path -Value $link
         Write-Host "[OK] README updated with mid-day status." -ForegroundColor Green
     } else {
         Write-Host "[INFO] README already contains today's status link." -ForegroundColor Cyan
@@ -264,11 +296,12 @@ if (Test-Path "README.md") {
 }
 
 # Update CHANGELOG (if it exists)
-if (Test-Path "CHANGELOG.md") {
-    Add-Content -Path "CHANGELOG.md" -Value "`n## [$today] - $commit_msg`n"
+$changelog_path = Join-Path $repo_root "CHANGELOG.md"
+if (Test-Path $changelog_path) {
+    Add-Content -Path $changelog_path -Value "`n## [$today] - $commit_msg`n"
     $recent_commits = git log -n 5 --oneline 2>&1 | Out-String
-    Add-Content -Path "CHANGELOG.md" -Value $recent_commits
-    Add-Content -Path "CHANGELOG.md" -Value "`n"
+    Add-Content -Path $changelog_path -Value $recent_commits
+    Add-Content -Path $changelog_path -Value "`n"
     Write-Host "[OK] CHANGELOG.md updated." -ForegroundColor Green
 } else {
     Write-Host "[WARNING] CHANGELOG.md not found, skipping CHANGELOG update." -ForegroundColor Yellow
