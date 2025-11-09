@@ -243,6 +243,27 @@ class PerformanceService {
   }
 
   /**
+   * Normalize date to ISO string format
+   * Handles both Date objects and ISO string dates from API responses
+   */
+  private normalizeDate(date: Date | string): string {
+    if (typeof date === 'string') {
+      // Already an ISO string, return as-is
+      return date;
+    } else if (date instanceof Date) {
+      // Date object, convert to ISO string
+      return date.toISOString();
+    } else {
+      // Fallback: try to convert to Date and then to ISO string
+      try {
+        return new Date(date).toISOString();
+      } catch {
+        return String(date);
+      }
+    }
+  }
+
+  /**
    * Export metrics to CSV
    */
   exportToCSV(
@@ -256,7 +277,7 @@ class PerformanceService {
       // Time series data
       csvContent = 'Date,Impressions,Clicks,CTR,Conversions,CPA,ROAS,Spend,Revenue\n';
       rows = metrics.map((point) => [
-        point.date.toISOString(),
+        this.normalizeDate(point.date),
         point.impressions.toString(),
         point.clicks.toString(),
         point.ctr.toFixed(2),
@@ -278,8 +299,8 @@ class PerformanceService {
         ['ROAS', metrics.roas.toFixed(2)],
         ['Spend', metrics.spend.toFixed(2)],
         ['Revenue', metrics.revenue?.toFixed(2) || '0'],
-        ['Start Date', metrics.dateRange.start.toISOString()],
-        ['End Date', metrics.dateRange.end.toISOString()],
+        ['Start Date', this.normalizeDate(metrics.dateRange.start)],
+        ['End Date', this.normalizeDate(metrics.dateRange.end)],
       ];
     }
 
