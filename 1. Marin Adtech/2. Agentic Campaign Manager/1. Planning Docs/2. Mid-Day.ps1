@@ -31,7 +31,74 @@ if ([string]::IsNullOrEmpty($current_branch)) {
 
 Write-Host "[*] Mid-day commit and push routine for $today" -ForegroundColor Cyan
 
-# Check if there are changes to commit
+# Update BUG log first
+$bug_log_path = Join-Path $repo_root "1. Marin Adtech\2. Agentic Campaign Manager\2. Artifacts\BUG-Bug Tracker"
+if (Test-Path $bug_log_path) {
+    Write-Host "[*] Updating BUG log..." -ForegroundColor Cyan
+    $bug_log_content = Get-Content $bug_log_path -Raw
+    
+    # Update "Last Updated" field
+    $bug_log_content = $bug_log_content -replace '(\*\*Last Updated:\*\*).*', "`$1 $today - Mid-Day Update"
+    
+    # Add changelog entry at the end of CHANGELOG section
+    $changelog_entry = @"
+
+### $today - Mid-Day Update
+- **📝 MID-DAY STATUS UPDATE**
+  - Mid-day status update for $today
+  - Branch: $current_branch
+  - Status file: $status_file
+"@
+    
+    # Find the end of the CHANGELOG section (before the "---" separator)
+    # Insert the new entry right after the last changelog entry, before the "---"
+    # Look for the pattern: end of CHANGELOG section followed by "---" and "Last Updated"
+    if ($bug_log_content -match '(## 📅 CHANGELOG[\s\S]*?)(\n---\n\n\*\*Last Updated:)') {
+        $bug_log_content = $bug_log_content -replace '(## 📅 CHANGELOG[\s\S]*?)(\n---\n\n\*\*Last Updated:)', "`$1$changelog_entry`n`$2"
+    } elseif ($bug_log_content -match '(## 📅 CHANGELOG[\s\S]*?)(\n---)') {
+        # Fallback: just look for CHANGELOG section followed by "---"
+        $bug_log_content = $bug_log_content -replace '(## 📅 CHANGELOG[\s\S]*?)(\n---)', "`$1$changelog_entry`n`$2"
+    } else {
+        # If pattern doesn't match, append before the final "---" separator
+        $bug_log_content = $bug_log_content -replace '(\n---\n\n\*\*Last Updated:)', "$changelog_entry`n`$1"
+    }
+    
+    Set-Content -Path $bug_log_path -Value $bug_log_content -Encoding UTF8
+    Write-Host "[OK] BUG log updated." -ForegroundColor Green
+} else {
+    Write-Host "[WARNING] BUG log not found at: $bug_log_path" -ForegroundColor Yellow
+}
+
+# Create status directory if it doesn't exist
+$status_dir_full = Join-Path $repo_root "1. Marin Adtech\2. Agentic Campaign Manager\$status_dir"
+if (-not (Test-Path $status_dir_full)) {
+    New-Item -ItemType Directory -Path $status_dir_full -Force | Out-Null
+}
+
+# Generate status file BEFORE committing
+Write-Host "[*] Generating status file..." -ForegroundColor Cyan
+$status_path = Join-Path $status_dir_full $status_file
+
+# Get recent commits for status
+$recent_commits = git log -n 5 --oneline 2>&1 | Out-String
+$git_status = git status 2>&1 | Out-String
+
+$status_content = @"
+# Mid-Day Status: $today
+
+## Branch: $current_branch
+
+## Recent Commits:
+$recent_commits
+
+## Current Status:
+$git_status
+"@
+
+Set-Content -Path $status_path -Value $status_content -Encoding UTF8
+Write-Host "[OK] Status file created: $status_path" -ForegroundColor Green
+
+# Check if there are changes to commit (including BUG log and status file)
 Write-Host "[*] Checking for changes to commit..." -ForegroundColor Cyan
 git diff --quiet 2>&1 | Out-Null
 $has_unstaged = $LASTEXITCODE -ne 0
@@ -43,7 +110,7 @@ if (-not $has_unstaged -and -not $has_staged) {
     exit 0
 }
 
-# Stage all changes
+# Stage all changes (including BUG log and status file)
 Write-Host "[*] Staging all changes..." -ForegroundColor Cyan
 $add_output = git add . 2>&1 | Out-String
 if ($LASTEXITCODE -ne 0) {
@@ -164,38 +231,23 @@ if ($confirm_push -match '^[Yy]$') {
     Write-Host "[*] Push skipped. Changes remain local." -ForegroundColor Yellow
 }
 
-# Create status directory if it doesn't exist
-if (-not (Test-Path $status_dir)) {
-    New-Item -ItemType Directory -Path $status_dir -Force | Out-Null
-}
-
-# Generate status file
-Write-Host "[*] Generating status file..." -ForegroundColor Cyan
-$status_path = Join-Path $status_dir $status_file
-
-$status_content = @"
-# Mid-Day Status: $today
-
-## Branch: $current_branch
+# Status file was already created before commit, now update it with commit message
+if (Test-Path $status_path) {
+    Write-Host "[*] Updating status file with commit message..." -ForegroundColor Cyan
+    $status_content = Get-Content $status_path -Raw
+    
+    # Add commit message section after branch
+    $commit_section = @"
 
 ## Commit Message:
 $commit_msg
-
-## Recent Commits:
 "@
-
-$recent_commits = git log -n 5 --oneline 2>&1 | Out-String
-$status_content += "`n$recent_commits`n"
-
-$status_content += @"
-## Current Status:
-"@
-
-$git_status = git status 2>&1 | Out-String
-$status_content += "`n$git_status`n"
-
-Set-Content -Path $status_path -Value $status_content -Encoding UTF8
-Write-Host "[OK] Status file created: $status_path" -ForegroundColor Green
+    
+    $status_content = $status_content -replace '(## Branch:.*\n)', "`$1$commit_section`n"
+    
+    Set-Content -Path $status_path -Value $status_content -Encoding UTF8
+    Write-Host "[OK] Status file updated with commit message." -ForegroundColor Green
+}
 
 # Update README with link to status file (if README exists)
 if (Test-Path "README.md") {
