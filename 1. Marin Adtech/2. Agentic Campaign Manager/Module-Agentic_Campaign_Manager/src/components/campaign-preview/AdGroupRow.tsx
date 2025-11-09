@@ -128,8 +128,8 @@ const AdGroupRow: React.FC<AdGroupRowProps> = ({ adGroup, isExpanded, onToggle }
           )}
         </TableCell>
         <TableCell className="text-center text-muted-foreground">—</TableCell>
-        <TableCell className="text-center font-medium">{adGroup.keywords.length}</TableCell>
-        <TableCell className="text-center font-medium">{adGroup.ads.length}</TableCell>
+        <TableCell className="text-center font-medium">{currentAdGroup.keywords.length}</TableCell>
+        <TableCell className="text-center font-medium">{currentAdGroup.ads.length}</TableCell>
         <TableCell className="text-center">
           <Button
             variant="ghost"
@@ -145,19 +145,19 @@ const AdGroupRow: React.FC<AdGroupRowProps> = ({ adGroup, isExpanded, onToggle }
       </TableRow>
       {isExpanded && (
         <>
-          {adGroup.keywords.map((keyword, index) => (
+          {currentAdGroup.keywords.map((keyword, index) => (
             <KeywordRow
-              key={`keyword-${adGroup.id}-${index}`}
+              key={`keyword-${currentAdGroup.id}-${keyword.text}-${keyword.matchType}-${index}`}
               keyword={keyword}
-              adGroupId={adGroup.id}
+              adGroupId={currentAdGroup.id}
               keywordIndex={index}
             />
           ))}
-          {adGroup.ads.map((ad, index) => (
+          {currentAdGroup.ads.map((ad, index) => (
             <AdRow
-              key={`ad-${adGroup.id}-${index}`}
+              key={`ad-${currentAdGroup.id}-${ad.id || index}`}
               ad={ad}
-              adGroupId={adGroup.id}
+              adGroupId={currentAdGroup.id}
             />
           ))}
         </>

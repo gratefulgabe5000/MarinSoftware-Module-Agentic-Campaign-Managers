@@ -28,7 +28,7 @@ interface CampaignPreviewStore {
   updateHeadline: (adId: string, adGroupId: string, headlineIndex: number, text: string) => void;
   updateDescription: (adId: string, adGroupId: string, descriptionIndex: number, text: string) => void;
   updateUrl: (adId: string, adGroupId: string, url: string) => void;
-  deleteKeyword: (keywordId: string, adGroupId: string) => void;
+  deleteKeyword: (adGroupId: string, keywordIndex: number) => void;
   deleteRSA: (adId: string, adGroupId: string) => void;
   addHeadline: (adId: string, adGroupId: string, text: string) => void;
   addDescription: (adId: string, adGroupId: string, text: string) => void;
@@ -198,21 +198,24 @@ export const useCampaignPreviewStore = create<CampaignPreviewStore>((set, get) =
   },
 
   // Delete keyword
-  deleteKeyword: (keywordId: string, adGroupId: string) => {
+  deleteKeyword: (adGroupId: string, keywordIndex: number) => {
     const state = get();
     if (!state.editedPreviewData) return;
 
     const updatedData = { ...state.editedPreviewData };
     const adGroupIndex = updatedData.adGroups.findIndex((ag) => ag.id === adGroupId);
     if (adGroupIndex !== -1) {
-      updatedData.adGroups[adGroupIndex].keywords = updatedData.adGroups[adGroupIndex].keywords.filter(
-        (kw) => kw.text !== keywordId && (kw as any).id !== keywordId
-      );
-      updatedData.totalKeywords = updatedData.adGroups.reduce((sum, ag) => sum + ag.keywords.length, 0);
-      set({
-        editedPreviewData: updatedData,
-        hasUnsavedChanges: true,
-      });
+      // Use index-based deletion to ensure correct item is removed
+      const keywords = [...updatedData.adGroups[adGroupIndex].keywords];
+      if (keywordIndex >= 0 && keywordIndex < keywords.length) {
+        keywords.splice(keywordIndex, 1);
+        updatedData.adGroups[adGroupIndex].keywords = keywords;
+        updatedData.totalKeywords = updatedData.adGroups.reduce((sum, ag) => sum + ag.keywords.length, 0);
+        set({
+          editedPreviewData: updatedData,
+          hasUnsavedChanges: true,
+        });
+      }
     }
   },
 
