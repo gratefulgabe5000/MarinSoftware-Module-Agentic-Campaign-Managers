@@ -13,6 +13,14 @@ export const config = {
   googleAdsRefreshToken: process.env.GOOGLE_ADS_REFRESH_TOKEN || '',
   googleAdsDeveloperToken: process.env.GOOGLE_ADS_DEVELOPER_TOKEN || '',
   googleAdsCustomerId: process.env.GOOGLE_ADS_CUSTOMER_ID || '',
+  marinDispatcher: {
+    // Use DISPATCHER_URL from environment (InfraDocs pattern - set by CloudFormation in Lambda)
+    // Fallback to MARIN_DISPATCHER_BASE_URL for local development
+    baseUrl: process.env.DISPATCHER_URL || process.env.MARIN_DISPATCHER_BASE_URL || '',
+    accountId: process.env.MARIN_DISPATCHER_ACCOUNT_ID || '',
+    publisher: process.env.MARIN_DISPATCHER_PUBLISHER || 'google',
+    timeout: parseInt(process.env.MARIN_DISPATCHER_TIMEOUT || '10000', 10),
+  },
 };
 
 // Validate required environment variables (for production)
@@ -23,6 +31,32 @@ if (process.env.NODE_ENV === 'production') {
   if (missingVars.length > 0) {
     console.warn(`Warning: Missing environment variables: ${missingVars.join(', ')}`);
   }
+}
+
+// Validate Marin Dispatcher configuration
+if (!config.marinDispatcher.baseUrl && process.env.NODE_ENV === 'production') {
+  console.warn('Warning: DISPATCHER_URL or MARIN_DISPATCHER_BASE_URL must be set for Marin Dispatcher integration');
+}
+
+// TypeScript types for config structure
+export interface MarinDispatcherConfig {
+  baseUrl: string;
+  accountId: string;
+  publisher: string;
+  timeout: number;
+}
+
+export interface Config {
+  port: number;
+  corsOrigin: string;
+  openaiApiKey: string;
+  anthropicApiKey: string;
+  googleAdsClientId: string;
+  googleAdsClientSecret: string;
+  googleAdsRefreshToken: string;
+  googleAdsDeveloperToken: string;
+  googleAdsCustomerId: string;
+  marinDispatcher: MarinDispatcherConfig;
 }
 
 export default config;
