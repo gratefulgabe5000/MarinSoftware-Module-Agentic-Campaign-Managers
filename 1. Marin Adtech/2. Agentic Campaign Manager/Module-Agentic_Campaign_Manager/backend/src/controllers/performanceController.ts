@@ -223,6 +223,14 @@ export class PerformanceController {
    */
   getCampaignPerformance = async (req: Request, res: Response): Promise<void> => {
     try {
+      if (!req.params) {
+        res.status(400).json({
+          error: 'Invalid request',
+          message: 'Campaign ID is required',
+        });
+        return;
+      }
+
       const { id } = req.params;
       const { platform, includeTimeSeries } = req.query;
 

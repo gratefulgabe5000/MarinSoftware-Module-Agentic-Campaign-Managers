@@ -67,7 +67,7 @@ export class CampaignController {
   updateCampaign = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-      const updates = req.body; // e.g., { status: 'active' }
+      const updates = req.body || {}; // e.g., { status: 'active' }
 
       if (!id) {
         res.status(400).json({

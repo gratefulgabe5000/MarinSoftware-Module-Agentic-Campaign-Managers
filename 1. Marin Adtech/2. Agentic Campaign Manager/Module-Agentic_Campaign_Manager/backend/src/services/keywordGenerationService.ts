@@ -1,5 +1,4 @@
 import { ProductInput } from '../types/product.types';
-import { CampaignPatterns } from '../types/campaign-patterns.types';
 import {
   KeywordSource,
   GeneratedKeyword,
@@ -18,7 +17,7 @@ import config from '../config/env';
  * Extracts keywords from product data
  */
 export function extractKeywordsFromProduct(
-  product: ProductInput
+  product: Omit<ProductInput, 'source'>
 ): KeywordSource[] {
   const keywords: KeywordSource[] = [];
 
@@ -92,8 +91,8 @@ export function extractKeywordsFromProduct(
  * Finds similar keywords from existing high-performing keywords
  */
 export function matchKeywordsFromExistingCampaigns(
-  product: ProductInput,
-  patterns?: CampaignPatterns
+  product: Omit<ProductInput, 'source'>,
+  patterns?: { highPerformingKeywords?: Array<{ keyword: string; matchType: string; ctr: number; conversions: number; roas?: number }> }
 ): KeywordSource[] {
   const keywords: KeywordSource[] = [];
 
@@ -149,7 +148,7 @@ export function matchKeywordsFromExistingCampaigns(
  * Generates keywords using LLM
  */
 export async function generateKeywordsWithLLM(
-  product: ProductInput
+  product: Omit<ProductInput, 'source'>
 ): Promise<KeywordSource[]> {
   try {
     const apiKey = config.openaiApiKey || '';
@@ -391,7 +390,7 @@ export async function generateKeywordsForProduct(
   const validationResults = validateKeywords(keywordTexts);
 
   // Filter out invalid keywords
-  const validKeywords = rankedKeywords.filter((keyword, index) => 
+  const validKeywords = rankedKeywords.filter((_keyword, index) =>
     validationResults[index].valid
   );
 
