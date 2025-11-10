@@ -150,80 +150,258 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
 
   /**
    * Create a campaign on Marin Dispatcher
-   * Note: This is a placeholder - full implementation in Phase 2.2
    */
   async createCampaign(
     campaignPlan: CampaignPlan,
     name: string
   ): Promise<PlatformAPIResponse> {
-    // Placeholder - will be implemented in Phase 2.2
-    return {
-      success: false,
-      error: 'createCampaign not yet implemented',
-    };
+    const segment = AWSXRay.getSegment();
+    const subsegment = segment?.addNewSubsegment('MarinDispatcher.createCampaign');
+
+    try {
+      // Map CampaignPlan to MarinCampaignRequest
+      const request: MarinCampaignRequest = this.mapCampaignPlanToRequest(campaignPlan, name);
+
+      // Validate request
+      const validationResult: ValidationResult = validateCampaignRequest(request);
+      if (!validationResult.isValid && validationResult.errors.length > 0) {
+        subsegment?.close();
+        return {
+          success: false,
+          error: `Validation failed: ${validationResult.errors.join(', ')}`,
+        };
+      }
+
+      // Make API call (using InfraDocs path format)
+      const response = await this.httpClient.post<MarinCampaignResponse>(
+        this.buildApiPath('/campaigns'), // InfraDocs format: /dispatcher/${publisher}/campaigns
+        request
+      );
+
+      subsegment?.close();
+
+      // Map response to PlatformAPIResponse
+      return this.mapResponseToPlatformResponse(response.data);
+    } catch (error: any) {
+      subsegment?.close();
+      return this.handleError(error, 'createCampaign');
+    }
   }
 
   /**
    * Update a campaign on Marin Dispatcher
-   * Note: This is a placeholder - full implementation in Phase 2.2
    */
   async updateCampaign(
     campaignId: string,
     updates: Partial<CampaignPlan>
   ): Promise<PlatformAPIResponse> {
-    // Placeholder - will be implemented in Phase 2.2
-    return {
-      success: false,
-      error: 'updateCampaign not yet implemented',
-    };
+    const segment = AWSXRay.getSegment();
+    const subsegment = segment?.addNewSubsegment('MarinDispatcher.updateCampaign');
+
+    try {
+      // Validate campaignId
+      if (!campaignId || typeof campaignId !== 'string' || campaignId.trim().length === 0) {
+        subsegment?.close();
+        return {
+          success: false,
+          error: 'campaignId is required and must be a non-empty string',
+        };
+      }
+
+      // Map updates to MarinCampaignUpdateRequest
+      const request: MarinCampaignUpdateRequest = {};
+
+      // Map budget if provided
+      if (updates.budget) {
+        const budgetAmount = updates.budget.total || updates.budget.daily || 0;
+        if (budgetAmount > 0) {
+          request.budget = {
+            amount: budgetAmount, // NO micros conversion - already in dollars
+            deliveryMethod: 'STANDARD',
+          };
+        }
+      }
+
+      // Note: CampaignPlan doesn't have name, status, or biddingStrategy properties
+      // These would need to be passed separately or added to CampaignPlan interface if needed
+
+      // Remove undefined fields
+      Object.keys(request).forEach((key) => {
+        if (request[key as keyof MarinCampaignUpdateRequest] === undefined) {
+          delete request[key as keyof MarinCampaignUpdateRequest];
+        }
+      });
+
+      // Check if request has any fields to update
+      if (Object.keys(request).length === 0) {
+        subsegment?.close();
+        return {
+          success: false,
+          error: 'No valid fields to update',
+        };
+      }
+
+      // Make API call (using InfraDocs path format)
+      const response = await this.httpClient.put<MarinCampaignResponse>(
+        this.buildApiPath(`/campaigns/${campaignId}`), // InfraDocs format: /dispatcher/${publisher}/campaigns/{id}
+        request
+      );
+
+      subsegment?.close();
+
+      // Map response to PlatformAPIResponse
+      return this.mapResponseToPlatformResponse(response.data);
+    } catch (error: any) {
+      subsegment?.close();
+      return this.handleError(error, 'updateCampaign');
+    }
   }
 
   /**
    * Pause a campaign on Marin Dispatcher
-   * Note: This is a placeholder - full implementation in Phase 2.2
    */
   async pauseCampaign(campaignId: string): Promise<PlatformAPIResponse> {
-    // Placeholder - will be implemented in Phase 2.2
-    return {
-      success: false,
-      error: 'pauseCampaign not yet implemented',
-    };
+    const segment = AWSXRay.getSegment();
+    const subsegment = segment?.addNewSubsegment('MarinDispatcher.pauseCampaign');
+
+    try {
+      // Validate campaignId
+      if (!campaignId || typeof campaignId !== 'string' || campaignId.trim().length === 0) {
+        subsegment?.close();
+        return {
+          success: false,
+          error: 'campaignId is required and must be a non-empty string',
+        };
+      }
+
+      // Create update request to set status to PAUSED
+      const request: MarinCampaignUpdateRequest = {
+        status: 'PAUSED',
+      };
+
+      // Make API call (using InfraDocs path format)
+      const response = await this.httpClient.put<MarinCampaignResponse>(
+        this.buildApiPath(`/campaigns/${campaignId}`), // InfraDocs format: /dispatcher/${publisher}/campaigns/{id}
+        request
+      );
+
+      subsegment?.close();
+
+      // Map response to PlatformAPIResponse
+      return this.mapResponseToPlatformResponse(response.data);
+    } catch (error: any) {
+      subsegment?.close();
+      return this.handleError(error, 'pauseCampaign');
+    }
   }
 
   /**
    * Resume a campaign on Marin Dispatcher
-   * Note: This is a placeholder - full implementation in Phase 2.2
    */
   async resumeCampaign(campaignId: string): Promise<PlatformAPIResponse> {
-    // Placeholder - will be implemented in Phase 2.2
-    return {
-      success: false,
-      error: 'resumeCampaign not yet implemented',
-    };
+    const segment = AWSXRay.getSegment();
+    const subsegment = segment?.addNewSubsegment('MarinDispatcher.resumeCampaign');
+
+    try {
+      // Validate campaignId
+      if (!campaignId || typeof campaignId !== 'string' || campaignId.trim().length === 0) {
+        subsegment?.close();
+        return {
+          success: false,
+          error: 'campaignId is required and must be a non-empty string',
+        };
+      }
+
+      // Create update request to set status to ENABLED
+      const request: MarinCampaignUpdateRequest = {
+        status: 'ENABLED',
+      };
+
+      // Make API call (using InfraDocs path format)
+      const response = await this.httpClient.put<MarinCampaignResponse>(
+        this.buildApiPath(`/campaigns/${campaignId}`), // InfraDocs format: /dispatcher/${publisher}/campaigns/{id}
+        request
+      );
+
+      subsegment?.close();
+
+      // Map response to PlatformAPIResponse
+      return this.mapResponseToPlatformResponse(response.data);
+    } catch (error: any) {
+      subsegment?.close();
+      return this.handleError(error, 'resumeCampaign');
+    }
   }
 
   /**
    * Delete a campaign on Marin Dispatcher
-   * Note: This is a placeholder - full implementation in Phase 2.2
+   * Note: Marin Dispatcher uses status update to REMOVED instead of DELETE endpoint
    */
   async deleteCampaign(campaignId: string): Promise<PlatformAPIResponse> {
-    // Placeholder - will be implemented in Phase 2.2
-    return {
-      success: false,
-      error: 'deleteCampaign not yet implemented',
-    };
+    const segment = AWSXRay.getSegment();
+    const subsegment = segment?.addNewSubsegment('MarinDispatcher.deleteCampaign');
+
+    try {
+      // Validate campaignId
+      if (!campaignId || typeof campaignId !== 'string' || campaignId.trim().length === 0) {
+        subsegment?.close();
+        return {
+          success: false,
+          error: 'campaignId is required and must be a non-empty string',
+        };
+      }
+
+      // Create update request to set status to REMOVED
+      const request: MarinCampaignUpdateRequest = {
+        status: 'REMOVED',
+      };
+
+      // Make API call (using InfraDocs path format)
+      const response = await this.httpClient.put<MarinCampaignResponse>(
+        this.buildApiPath(`/campaigns/${campaignId}`), // InfraDocs format: /dispatcher/${publisher}/campaigns/{id}
+        request
+      );
+
+      subsegment?.close();
+
+      // Map response to PlatformAPIResponse
+      return this.mapResponseToPlatformResponse(response.data);
+    } catch (error: any) {
+      subsegment?.close();
+      return this.handleError(error, 'deleteCampaign');
+    }
   }
 
   /**
    * Get campaign status from Marin Dispatcher
-   * Note: This is a placeholder - full implementation in Phase 2.2
    */
   async getCampaignStatus(campaignId: string): Promise<PlatformAPIResponse> {
-    // Placeholder - will be implemented in Phase 2.2
-    return {
-      success: false,
-      error: 'getCampaignStatus not yet implemented',
-    };
+    const segment = AWSXRay.getSegment();
+    const subsegment = segment?.addNewSubsegment('MarinDispatcher.getCampaignStatus');
+
+    try {
+      // Validate campaignId
+      if (!campaignId || typeof campaignId !== 'string' || campaignId.trim().length === 0) {
+        subsegment?.close();
+        return {
+          success: false,
+          error: 'campaignId is required and must be a non-empty string',
+        };
+      }
+
+      // Make API call to get campaign (using InfraDocs path format)
+      const response = await this.httpClient.get<MarinCampaignResponse>(
+        this.buildApiPath(`/campaigns/${campaignId}`) // InfraDocs format: /dispatcher/${publisher}/campaigns/{id}
+      );
+
+      subsegment?.close();
+
+      // Map response to PlatformAPIResponse
+      return this.mapResponseToPlatformResponse(response.data);
+    } catch (error: any) {
+      subsegment?.close();
+      return this.handleError(error, 'getCampaignStatus');
+    }
   }
 
   // ========================================================================
