@@ -4,6 +4,7 @@ import { campaignCreationService } from '../services/campaignCreationService';
 import { GoogleAdsService } from '../services/googleAdsService';
 import { MetaAdsService } from '../services/metaAdsService';
 import { MicrosoftAdsService } from '../services/microsoftAdsService';
+import { MarinDispatcherService } from '../services/marinDispatcherService';
 
 /**
  * Campaign Creation Controller
@@ -26,6 +27,8 @@ export class CampaignCreationController {
     campaignCreationService.registerPlatform('Google Ads', new GoogleAdsService());
     campaignCreationService.registerPlatform('Meta', new MetaAdsService());
     campaignCreationService.registerPlatform('Microsoft Ads', new MicrosoftAdsService());
+    // Register Marin Dispatcher service (optional - primarily used by Lambda functions)
+    campaignCreationService.registerPlatform('Marin', new MarinDispatcherService());
   }
 
   /**

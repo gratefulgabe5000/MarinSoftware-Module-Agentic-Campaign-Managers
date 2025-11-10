@@ -129,6 +129,7 @@ class CampaignCreationService {
     if (platformLower.includes('google')) return 'googleAds';
     if (platformLower.includes('meta') || platformLower.includes('facebook')) return 'meta';
     if (platformLower.includes('microsoft') || platformLower.includes('bing')) return 'microsoft';
+    if (platformLower.includes('marin')) return 'marin';
     return null;
   }
 
