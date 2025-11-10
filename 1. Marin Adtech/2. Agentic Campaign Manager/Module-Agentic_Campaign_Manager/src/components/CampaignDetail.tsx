@@ -89,21 +89,16 @@ const CampaignDetail: React.FC = () => {
         // If still not found, try to fetch from API
         if (!campaignData) {
           console.log('Fetching campaign from API...');
-          try {
-            const apiResponse = await campaignService.getCampaign(id);
-            console.log('Campaign from API:', apiResponse);
+          const apiResponse = await campaignService.getCampaign(id);
+          console.log('Campaign from API:', apiResponse);
 
-            // Check if API returned a valid campaign (not just a "not implemented" message)
-            if (apiResponse && apiResponse.status && apiResponse.campaignPlan) {
-              campaignData = apiResponse;
-            } else {
-              console.warn('API returned incomplete campaign data:', apiResponse);
-              throw new Error('Campaign API endpoint not fully implemented');
-            }
-          } catch (apiError) {
-            console.error('API fetch failed, campaign only exists in memory/IndexedDB:', apiError);
-            // If API fails, campaign doesn't exist
-            campaignData = undefined;
+          // Check if API returned a valid campaign (not just a "not implemented" message)
+          if (apiResponse && apiResponse.status && apiResponse.campaignPlan) {
+            campaignData = apiResponse;
+          } else {
+            console.warn('API returned incomplete campaign data:', apiResponse);
+            // If API returns null or incomplete data, campaign not found
+            campaignData = null;
           }
         }
 

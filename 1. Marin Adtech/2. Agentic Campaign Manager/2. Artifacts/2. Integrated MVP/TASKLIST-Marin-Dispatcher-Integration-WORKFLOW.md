@@ -247,8 +247,8 @@ graph TB
     
     %% Phase 2B: Ad Structure (VANES) - Can work with 2C
     subgraph Phase2B["Phase 2B: Ad Structure (3-4 hours) - VANES"]
-        V2B_1[VANES: Ad Group Methods<br/>2B.1.1, 2B.1.2]
-        V2B_2[VANES: Ad Methods<br/>2B.2.1, 2B.2.2]
+        V2B_1["✅ VANES: Ad Group Methods<br/>2B.1.1, 2B.1.2"]
+        V2B_2["✅ VANES: Ad Methods<br/>2B.2.1, 2B.2.2"]
         V2B_3[VANES: Keyword Methods<br/>2B.3.1, 2B.3.2]
         V2B_4[VANES: Ad Structure Tests<br/>2B.4.1]
     end

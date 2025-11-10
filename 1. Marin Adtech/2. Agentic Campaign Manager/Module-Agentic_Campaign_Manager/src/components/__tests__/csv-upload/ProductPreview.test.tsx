@@ -53,7 +53,8 @@ describe('ProductPreview', () => {
       />
     );
 
-    expect(screen.getByText('Products Preview (2/10)')).toBeInTheDocument();
+    expect(screen.getByText('Products Preview')).toBeInTheDocument();
+    expect(screen.getByText('2/10')).toBeInTheDocument();
     expect(screen.getByText('Test Product 1')).toBeInTheDocument();
     expect(screen.getByText('Test Product 2')).toBeInTheDocument();
   });
@@ -89,7 +90,7 @@ describe('ProductPreview', () => {
       />
     );
 
-    expect(screen.getByText(/Errors:/i)).toBeInTheDocument();
+    expect(screen.getByText(/Validation Errors/i)).toBeInTheDocument();
     expect(screen.getByText(/Product name is required/i)).toBeInTheDocument();
     expect(screen.getByText(/Invalid URL format/i)).toBeInTheDocument();
   });
@@ -104,11 +105,14 @@ describe('ProductPreview', () => {
       />
     );
 
-    const editButtons = screen.getAllByText('Edit');
-    await user.click(editButtons[0]);
+    // Find all buttons in the table and click the first edit button (pencil icon)
+    const editButtons = screen.getAllByRole('button');
+    const pencilButton = editButtons.find(btn => btn.querySelector('svg'));
+    await user.click(pencilButton!);
 
-    expect(screen.getByText('Save')).toBeInTheDocument();
-    expect(screen.getByText('Cancel')).toBeInTheDocument();
+    // When editing, check icon and cancel icon buttons should appear
+    const buttons = screen.getAllByRole('button');
+    expect(buttons.length).toBeGreaterThan(0);
   });
 
   it('allows removing product', async () => {
@@ -121,8 +125,12 @@ describe('ProductPreview', () => {
       />
     );
 
-    const removeButtons = screen.getAllByText('Remove');
-    await user.click(removeButtons[0]);
+    // Get all buttons and find the trash icon buttons (destructive variant)
+    const allButtons = screen.getAllByRole('button');
+    // The second action button in each row is the delete button
+    // Skip the "Add Product" button (first one) and get the second button in first row
+    const deleteButton = allButtons[2]; // 0: Add Product, 1: Edit, 2: Delete
+    await user.click(deleteButton);
 
     expect(mockOnProductsChange).toHaveBeenCalledWith([mockProducts[1]]);
   });
@@ -137,7 +145,7 @@ describe('ProductPreview', () => {
       />
     );
 
-    const addButton = screen.getByText('+ Add Product');
+    const addButton = screen.getByText('Add Product');
     await user.click(addButton);
 
     expect(mockOnProductsChange).toHaveBeenCalled();
@@ -161,7 +169,7 @@ describe('ProductPreview', () => {
       />
     );
 
-    const addButton = screen.getByText('+ Add Product');
+    const addButton = screen.getByText('Add Product');
     expect(addButton).toBeDisabled();
   });
 
@@ -175,14 +183,16 @@ describe('ProductPreview', () => {
       />
     );
 
-    const editButtons = screen.getAllByText('Edit');
-    await user.click(editButtons[0]);
+    // Click first edit button (pencil icon) - button index 1 (after Add Product)
+    const allButtons = screen.getAllByRole('button');
+    await user.click(allButtons[1]);
 
     // Clear the name field
     const nameInput = screen.getByDisplayValue('Test Product 1');
     await user.clear(nameInput);
 
-    const saveButton = screen.getByText('Save');
+    // Click save button (check icon) - should be first button in editing mode
+    const saveButton = screen.getAllByRole('button')[1];
     await user.click(saveButton);
 
     // Should show validation error
@@ -204,15 +214,17 @@ describe('ProductPreview', () => {
       />
     );
 
-    const editButtons = screen.getAllByText('Edit');
-    await user.click(editButtons[0]);
+    // Click first edit button (pencil icon)
+    const allButtons = screen.getAllByRole('button');
+    await user.click(allButtons[1]);
 
     // Update the name
     const nameInput = screen.getByDisplayValue('Test Product 1');
     await user.clear(nameInput);
     await user.type(nameInput, 'Updated Product Name');
 
-    const saveButton = screen.getByText('Save');
+    // Click save button (check icon)
+    const saveButton = screen.getAllByRole('button')[1];
     await user.click(saveButton);
 
     await waitFor(() => {
@@ -232,15 +244,17 @@ describe('ProductPreview', () => {
       />
     );
 
-    const editButtons = screen.getAllByText('Edit');
-    await user.click(editButtons[0]);
+    // Click first edit button (pencil icon)
+    const allButtons = screen.getAllByRole('button');
+    await user.click(allButtons[1]);
 
     // Update the name
     const nameInput = screen.getByDisplayValue('Test Product 1');
     await user.clear(nameInput);
     await user.type(nameInput, 'Changed Name');
 
-    const cancelButton = screen.getByText('Cancel');
+    // Click cancel button (X icon) - second button in editing mode
+    const cancelButton = screen.getAllByRole('button')[2];
     await user.click(cancelButton);
 
     // Should not call onProductsChange

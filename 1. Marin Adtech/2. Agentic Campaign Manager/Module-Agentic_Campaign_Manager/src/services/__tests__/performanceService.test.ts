@@ -34,6 +34,10 @@ describe('PerformanceService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (getCachedPerformanceMetrics as jest.Mock).mockResolvedValue(null);
+
+    // Mock URL methods for CSV export
+    global.URL.createObjectURL = jest.fn(() => 'mock-url');
+    global.URL.revokeObjectURL = jest.fn();
   });
 
   describe('getMetrics', () => {
@@ -133,16 +137,16 @@ describe('PerformanceService', () => {
 
   describe('exportToCSV', () => {
     it('should export metrics to CSV', () => {
-      const createElementSpy = jest.spyOn(document, 'createElement');
-      const appendChildSpy = jest.spyOn(document.body, 'appendChild');
-      const removeChildSpy = jest.spyOn(document.body, 'removeChild');
       const clickSpy = jest.fn();
-
-      createElementSpy.mockReturnValue({
+      const mockElement = {
         setAttribute: jest.fn(),
         click: clickSpy,
         style: {},
-      } as any);
+      };
+
+      const createElementSpy = jest.spyOn(document, 'createElement').mockReturnValue(mockElement as any);
+      const appendChildSpy = jest.spyOn(document.body, 'appendChild').mockImplementation(() => mockElement as any);
+      const removeChildSpy = jest.spyOn(document.body, 'removeChild').mockImplementation(() => mockElement as any);
 
       performanceService.exportToCSV(mockMetrics);
 
@@ -167,14 +171,16 @@ describe('PerformanceService', () => {
         },
       ];
 
-      const createElementSpy = jest.spyOn(document, 'createElement');
       const clickSpy = jest.fn();
-
-      createElementSpy.mockReturnValue({
+      const mockElement = {
         setAttribute: jest.fn(),
         click: clickSpy,
         style: {},
-      } as any);
+      };
+
+      const createElementSpy = jest.spyOn(document, 'createElement').mockReturnValue(mockElement as any);
+      jest.spyOn(document.body, 'appendChild').mockImplementation(() => mockElement as any);
+      jest.spyOn(document.body, 'removeChild').mockImplementation(() => mockElement as any);
 
       performanceService.exportToCSV(dataPoints);
 

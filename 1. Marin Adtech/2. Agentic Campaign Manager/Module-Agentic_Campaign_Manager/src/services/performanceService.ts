@@ -107,22 +107,24 @@ class PerformanceService {
       await cachePerformanceMetrics(campaignId, metrics, timeRange);
 
       return metrics;
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        if (error.response) {
-          throw new Error(
-            error.response.data?.error?.message ||
-              `Server error: ${error.response.status}`
-          );
-        } else if (error.request) {
-          // Try to get from cache if network error
-          const cached = await getCachedPerformanceMetrics(campaignId, timeRange);
-          if (cached) {
-            return cached;
-          }
-          throw new Error('Network error: Unable to reach server');
-        }
+    } catch (error: any) {
+      // Check for response (server error)
+      if (error.response) {
+        throw new Error(
+          error.response.data?.error?.message ||
+            `Server error: ${error.response.status}`
+        );
       }
+      // Check for request (network error)
+      if (error.request) {
+        // Try to get from cache if network error
+        const cached = await getCachedPerformanceMetrics(campaignId, timeRange);
+        if (cached) {
+          return cached;
+        }
+        throw new Error('Network error: Unable to reach server');
+      }
+      // Re-throw other errors
       throw error;
     }
   }
@@ -165,17 +167,19 @@ class PerformanceService {
       }
 
       return response.data.timeSeries;
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        if (error.response) {
-          throw new Error(
-            error.response.data?.error?.message ||
-              `Server error: ${error.response.status}`
-          );
-        } else if (error.request) {
-          throw new Error('Network error: Unable to reach server');
-        }
+    } catch (error: any) {
+      // Check for response (server error)
+      if (error.response) {
+        throw new Error(
+          error.response.data?.error?.message ||
+            `Server error: ${error.response.status}`
+        );
       }
+      // Check for request (network error)
+      if (error.request) {
+        throw new Error('Network error: Unable to reach server');
+      }
+      // Re-throw other errors
       throw error;
     }
   }
@@ -220,24 +224,26 @@ class PerformanceService {
       }
 
       return response.data;
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        if (error.response) {
-          throw new Error(
-            error.response.data?.error?.message ||
-              `Server error: ${error.response.status}`
-          );
-        } else if (error.request) {
-          // Try to get from cache if network error
-          const cached = await getCachedPerformanceMetrics(campaignId, timeRange);
-          if (cached) {
-            return {
-              metrics: cached,
-            };
-          }
-          throw new Error('Network error: Unable to reach server');
-        }
+    } catch (error: any) {
+      // Check for response (server error)
+      if (error.response) {
+        throw new Error(
+          error.response.data?.error?.message ||
+            `Server error: ${error.response.status}`
+        );
       }
+      // Check for request (network error)
+      if (error.request) {
+        // Try to get from cache if network error
+        const cached = await getCachedPerformanceMetrics(campaignId, timeRange);
+        if (cached) {
+          return {
+            metrics: cached,
+          };
+        }
+        throw new Error('Network error: Unable to reach server');
+      }
+      // Re-throw other errors
       throw error;
     }
   }

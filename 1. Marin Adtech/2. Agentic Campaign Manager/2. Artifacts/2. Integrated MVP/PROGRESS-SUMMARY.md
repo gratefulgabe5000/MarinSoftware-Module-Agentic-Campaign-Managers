@@ -259,14 +259,14 @@ All 6 placeholder methods return expected "not yet implemented" errors:
 **Can work in parallel with**: Phase 2C (Batch Jobs)
 
 #### Task 2B.1: Implement Ad Group Methods
-- [ ] `createAdGroup()`
-- [ ] `updateAdGroup()`
+- [x] `createAdGroup()`
+- [x] `updateAdGroup()`
 - [ ] `deleteAdGroup()`
 - [ ] `getAdGroupStatus()`
 
 #### Task 2B.2: Implement Ad Methods
-- [ ] `createAd()`
-- [ ] `updateAd()`
+- [x] `createAd()`
+- [x] `updateAd()`
 - [ ] `deleteAd()`
 - [ ] `getAdStatus()`
 

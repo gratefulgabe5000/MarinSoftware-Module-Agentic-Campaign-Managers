@@ -62,20 +62,26 @@ describe('CampaignDetail', () => {
 
   // Create stable mock functions
   const mockGetCampaignById = jest.fn().mockReturnValue(null);
+  const mockInitializeCampaigns = jest.fn().mockResolvedValue(undefined);
   const mockStoreState = {
     getCampaignById: mockGetCampaignById,
     currentCampaign: null,
+    initializeCampaigns: mockInitializeCampaigns,
+    isInitialized: false,
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
     mockGetCampaignById.mockReturnValue(null);
+    mockInitializeCampaigns.mockResolvedValue(undefined);
   });
 
   it('renders without crashing', () => {
     (useParams as jest.Mock).mockReturnValue({ id: 'campaign-123' });
-    (useCampaignStore as jest.Mock).mockReturnValue(null);
-    (useCampaignStore as jest.Mock).mockReturnValue(null);
+    (useCampaignStore as jest.Mock).mockImplementation((selector) => {
+      return selector(mockStoreState);
+    });
+    (campaignService.getCampaign as jest.Mock).mockImplementation(() => new Promise(() => {})); // Never resolves
 
     render(
       <BrowserRouter>

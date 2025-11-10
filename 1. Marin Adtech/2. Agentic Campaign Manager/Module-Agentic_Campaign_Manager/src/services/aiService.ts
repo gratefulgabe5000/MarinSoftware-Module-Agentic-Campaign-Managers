@@ -38,17 +38,23 @@ class AIService {
       );
 
       return response.data;
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        if (error.response) {
-          throw new Error(
-            error.response.data?.error?.message ||
-              `Server error: ${error.response.status}`
-          );
-        } else if (error.request) {
-          throw new Error('Network error: Could not connect to server');
-        }
+    } catch (error: any) {
+      // Check for response (server error)
+      if (error.response) {
+        throw new Error(
+          error.response.data?.error?.message ||
+            `Server error: ${error.response.status}`
+        );
       }
+      // Check for request (network error)
+      if (error.request) {
+        throw new Error('Network error: Could not connect to server');
+      }
+      // Handle timeout
+      if (error.code === 'ECONNABORTED') {
+        throw new Error('Request timeout');
+      }
+      // Generic error
       throw new Error('Failed to understand goal');
     }
   }
@@ -74,17 +80,23 @@ class AIService {
       );
 
       return response.data;
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        if (error.response) {
-          throw new Error(
-            error.response.data?.error?.message ||
-              `Server error: ${error.response.status}`
-          );
-        } else if (error.request) {
-          throw new Error('Network error: Could not connect to server');
-        }
+    } catch (error: any) {
+      // Check for response (server error)
+      if (error.response) {
+        throw new Error(
+          error.response.data?.error?.message ||
+            `Server error: ${error.response.status}`
+        );
       }
+      // Check for request (network error)
+      if (error.request) {
+        throw new Error('Network error: Could not connect to server');
+      }
+      // Handle timeout
+      if (error.code === 'ECONNABORTED') {
+        throw new Error('Request timeout');
+      }
+      // Generic error
       throw new Error('Failed to generate clarifying questions');
     }
   }

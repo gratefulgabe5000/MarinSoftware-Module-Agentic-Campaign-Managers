@@ -1110,11 +1110,11 @@ This document provides a granular, step-by-step task list for implementing the M
 
 ### Subphase 2B.2: Ad Methods (1 hour)
 
-#### Task 2B.2.1: Implement createAd Method
-**Assigned to**: VANES  
+#### Task 2B.2.1: Implement createAd Method ✅
+**Assigned to**: VANES
 **Dependencies**: Task 2B.1.1, Task 1.1.2
 
-- [ ] Implement `createAd()` method:
+- [x] Implement `createAd()` method:
   ```typescript
   async createAd(
     adGroupId: string,
@@ -1157,18 +1157,18 @@ This document provides a granular, step-by-step task list for implementing the M
     }
   }
   ```
-- [ ] Add validation for headlines (min 3, max 15, each max 30 chars)
-- [ ] Add validation for descriptions (min 2, max 4, each max 90 chars)
-- [ ] Add validation for finalUrl
-- [ ] Add error handling
-- [ ] Add logging
+- [x] Add validation for headlines (min 3, max 15, each max 30 chars)
+- [x] Add validation for descriptions (min 2, max 4, each max 90 chars)
+- [x] Add validation for finalUrl
+- [x] Add error handling
+- [x] Add logging
 - [ ] Add unit tests
 
-#### Task 2B.2.2: Implement updateAd Method
-**Assigned to**: VANES  
+#### Task 2B.2.2: Implement updateAd Method ✅
+**Assigned to**: VANES
 **Dependencies**: Task 2B.2.1
 
-- [ ] Implement `updateAd()` method:
+- [x] Implement `updateAd()` method:
   ```typescript
   async updateAd(
     adId: string,
@@ -1202,9 +1202,9 @@ This document provides a granular, step-by-step task list for implementing the M
     }
   }
   ```
-- [ ] Add validation
-- [ ] Add error handling
-- [ ] Add logging
+- [x] Add validation
+- [x] Add error handling
+- [x] Add logging
 - [ ] Add unit tests
 
 ### Subphase 2B.3: Keyword Methods (1 hour)

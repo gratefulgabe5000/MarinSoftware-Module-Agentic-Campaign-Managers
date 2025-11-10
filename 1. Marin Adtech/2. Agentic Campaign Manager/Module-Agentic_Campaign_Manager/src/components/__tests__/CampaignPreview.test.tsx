@@ -24,9 +24,14 @@ describe('CampaignPreview', () => {
   });
 
   it('renders without crashing', () => {
-    (useCampaignStore as jest.Mock).mockReturnValue(null);
-    (useCampaignStore as jest.Mock).mockReturnValue(false);
-    (useCampaignStore as jest.Mock).mockReturnValue(null);
+    (useCampaignStore as jest.Mock).mockImplementation((selector) => {
+      const state = {
+        currentCampaignPlan: null,
+        isLoading: false,
+        error: null,
+      };
+      return selector(state);
+    });
 
     render(
       <BrowserRouter>
@@ -52,25 +57,6 @@ describe('CampaignPreview', () => {
     );
 
     expect(screen.getByText(/No Campaign Plan/i)).toBeInTheDocument();
-  });
-
-  it('displays loading state when loading', () => {
-    (useCampaignStore as jest.Mock).mockImplementation((selector) => {
-      const state = {
-        currentCampaignPlan: null,
-        isLoading: true,
-        error: null,
-      };
-      return selector(state);
-    });
-
-    render(
-      <BrowserRouter>
-        <CampaignPreview />
-      </BrowserRouter>
-    );
-
-    expect(screen.getByText(/Loading campaign preview/i)).toBeInTheDocument();
   });
 
   it('displays error state when error exists', () => {

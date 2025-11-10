@@ -13,9 +13,13 @@ jest.mock('../../services/aiService', () => ({
 }));
 
 // Mock the conversation store
-jest.mock('../../store/conversationStore', () => ({
-  useConversationStore: jest.fn(),
-}));
+jest.mock('../../store/conversationStore', () => {
+  const mockFn: any = jest.fn();
+  mockFn.getState = jest.fn();
+  return {
+    useConversationStore: mockFn,
+  };
+});
 
 describe('ConversationalInterface', () => {
   const mockAddMessage = jest.fn();
@@ -26,20 +30,25 @@ describe('ConversationalInterface', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
-    (useConversationStore as jest.Mock).mockImplementation((selector) => {
-      const state = {
-        messages: [],
-        isLoading: false,
-        error: null,
-        addMessage: mockAddMessage,
-        setLoading: mockSetLoading,
-        setError: mockSetError,
-        clearConversation: mockClearConversation,
-        setMessages: mockSetMessages,
-      };
-      return selector(state);
+
+    const state = {
+      messages: [],
+      isLoading: false,
+      error: null,
+      addMessage: mockAddMessage,
+      setLoading: mockSetLoading,
+      setError: mockSetError,
+      clearConversation: mockClearConversation,
+      setMessages: mockSetMessages,
+    };
+
+    // Mock the hook selector
+    (useConversationStore as any).mockImplementation((selector: any) => {
+      return selector ? selector(state) : state;
     });
+
+    // Mock getState for direct store access
+    (useConversationStore as any).getState.mockReturnValue(state);
   });
 
   it('renders without crashing', () => {
@@ -131,21 +140,6 @@ describe('ConversationalInterface', () => {
       },
       confidence: 0.8,
       needsClarification: false,
-    });
-
-    (useConversationStore as jest.Mock).mockImplementation((selector) => {
-      const state = {
-        messages: [],
-        isLoading: false,
-        error: null,
-        addMessage: mockAddMessage,
-        setLoading: mockSetLoading,
-        setError: mockSetError,
-        clearConversation: mockClearConversation,
-        setMessages: mockSetMessages,
-        getState: () => ({ messages: [] }),
-      };
-      return selector(state);
     });
 
     render(
