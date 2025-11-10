@@ -1,0 +1,44 @@
+version = 0.1
+
+[default]
+[default.global.parameters]
+stack_name = "meridian-dev"
+
+[default.build.parameters]
+cached = true
+parallel = true
+
+[default.deploy.parameters]
+capabilities = "CAPABILITY_IAM CAPABILITY_AUTO_EXPAND"
+confirm_changeset = true
+resolve_s3 = true
+region = "us-east-1"
+parameter_overrides = [
+  "Environment=dev",
+  "CognitoUserPoolId=REPLACE_WITH_ACTUAL_POOL_ID",
+  "DatabaseUsername=meridian_admin",
+  "DatabasePassword=REPLACE_WITH_SECURE_PASSWORD"
+]
+
+[default.sync.parameters]
+watch = true
+
+[staging]
+[staging.deploy.parameters]
+stack_name = "meridian-staging"
+parameter_overrides = [
+  "Environment=staging",
+  "CognitoUserPoolId=REPLACE_WITH_ACTUAL_POOL_ID",
+  "DatabaseUsername=meridian_admin",
+  "DatabasePassword=REPLACE_WITH_SECURE_PASSWORD"
+]
+
+[prod]
+[prod.deploy.parameters]
+stack_name = "meridian-prod"
+parameter_overrides = [
+  "Environment=prod",
+  "CognitoUserPoolId=REPLACE_WITH_ACTUAL_POOL_ID",
+  "DatabaseUsername=meridian_admin",
+  "DatabasePassword=REPLACE_WITH_SECURE_PASSWORD"
+]

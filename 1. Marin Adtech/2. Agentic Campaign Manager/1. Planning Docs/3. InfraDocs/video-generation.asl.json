@@ -1,0 +1,117 @@
+{
+  "Comment": "Video generation workflow orchestrating Banana API calls",
+  "StartAt": "GenerateLogo",
+  "States": {
+    "GenerateLogo": {
+      "Type": "Task",
+      "Resource": "${VideoWorkerFunctionArn}",
+      "Parameters": {
+        "action": "generate_logo",
+        "input.$": "$.logoPrompt"
+      },
+      "ResultPath": "$.logo",
+      "Next": "GenerateBackground",
+      "Retry": [
+        {
+          "ErrorEquals": ["States.TaskFailed"],
+          "IntervalSeconds": 10,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "HandleFailure"
+        }
+      ]
+    },
+    "GenerateBackground": {
+      "Type": "Task",
+      "Resource": "${VideoWorkerFunctionArn}",
+      "Parameters": {
+        "action": "generate_background",
+        "input.$": "$.backgroundPrompt"
+      },
+      "ResultPath": "$.background",
+      "Next": "CompositeImages",
+      "Retry": [
+        {
+          "ErrorEquals": ["States.TaskFailed"],
+          "IntervalSeconds": 10,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ]
+    },
+    "CompositeImages": {
+      "Type": "Task",
+      "Resource": "${VideoWorkerFunctionArn}",
+      "Parameters": {
+        "action": "composite",
+        "logo.$": "$.logo.imageUrl",
+        "background.$": "$.background.imageUrl"
+      },
+      "ResultPath": "$.composite",
+      "Next": "AnimateScene",
+      "Retry": [
+        {
+          "ErrorEquals": ["States.TaskFailed"],
+          "IntervalSeconds": 10,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ]
+    },
+    "AnimateScene": {
+      "Type": "Task",
+      "Resource": "${VideoWorkerFunctionArn}",
+      "Parameters": {
+        "action": "animate",
+        "compositeImage.$": "$.composite.imageUrl",
+        "duration": 5,
+        "animationType": "zoom_pan"
+      },
+      "ResultPath": "$.video",
+      "Next": "SaveToS3",
+      "Retry": [
+        {
+          "ErrorEquals": ["States.TaskFailed"],
+          "IntervalSeconds": 10,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ]
+    },
+    "SaveToS3": {
+      "Type": "Task",
+      "Resource": "${VideoWorkerFunctionArn}",
+      "Parameters": {
+        "action": "save_to_s3",
+        "videoUrl.$": "$.video.videoUrl",
+        "metadata.$": "$"
+      },
+      "ResultPath": "$.s3Location",
+      "Next": "Success"
+    },
+    "Success": {
+      "Type": "Succeed"
+    },
+    "HandleFailure": {
+      "Type": "Task",
+      "Resource": "${VideoWorkerFunctionArn}",
+      "Parameters": {
+        "action": "handle_failure",
+        "error.$": "$.error",
+        "context.$": "$"
+      },
+      "Next": "Failure"
+    },
+    "Failure": {
+      "Type": "Fail",
+      "Error": "VideoGenerationFailed",
+      "Cause": "Video generation workflow failed after retries"
+    }
+  }
+}

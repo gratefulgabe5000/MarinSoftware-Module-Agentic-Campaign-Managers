@@ -1,0 +1,8 @@
+   git checkout -b feat-your-feature-name
+   # or
+   git checkout -b BUG-your-bug-name
+   ```
+
+2. Then run the script again:
+   ```powershell
+   .\Good-Morning.ps1

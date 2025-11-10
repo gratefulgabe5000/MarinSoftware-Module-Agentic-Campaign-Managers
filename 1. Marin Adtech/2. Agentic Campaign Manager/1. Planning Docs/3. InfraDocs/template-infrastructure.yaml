@@ -1,0 +1,869 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Meridian - Base Infrastructure (VPC, Databases, Queues, Storage)
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, staging, prod]
+    Description: Environment name
+  
+  CognitoUserPoolId:
+    Type: String
+    Description: Cognito User Pool ID (from auth team)
+  
+  DatabaseUsername:
+    Type: String
+    Default: meridian_admin
+    NoEcho: true
+    Description: PostgreSQL admin username
+  
+  DatabasePassword:
+    Type: String
+    NoEcho: true
+    MinLength: 8
+    Description: PostgreSQL admin password (min 8 chars)
+
+Resources:
+  #############################################################################
+  # API GATEWAY (Without Lambda integrations yet)
+  #############################################################################
+  
+  MeridianApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub meridian-api-${Environment}
+      StageName: !Ref Environment
+      Cors:
+        AllowOrigin: "'*'"
+        AllowHeaders: "'Content-Type,Authorization,X-Meridian-Mode'"
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+      Auth:
+        DefaultAuthorizer: CognitoAuthorizer
+        Authorizers:
+          CognitoAuthorizer:
+            UserPoolArn: !Sub 'arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${CognitoUserPoolId}'
+            Identity:
+              Header: Authorization
+      AccessLogSetting:
+        DestinationArn: !GetAtt ApiLogGroup.Arn
+        Format: '$context.requestId $context.status $context.error.message'
+      TracingEnabled: true
+
+  ApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/apigateway/meridian-${Environment}
+      RetentionInDays: 7
+
+  #############################################################################
+  # SQS QUEUES
+  #############################################################################
+
+  FraudQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub meridian-fraud-queue-${Environment}
+      VisibilityTimeout: 180
+      MessageRetentionPeriod: 345600  # 4 days
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt FraudDLQ.Arn
+        maxReceiveCount: 3
+
+  FraudDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub meridian-fraud-dlq-${Environment}
+      MessageRetentionPeriod: 1209600  # 14 days
+
+  BulkQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub meridian-bulk-queue-${Environment}
+      VisibilityTimeout: 300
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt BulkDLQ.Arn
+        maxReceiveCount: 3
+
+  BulkDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub meridian-bulk-dlq-${Environment}
+
+  CopyQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub meridian-copy-queue-${Environment}
+      VisibilityTimeout: 240
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt CopyDLQ.Arn
+        maxReceiveCount: 3
+
+  CopyDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub meridian-copy-dlq-${Environment}
+
+  VideoQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub meridian-video-queue-${Environment}
+      VisibilityTimeout: 900  # 15 minutes
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt VideoDLQ.Arn
+        maxReceiveCount: 2
+
+  VideoDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub meridian-video-dlq-${Environment}
+
+  #############################################################################
+  # DYNAMODB TABLES
+  #############################################################################
+
+  ClickEventsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub meridian-click-events-${Environment}
+      BillingMode: PAY_PER_REQUEST
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+      TimeToLiveSpecification:
+        Enabled: true
+        AttributeName: ttl
+      AttributeDefinitions:
+        - AttributeName: click_id
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: N
+        - AttributeName: user_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: click_id
+          KeyType: HASH
+        - AttributeName: timestamp
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: user-timestamp-index
+          KeySchema:
+            - AttributeName: user_id
+              KeyType: HASH
+            - AttributeName: timestamp
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
+  JobStatusTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub meridian-job-status-${Environment}
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: job_id
+          AttributeType: S
+        - AttributeName: user_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: job_id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: user-index
+          KeySchema:
+            - AttributeName: user_id
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
+  #############################################################################
+  # VPC NETWORKING
+  #############################################################################
+
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      Tags:
+        - Key: Name
+          Value: !Sub meridian-vpc-${Environment}
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub meridian-igw-${Environment}
+
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.1.0/24
+      AvailabilityZone: !Select [0, !GetAZs '']
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub meridian-public-1-${Environment}
+
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.2.0/24
+      AvailabilityZone: !Select [1, !GetAZs '']
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub meridian-public-2-${Environment}
+
+  PrivateSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.10.0/24
+      AvailabilityZone: !Select [0, !GetAZs '']
+      Tags:
+        - Key: Name
+          Value: !Sub meridian-private-1-${Environment}
+
+  PrivateSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.11.0/24
+      AvailabilityZone: !Select [1, !GetAZs '']
+      Tags:
+        - Key: Name
+          Value: !Sub meridian-private-2-${Environment}
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub meridian-public-rt-${Environment}
+
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: AttachGateway
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnetRouteTableAssociation1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet1
+      RouteTableId: !Ref PublicRouteTable
+
+  PublicSubnetRouteTableAssociation2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet2
+      RouteTableId: !Ref PublicRouteTable
+
+  # NAT Gateway - Comment out to save $32/month in dev
+  NatGatewayEIP:
+    Type: AWS::EC2::EIP
+    DependsOn: AttachGateway
+    Properties:
+      Domain: vpc
+      Tags:
+        - Key: Name
+          Value: !Sub meridian-nat-eip-${Environment}
+
+  NatGateway:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NatGatewayEIP.AllocationId
+      SubnetId: !Ref PublicSubnet1
+      Tags:
+        - Key: Name
+          Value: !Sub meridian-nat-${Environment}
+
+  PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub meridian-private-rt-${Environment}
+
+  PrivateRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway
+
+  PrivateSubnetRouteTableAssociation1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnet1
+      RouteTableId: !Ref PrivateRouteTable
+
+  PrivateSubnetRouteTableAssociation2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnet2
+      RouteTableId: !Ref PrivateRouteTable
+
+  #############################################################################
+  # SECURITY GROUPS
+  #############################################################################
+
+  LambdaSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub meridian-lambda-sg-${Environment}
+      GroupDescription: Security group for Lambda functions
+      VpcId: !Ref VPC
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Sub meridian-lambda-sg-${Environment}
+
+  DatabaseSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub meridian-db-sg-${Environment}
+      GroupDescription: Security group for RDS PostgreSQL
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          SourceSecurityGroupId: !Ref LambdaSecurityGroup
+          Description: Lambda access
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          SourceSecurityGroupId: !Ref DispatcherSecurityGroup
+          Description: Dispatcher access
+      Tags:
+        - Key: Name
+          Value: !Sub meridian-db-sg-${Environment}
+
+  CacheSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub meridian-cache-sg-${Environment}
+      GroupDescription: Security group for ElastiCache Redis
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 6379
+          ToPort: 6379
+          SourceSecurityGroupId: !Ref LambdaSecurityGroup
+          Description: Lambda access
+        - IpProtocol: tcp
+          FromPort: 6379
+          ToPort: 6379
+          SourceSecurityGroupId: !Ref DispatcherSecurityGroup
+          Description: Dispatcher access
+      Tags:
+        - Key: Name
+          Value: !Sub meridian-cache-sg-${Environment}
+
+  DispatcherSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub meridian-dispatcher-sg-${Environment}
+      GroupDescription: Security group for Dispatcher ECS service
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3000
+          ToPort: 3000
+          SourceSecurityGroupId: !Ref LambdaSecurityGroup
+          Description: Lambda access
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Sub meridian-dispatcher-sg-${Environment}
+
+  ALBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub meridian-alb-sg-${Environment}
+      GroupDescription: Security group for ALB
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          SourceSecurityGroupId: !Ref LambdaSecurityGroup
+          Description: Lambda access
+      Tags:
+        - Key: Name
+          Value: !Sub meridian-alb-sg-${Environment}
+
+  #############################################################################
+  # RDS POSTGRESQL
+  #############################################################################
+
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupName: !Sub meridian-db-subnet-${Environment}
+      DBSubnetGroupDescription: Subnet group for Meridian PostgreSQL
+      SubnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+
+  PostgresDB:
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: Snapshot
+    Properties:
+      DBInstanceIdentifier: !Sub meridian-postgres-${Environment}
+      Engine: postgres
+      EngineVersion: '15.4'
+      DBInstanceClass: db.t4g.micro  # Change to db.t4g.small or larger for prod
+      AllocatedStorage: 20
+      StorageType: gp3
+      MasterUsername: !Ref DatabaseUsername
+      MasterUserPassword: !Ref DatabasePassword
+      DBName: meridian
+      VPCSecurityGroups:
+        - !Ref DatabaseSecurityGroup
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      BackupRetentionPeriod: 7
+      PreferredBackupWindow: "03:00-04:00"
+      PreferredMaintenanceWindow: "sun:04:00-sun:05:00"
+      EnableCloudwatchLogsExports:
+        - postgresql
+      PubliclyAccessible: false
+      Tags:
+        - Key: Name
+          Value: !Sub meridian-postgres-${Environment}
+
+  #############################################################################
+  # ELASTICACHE REDIS
+  #############################################################################
+
+  CacheSubnetGroup:
+    Type: AWS::ElastiCache::SubnetGroup
+    Properties:
+      Description: Subnet group for Meridian Redis
+      SubnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+
+  RedisCache:
+    Type: AWS::ElastiCache::CacheCluster
+    Properties:
+      CacheNodeType: cache.t4g.micro  # Change to larger for prod
+      Engine: redis
+      NumCacheNodes: 1
+      VpcSecurityGroupIds:
+        - !Ref CacheSecurityGroup
+      CacheSubnetGroupName: !Ref CacheSubnetGroup
+      Tags:
+        - Key: Name
+          Value: !Sub meridian-redis-${Environment}
+
+  #############################################################################
+  # S3 BUCKETS
+  #############################################################################
+
+  ContentBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub meridian-content-${Environment}-${AWS::AccountId}
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteOldVersions
+            Status: Enabled
+            NoncurrentVersionExpirationInDays: 30
+      Tags:
+        - Key: Name
+          Value: !Sub meridian-content-${Environment}
+
+  IcebergBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub meridian-iceberg-${Environment}-${AWS::AccountId}
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: TransitionToGlacier
+            Status: Enabled
+            Transitions:
+              - TransitionInDays: 90
+                StorageClass: GLACIER
+      Tags:
+        - Key: Name
+          Value: !Sub meridian-iceberg-${Environment}
+
+  #############################################################################
+  # KINESIS FOR ICEBERG STREAMING
+  #############################################################################
+
+  ClickEventsStream:
+    Type: AWS::Kinesis::Stream
+    Properties:
+      Name: !Sub meridian-click-events-${Environment}
+      ShardCount: 1
+      StreamModeDetails:
+        StreamMode: PROVISIONED
+
+  #############################################################################
+  # GLUE DATA CATALOG
+  #############################################################################
+
+  GlueDatabase:
+    Type: AWS::Glue::Database
+    Properties:
+      CatalogId: !Ref AWS::AccountId
+      DatabaseInput:
+        Name: !Sub meridian_${Environment}
+        Description: Meridian analytics database
+
+  #############################################################################
+  # ECS FARGATE - DISPATCHER SERVICE
+  #############################################################################
+
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub meridian-cluster-${Environment}
+      CapacityProviders:
+        - FARGATE
+        - FARGATE_SPOT
+      DefaultCapacityProviderStrategy:
+        - CapacityProvider: FARGATE_SPOT
+          Weight: 1
+          Base: 0
+
+  DispatcherLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/ecs/meridian-dispatcher-${Environment}
+      RetentionInDays: 7
+
+  DispatcherALB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Sub meridian-dispatcher-alb-${Environment}
+      Type: application
+      Scheme: internal
+      Subnets:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+      SecurityGroups:
+        - !Ref ALBSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Sub meridian-dispatcher-alb-${Environment}
+
+  DispatcherTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub meridian-dispatcher-tg-${Environment}
+      Port: 3000
+      Protocol: HTTP
+      VpcId: !Ref VPC
+      TargetType: ip
+      HealthCheckPath: /health
+      HealthCheckIntervalSeconds: 30
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 3
+      Tags:
+        - Key: Name
+          Value: !Sub meridian-dispatcher-tg-${Environment}
+
+  ALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref DispatcherALB
+      Port: 80
+      Protocol: HTTP
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref DispatcherTargetGroup
+
+  # ECS Task Execution Role
+  ECSExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub meridian-ecs-execution-${Environment}
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+
+  # Dispatcher Task Role
+  DispatcherTaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub meridian-dispatcher-task-${Environment}
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: DispatcherPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - elasticache:Describe*
+                Resource: !Sub 'arn:aws:elasticache:${AWS::Region}:${AWS::AccountId}:*'
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - xray:PutTraceSegments
+                  - xray:PutTelemetryRecords
+                Resource: '*'
+
+Outputs:
+  # VPC Outputs
+  VpcId:
+    Description: VPC ID
+    Value: !Ref VPC
+    Export:
+      Name: !Sub MeridianVpcId-${Environment}
+
+  PrivateSubnet1Id:
+    Description: Private Subnet 1 ID
+    Value: !Ref PrivateSubnet1
+    Export:
+      Name: !Sub MeridianPrivateSubnet1-${Environment}
+
+  PrivateSubnet2Id:
+    Description: Private Subnet 2 ID
+    Value: !Ref PrivateSubnet2
+    Export:
+      Name: !Sub MeridianPrivateSubnet2-${Environment}
+
+  LambdaSecurityGroupId:
+    Description: Lambda Security Group ID
+    Value: !Ref LambdaSecurityGroup
+    Export:
+      Name: !Sub MeridianLambdaSG-${Environment}
+
+  # Database Outputs
+  PostgresEndpoint:
+    Description: PostgreSQL endpoint
+    Value: !GetAtt PostgresDB.Endpoint.Address
+    Export:
+      Name: !Sub MeridianPostgresHost-${Environment}
+
+  PostgresPort:
+    Description: PostgreSQL port
+    Value: !GetAtt PostgresDB.Endpoint.Port
+    Export:
+      Name: !Sub MeridianPostgresPort-${Environment}
+
+  RedisEndpoint:
+    Description: Redis endpoint
+    Value: !GetAtt RedisCache.RedisEndpoint.Address
+    Export:
+      Name: !Sub MeridianRedisHost-${Environment}
+
+  RedisPort:
+    Description: Redis port
+    Value: !GetAtt RedisCache.RedisEndpoint.Port
+    Export:
+      Name: !Sub MeridianRedisPort-${Environment}
+
+  # DynamoDB Outputs
+  ClickEventsTableName:
+    Description: DynamoDB table for click events
+    Value: !Ref ClickEventsTable
+    Export:
+      Name: !Sub MeridianClickEventsTable-${Environment}
+
+  ClickEventsTableArn:
+    Description: DynamoDB table ARN
+    Value: !GetAtt ClickEventsTable.Arn
+    Export:
+      Name: !Sub MeridianClickEventsTableArn-${Environment}
+
+  ClickEventsStreamArn:
+    Description: DynamoDB Stream ARN
+    Value: !GetAtt ClickEventsTable.StreamArn
+    Export:
+      Name: !Sub MeridianClickEventsStreamArn-${Environment}
+
+  JobStatusTableName:
+    Description: DynamoDB table for job status
+    Value: !Ref JobStatusTable
+    Export:
+      Name: !Sub MeridianJobStatusTable-${Environment}
+
+  # SQS Outputs
+  FraudQueueUrl:
+    Description: Fraud detection queue URL
+    Value: !Ref FraudQueue
+    Export:
+      Name: !Sub MeridianFraudQueueUrl-${Environment}
+
+  FraudQueueArn:
+    Description: Fraud detection queue ARN
+    Value: !GetAtt FraudQueue.Arn
+    Export:
+      Name: !Sub MeridianFraudQueueArn-${Environment}
+
+  BulkQueueUrl:
+    Description: Bulk operations queue URL
+    Value: !Ref BulkQueue
+    Export:
+      Name: !Sub MeridianBulkQueueUrl-${Environment}
+
+  BulkQueueArn:
+    Description: Bulk operations queue ARN
+    Value: !GetAtt BulkQueue.Arn
+    Export:
+      Name: !Sub MeridianBulkQueueArn-${Environment}
+
+  CopyQueueUrl:
+    Description: Copy refresh queue URL
+    Value: !Ref CopyQueue
+    Export:
+      Name: !Sub MeridianCopyQueueUrl-${Environment}
+
+  CopyQueueArn:
+    Description: Copy refresh queue ARN
+    Value: !GetAtt CopyQueue.Arn
+    Export:
+      Name: !Sub MeridianCopyQueueArn-${Environment}
+
+  VideoQueueUrl:
+    Description: Video generation queue URL
+    Value: !Ref VideoQueue
+    Export:
+      Name: !Sub MeridianVideoQueueUrl-${Environment}
+
+  VideoQueueArn:
+    Description: Video generation queue ARN
+    Value: !GetAtt VideoQueue.Arn
+    Export:
+      Name: !Sub MeridianVideoQueueArn-${Environment}
+
+  # S3 Outputs
+  ContentBucketName:
+    Description: S3 bucket for content storage
+    Value: !Ref ContentBucket
+    Export:
+      Name: !Sub MeridianContentBucket-${Environment}
+
+  IcebergBucketName:
+    Description: S3 bucket for Iceberg data lake
+    Value: !Ref IcebergBucket
+    Export:
+      Name: !Sub MeridianIcebergBucket-${Environment}
+
+  # Kinesis Outputs
+  ClickEventsKinesisStreamName:
+    Description: Kinesis stream name
+    Value: !Ref ClickEventsStream
+    Export:
+      Name: !Sub MeridianClickEventsStream-${Environment}
+
+  ClickEventsKinesisStreamArn:
+    Description: Kinesis stream ARN
+    Value: !GetAtt ClickEventsStream.Arn
+    Export:
+      Name: !Sub MeridianClickEventsKinesisStreamArn-${Environment}
+
+  # Glue Outputs
+  GlueDatabaseName:
+    Description: Glue database for analytics
+    Value: !Ref GlueDatabase
+    Export:
+      Name: !Sub MeridianGlueDatabase-${Environment}
+
+  # API Gateway Outputs
+  ApiGatewayId:
+    Description: API Gateway ID
+    Value: !Ref MeridianApi
+    Export:
+      Name: !Sub MeridianApiId-${Environment}
+
+  ApiEndpoint:
+    Description: API Gateway endpoint URL
+    Value: !Sub 'https://${MeridianApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}'
+    Export:
+      Name: !Sub MeridianApiEndpoint-${Environment}
+
+  # ECS Outputs
+  ECSClusterName:
+    Description: ECS Cluster name
+    Value: !Ref ECSCluster
+    Export:
+      Name: !Sub MeridianECSCluster-${Environment}
+
+  DispatcherALBUrl:
+    Description: Dispatcher ALB URL (internal)
+    Value: !Sub 'http://${DispatcherALB.DNSName}'
+    Export:
+      Name: !Sub MeridianDispatcherUrl-${Environment}
+
+  DispatcherTargetGroupArn:
+    Description: Dispatcher Target Group ARN
+    Value: !Ref DispatcherTargetGroup
+    Export:
+      Name: !Sub MeridianDispatcherTG-${Environment}
+
+  DispatcherSecurityGroupId:
+    Description: Dispatcher Security Group ID
+    Value: !Ref DispatcherSecurityGroup
+    Export:
+      Name: !Sub MeridianDispatcherSG-${Environment}
+
+  ECSExecutionRoleArn:
+    Description: ECS Task Execution Role ARN
+    Value: !GetAtt ECSExecutionRole.Arn
+    Export:
+      Name: !Sub MeridianECSExecutionRole-${Environment}
+
+  DispatcherTaskRoleArn:
+    Description: Dispatcher Task Role ARN
+    Value: !GetAtt DispatcherTaskRole.Arn
+    Export:
+      Name: !Sub MeridianDispatcherTaskRole-${Environment}
+
+  # Database Credentials Info
+  DatabaseCredentialsInfo:
+    Description: Database credentials location
+    Value: !Sub 'Username: ${DatabaseUsername}, Password: (parameter you provided)'
