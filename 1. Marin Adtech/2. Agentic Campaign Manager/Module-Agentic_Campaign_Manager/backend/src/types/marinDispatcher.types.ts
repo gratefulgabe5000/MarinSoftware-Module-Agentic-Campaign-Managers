@@ -416,3 +416,185 @@ export function isValidAdType(adType: string): adType is AdType {
 export function isValidResourceStatus(status: string): status is ResourceStatus {
   return ['ENABLED', 'PAUSED', 'REMOVED'].includes(status);
 }
+
+// ============================================================================
+// Batch Job Types
+// ============================================================================
+
+/**
+ * Type of batch operation to perform
+ */
+export type BatchOperationType = 'CREATE' | 'UPDATE';
+
+/**
+ * Type of resource the batch operation targets
+ */
+export type BatchResourceType = 'CAMPAIGN' | 'ADGROUP' | 'AD' | 'KEYWORD';
+
+/**
+ * Status of a batch job
+ */
+export type BatchJobStatus =
+  | 'PENDING'      // Job created but not yet running
+  | 'RUNNING'      // Job is currently processing
+  | 'DONE'         // Job completed successfully
+  | 'FAILED'       // Job failed with errors
+  | 'CANCELLED';   // Job was cancelled
+
+/**
+ * Individual operation within a batch job
+ */
+export interface BatchOperation {
+  /** Type of operation to perform (CREATE or UPDATE) */
+  operationType: BatchOperationType;
+  /** Type of resource being operated on */
+  resourceType: BatchResourceType;
+  /** The actual resource data (campaign, ad group, ad, or keyword) */
+  resource: MarinCampaignRequest | MarinAdGroupRequest | MarinAdRequest | MarinKeywordRequest;
+  /** Optional operation ID for tracking (auto-generated if not provided) */
+  operationId?: string;
+}
+
+/**
+ * Request to create a new batch job
+ */
+export interface BatchJobRequest {
+  /** The Marin account ID */
+  accountId: string;
+  /** Publisher/platform for the batch job (e.g., 'google') */
+  publisher: string;
+  /** Array of operations to include in this batch job */
+  operations?: BatchOperation[];
+}
+
+/**
+ * Response from creating a batch job
+ */
+export interface BatchJobResponse extends MarinBaseResponse {
+  /** Unique batch job ID */
+  id: string;
+  /** The Marin account ID */
+  accountId: string;
+  /** Publisher/platform for the batch job */
+  publisher: string;
+  /** Current status of the batch job */
+  jobStatus: BatchJobStatus;
+  /** Total number of operations in the job */
+  totalOperations: number;
+  /** Number of operations successfully processed */
+  processedOperations: number;
+  /** ISO 8601 timestamp when job was created */
+  createdAt: string;
+  /** ISO 8601 timestamp when job started running */
+  startedAt?: string;
+  /** ISO 8601 timestamp when job completed */
+  completedAt?: string;
+  /** Sequence token for adding more operations (if job not yet run) */
+  sequenceToken?: string;
+}
+
+/**
+ * Request to add operations to an existing batch job
+ */
+export interface AddBatchOperationsRequest {
+  /** Array of operations to add to the batch job */
+  operations: BatchOperation[];
+  /** Sequence token from previous add operations call (for >1000 operations) */
+  sequenceToken?: string;
+}
+
+/**
+ * Response from adding operations to a batch job
+ */
+export interface AddBatchOperationsResponse {
+  /** Number of operations successfully added */
+  operationsAdded: number;
+  /** New sequence token for next add operations call (if more to add) */
+  sequenceToken?: string;
+  /** Status of the add operation */
+  status: 'SUCCESS' | 'FAILURE';
+  /** Array of error messages if operation failed */
+  errors?: string[];
+}
+
+/**
+ * Result of a single operation within a batch job
+ */
+export interface BatchJobResult {
+  /** Operation ID that was executed */
+  operationId: string;
+  /** Type of operation performed */
+  operationType: BatchOperationType;
+  /** Type of resource operated on */
+  resourceType: BatchResourceType;
+  /** Whether this operation succeeded */
+  success: boolean;
+  /** Resource ID if operation succeeded */
+  resourceId?: string;
+  /** Error message if operation failed */
+  error?: string;
+  /** Error code if operation failed */
+  errorCode?: string;
+}
+
+/**
+ * Request to get batch job results
+ */
+export interface BatchJobResultsRequest {
+  /** Batch job ID to get results for */
+  jobId: string;
+  /** Maximum number of results to return (default 1000) */
+  limit?: number;
+  /** Page token for pagination (from previous results response) */
+  pageToken?: string;
+}
+
+/**
+ * Response containing batch job results
+ */
+export interface BatchJobResultsResponse {
+  /** Batch job ID */
+  jobId: string;
+  /** Current status of the batch job */
+  jobStatus: BatchJobStatus;
+  /** Summary statistics for the batch job */
+  summary: {
+    /** Total number of operations */
+    total: number;
+    /** Number of successful operations */
+    successful: number;
+    /** Number of failed operations */
+    failed: number;
+  };
+  /** Array of individual operation results */
+  results: BatchJobResult[];
+  /** Next page token for pagination (null if no more results) */
+  nextPageToken: string | null;
+}
+
+/**
+ * Type guard to check if a string is a valid batch operation type
+ * @param type - The operation type string to validate
+ * @returns True if the operation type is valid, false otherwise
+ */
+export function isValidBatchOperationType(type: string): type is BatchOperationType {
+  return ['CREATE', 'UPDATE'].includes(type);
+}
+
+/**
+ * Type guard to check if a string is a valid batch resource type
+ * @param type - The resource type string to validate
+ * @returns True if the resource type is valid, false otherwise
+ */
+export function isValidBatchResourceType(type: string): type is BatchResourceType {
+  return ['CAMPAIGN', 'ADGROUP', 'AD', 'KEYWORD'].includes(type);
+}
+
+/**
+ * Type guard to check if a string is a valid batch job status
+ * @param status - The status string to validate
+ * @returns True if the status is valid, false otherwise
+ */
+export function isValidBatchJobStatus(status: string): status is BatchJobStatus {
+  return ['PENDING', 'RUNNING', 'DONE', 'FAILED', 'CANCELLED'].includes(status);
+}
