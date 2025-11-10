@@ -1,0 +1,19 @@
+{
+  "name": "meridian-bulk-worker",
+  "version": "1.0.0",
+  "description": "Bulk Worker Lambda Function for Marin Dispatcher Batch Job Integration",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.1467.0",
+    "aws-xray-sdk-core": "^3.5.3"
+  },
+  "engines": {
+    "node": ">=18.x"
+  },
+  "author": "Marin Software",
+  "license": "ISC"
+}
+

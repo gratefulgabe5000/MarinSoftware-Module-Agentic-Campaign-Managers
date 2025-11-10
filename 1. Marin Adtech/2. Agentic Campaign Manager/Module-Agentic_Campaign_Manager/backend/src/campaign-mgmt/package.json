@@ -1,0 +1,20 @@
+{
+  "name": "meridian-campaign-mgmt",
+  "version": "1.0.0",
+  "description": "Campaign Management Lambda Function for Marin Dispatcher Integration",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "pg": "^8.11.0",
+    "axios": "^1.6.0",
+    "aws-xray-sdk-core": "^3.5.3"
+  },
+  "engines": {
+    "node": ">=18.x"
+  },
+  "author": "Marin Software",
+  "license": "ISC"
+}
+
