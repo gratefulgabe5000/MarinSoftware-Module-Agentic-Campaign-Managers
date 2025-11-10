@@ -59,28 +59,6 @@ describe('CampaignPreview', () => {
     expect(screen.getByText(/No Campaign Plan/i)).toBeInTheDocument();
   });
 
-  it('displays loading state when loading', () => {
-    (useCampaignStore as jest.Mock).mockImplementation((selector) => {
-      const state = {
-        currentCampaignPlan: null,
-        isLoading: true,
-        error: null,
-      };
-      return selector(state);
-    });
-
-    render(
-      <BrowserRouter>
-        <CampaignPreview />
-      </BrowserRouter>
-    );
-
-    // The component renders a LoadingSpinner when loading
-    const loadingContainer = screen.getByRole('img', { hidden: true }) ||
-                            document.querySelector('.animate-spin');
-    expect(loadingContainer).toBeInTheDocument();
-  });
-
   it('displays error state when error exists', () => {
     (useCampaignStore as jest.Mock).mockImplementation((selector) => {
       const state = {

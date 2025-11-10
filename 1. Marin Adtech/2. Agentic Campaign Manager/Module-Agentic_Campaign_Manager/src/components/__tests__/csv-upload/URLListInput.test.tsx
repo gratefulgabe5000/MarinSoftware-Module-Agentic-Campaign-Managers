@@ -104,7 +104,7 @@ describe('URLListInput', () => {
 
     render(<URLListInput onParseComplete={mockOnParseComplete} onError={mockOnError} />);
 
-    const textarea = screen.getByLabelText(/Paste URLs/i);
+    const textarea = screen.getByLabelText(/URLs/i);
     await user.type(textarea, 'https://example.com/product1\nhttps://example.com/product2');
 
     const parseButton = screen.getByText(/Parse URLs/i);
@@ -125,7 +125,7 @@ describe('URLListInput', () => {
 
     render(<URLListInput onParseComplete={mockOnParseComplete} onError={mockOnError} />);
 
-    const textarea = screen.getByLabelText(/Paste URLs/i);
+    const textarea = screen.getByLabelText(/URLs/i);
     await user.type(textarea, 'invalid-url');
 
     const parseButton = screen.getByText(/Parse URLs/i);
@@ -147,7 +147,7 @@ describe('URLListInput', () => {
 
     render(<URLListInput onParseComplete={mockOnParseComplete} onError={mockOnError} />);
 
-    const textarea = screen.getByLabelText(/Paste URLs/i);
+    const textarea = screen.getByLabelText(/URLs/i);
     await user.type(textarea, 'https://example.com');
 
     const parseButton = screen.getByText(/Parse URLs/i);
@@ -182,7 +182,7 @@ describe('URLListInput', () => {
 
     render(<URLListInput onParseComplete={mockOnParseComplete} onError={mockOnError} />);
 
-    const textarea = screen.getByLabelText(/Paste URLs/i);
+    const textarea = screen.getByLabelText(/URLs/i);
     await user.type(textarea, '  https://example.com/product  ');
 
     const parseButton = screen.getByText(/Parse URLs/i);

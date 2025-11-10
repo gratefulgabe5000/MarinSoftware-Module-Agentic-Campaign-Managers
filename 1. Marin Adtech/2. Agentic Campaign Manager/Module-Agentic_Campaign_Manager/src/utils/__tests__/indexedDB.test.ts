@@ -63,6 +63,12 @@ describe('IndexedDB Performance Caching', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
+    // Mock setImmediate for async handling
+    global.setImmediate = ((cb: () => void) => {
+      const timeoutId = setTimeout(cb, 0);
+      return timeoutId as any;
+    }) as any;
+
     // Mock indexedDB.open to return a promise-like request
     (global.indexedDB.open as jest.Mock).mockImplementation((name, version) => {
       const request = {
@@ -112,17 +118,18 @@ describe('IndexedDB Performance Caching', () => {
     });
 
     it('should handle errors gracefully', async () => {
-      // Mock store.put to trigger error
-      mockStore.put.mockImplementation(() => {
+      // Mock initDB to reject with an error
+      (global.indexedDB.open as jest.Mock).mockImplementation(() => {
         const request = {
           onsuccess: null as any,
           onerror: null as any,
+          onupgradeneeded: null as any,
           error: new Error('DB Error'),
         } as any;
 
-        setImmediate(() => {
+        Promise.resolve().then(() => {
           if (request.onerror) {
-            request.onerror({});
+            request.onerror({ target: { error: new Error('DB Error') } });
           }
         });
 
@@ -132,9 +139,6 @@ describe('IndexedDB Performance Caching', () => {
       const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
 
       await cachePerformanceMetrics('campaign-123', mockMetrics, mockTimeRange);
-
-      // Give async operations time to complete
-      await new Promise(resolve => setImmediate(resolve));
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         'Failed to cache performance metrics:',
@@ -238,39 +242,33 @@ describe('IndexedDB Performance Caching', () => {
 
   describe('clearCachedPerformanceMetrics', () => {
     it('should clear cached metrics for a campaign', async () => {
-      const cursor = {
-        delete: jest.fn(),
-        continue: jest.fn(),
-      };
-
-      // Set up a one-shot callback to simulate end of cursor
-      let hasBeenCalled = false;
-
-      mockIndex.openCursor.mockImplementation((range) => {
+      mockIndex.openCursor.mockImplementation(() => {
         const request = {
           onsuccess: null as any,
           onerror: null as any,
           error: null,
         } as any;
 
-        // Use setImmediate to properly handle microtasks
-        setImmediate(() => {
-          if (request.onsuccess && !hasBeenCalled) {
-            hasBeenCalled = true;
-            const event = {
-              target: {
-                result: cursor,
-              },
-            };
-            request.onsuccess(event);
-          } else if (request.onsuccess && hasBeenCalled) {
-            // Second call with null result to indicate end
-            const event = {
-              target: {
-                result: null,
-              },
-            };
-            request.onsuccess(event);
+        let callCount = 0;
+
+        // Create cursor that calls onsuccess with null on continue()
+        const cursor = {
+          delete: jest.fn(),
+          continue: jest.fn(() => {
+            // On continue, trigger onsuccess with null to end iteration
+            if (request.onsuccess) {
+              Promise.resolve().then(() => {
+                request.onsuccess({ target: { result: null } });
+              });
+            }
+          }),
+        };
+
+        // Initial call with cursor
+        Promise.resolve().then(() => {
+          if (request.onsuccess && callCount === 0) {
+            callCount++;
+            request.onsuccess({ target: { result: cursor } });
           }
         });
 
@@ -289,16 +287,6 @@ describe('IndexedDB Performance Caching', () => {
       const expiredDate = new Date();
       expiredDate.setMinutes(expiredDate.getMinutes() - 20);
 
-      const cursor = {
-        value: {
-          cachedAt: expiredDate.toISOString(),
-        },
-        delete: jest.fn(),
-        continue: jest.fn(),
-      };
-
-      let hasBeenCalled = false;
-
       mockIndex.openCursor.mockImplementation(() => {
         const request = {
           onsuccess: null as any,
@@ -306,24 +294,29 @@ describe('IndexedDB Performance Caching', () => {
           error: null,
         } as any;
 
-        // Use setImmediate to properly handle callbacks
-        setImmediate(() => {
-          if (request.onsuccess && !hasBeenCalled) {
-            hasBeenCalled = true;
-            const event = {
-              target: {
-                result: cursor,
-              },
-            };
-            request.onsuccess(event);
-          } else if (request.onsuccess && hasBeenCalled) {
-            // Second call with null result to indicate end
-            const event = {
-              target: {
-                result: null,
-              },
-            };
-            request.onsuccess(event);
+        let callCount = 0;
+
+        // Create cursor that calls onsuccess with null on continue()
+        const cursor = {
+          value: {
+            cachedAt: expiredDate.toISOString(),
+          },
+          delete: jest.fn(),
+          continue: jest.fn(() => {
+            // On continue, trigger onsuccess with null to end iteration
+            if (request.onsuccess) {
+              Promise.resolve().then(() => {
+                request.onsuccess({ target: { result: null } });
+              });
+            }
+          }),
+        };
+
+        // Initial call with cursor
+        Promise.resolve().then(() => {
+          if (request.onsuccess && callCount === 0) {
+            callCount++;
+            request.onsuccess({ target: { result: cursor } });
           }
         });
 

@@ -78,8 +78,10 @@ describe('CampaignDetail', () => {
 
   it('renders without crashing', () => {
     (useParams as jest.Mock).mockReturnValue({ id: 'campaign-123' });
-    (useCampaignStore as jest.Mock).mockReturnValue(null);
-    (useCampaignStore as jest.Mock).mockReturnValue(null);
+    (useCampaignStore as jest.Mock).mockImplementation((selector) => {
+      return selector(mockStoreState);
+    });
+    (campaignService.getCampaign as jest.Mock).mockImplementation(() => new Promise(() => {})); // Never resolves
 
     render(
       <BrowserRouter>
