@@ -1,6 +1,15 @@
 import { useCampaignStore } from '../campaignStore';
 import { CampaignPlan, Campaign, CampaignStatus } from '../../types/campaign.types';
 
+// Mock IndexedDB operations
+jest.mock('../../utils/indexedDB', () => ({
+  loadAllCampaigns: jest.fn().mockResolvedValue([]),
+  saveCampaign: jest.fn().mockResolvedValue(undefined),
+  saveCampaigns: jest.fn().mockResolvedValue(undefined),
+  deleteCampaignFromDB: jest.fn().mockResolvedValue(undefined),
+  updateCampaignInDB: jest.fn().mockResolvedValue(undefined),
+}));
+
 describe('CampaignStore', () => {
   beforeEach(() => {
     // Reset store state

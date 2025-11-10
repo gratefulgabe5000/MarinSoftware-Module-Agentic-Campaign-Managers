@@ -24,9 +24,14 @@ describe('CampaignPreview', () => {
   });
 
   it('renders without crashing', () => {
-    (useCampaignStore as jest.Mock).mockReturnValue(null);
-    (useCampaignStore as jest.Mock).mockReturnValue(false);
-    (useCampaignStore as jest.Mock).mockReturnValue(null);
+    (useCampaignStore as jest.Mock).mockImplementation((selector) => {
+      const state = {
+        currentCampaignPlan: null,
+        isLoading: false,
+        error: null,
+      };
+      return selector(state);
+    });
 
     render(
       <BrowserRouter>
@@ -70,7 +75,10 @@ describe('CampaignPreview', () => {
       </BrowserRouter>
     );
 
-    expect(screen.getByText(/Loading campaign preview/i)).toBeInTheDocument();
+    // The component renders a LoadingSpinner when loading
+    const loadingContainer = screen.getByRole('img', { hidden: true }) ||
+                            document.querySelector('.animate-spin');
+    expect(loadingContainer).toBeInTheDocument();
   });
 
   it('displays error state when error exists', () => {

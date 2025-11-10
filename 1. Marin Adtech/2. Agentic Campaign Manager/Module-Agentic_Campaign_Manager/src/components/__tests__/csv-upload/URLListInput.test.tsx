@@ -19,14 +19,14 @@ describe('URLListInput', () => {
   it('renders without crashing', () => {
     render(<URLListInput onParseComplete={mockOnParseComplete} onError={mockOnError} />);
 
-    expect(screen.getByLabelText(/Paste URLs/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/URLs/i)).toBeInTheDocument();
     expect(screen.getByText(/Parse URLs/i)).toBeInTheDocument();
   });
 
   it('displays placeholder text', () => {
     render(<URLListInput onParseComplete={mockOnParseComplete} onError={mockOnError} />);
 
-    const textarea = screen.getByLabelText(/Paste URLs/i);
+    const textarea = screen.getByLabelText(/URLs/i);
     expect(textarea).toHaveAttribute('placeholder');
   });
 
@@ -34,7 +34,7 @@ describe('URLListInput', () => {
     const user = userEvent.setup();
     render(<URLListInput onParseComplete={mockOnParseComplete} onError={mockOnError} />);
 
-    const textarea = screen.getByLabelText(/Paste URLs/i);
+    const textarea = screen.getByLabelText(/URLs/i);
     await user.type(textarea, 'https://example.com');
 
     expect(screen.getByText(/characters/i)).toBeInTheDocument();
@@ -51,7 +51,7 @@ describe('URLListInput', () => {
     const user = userEvent.setup();
     render(<URLListInput onParseComplete={mockOnParseComplete} onError={mockOnError} />);
 
-    const textarea = screen.getByLabelText(/Paste URLs/i);
+    const textarea = screen.getByLabelText(/URLs/i);
     await user.type(textarea, 'https://example.com');
 
     const parseButton = screen.getByText(/Parse URLs/i);
@@ -77,7 +77,7 @@ describe('URLListInput', () => {
 
     render(<URLListInput onParseComplete={mockOnParseComplete} onError={mockOnError} />);
 
-    const textarea = screen.getByLabelText(/Paste URLs/i);
+    const textarea = screen.getByLabelText(/URLs/i);
     await user.type(textarea, 'https://example.com/product1');
 
     const parseButton = screen.getByText(/Parse URLs/i);

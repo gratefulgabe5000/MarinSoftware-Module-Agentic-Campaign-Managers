@@ -62,14 +62,18 @@ describe('CampaignDetail', () => {
 
   // Create stable mock functions
   const mockGetCampaignById = jest.fn().mockReturnValue(null);
+  const mockInitializeCampaigns = jest.fn().mockResolvedValue(undefined);
   const mockStoreState = {
     getCampaignById: mockGetCampaignById,
     currentCampaign: null,
+    initializeCampaigns: mockInitializeCampaigns,
+    isInitialized: false,
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
     mockGetCampaignById.mockReturnValue(null);
+    mockInitializeCampaigns.mockResolvedValue(undefined);
   });
 
   it('renders without crashing', () => {
