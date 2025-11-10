@@ -21,20 +21,10 @@ interface PatternViewerProps {
  */
 const PatternViewer: React.FC<PatternViewerProps> = ({
   patterns,
-  isMockData = false,
   onContinue,
 }) => {
   return (
     <div className="space-y-6">
-      {isMockData && (
-        <Card className="border-warning bg-warning/5">
-          <CardContent className="flex items-center gap-2 py-3">
-            <AlertTriangleIcon className="h-4 w-4 text-warning" />
-            <p className="text-sm font-medium">Using mock data for demonstration</p>
-          </CardContent>
-        </Card>
-      )}
-
       <div className="grid gap-6">
         {/* Ad Group Structures */}
         <Card>
