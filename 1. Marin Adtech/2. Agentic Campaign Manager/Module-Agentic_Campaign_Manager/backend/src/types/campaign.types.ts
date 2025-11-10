@@ -103,6 +103,9 @@ export interface Campaign {
 export interface PlatformAPIResponse {
   success: boolean;
   campaignId?: string;
+  adGroupId?: string;
+  adId?: string;
+  keywordId?: string;
   error?: string;
   details?: any;
 }
