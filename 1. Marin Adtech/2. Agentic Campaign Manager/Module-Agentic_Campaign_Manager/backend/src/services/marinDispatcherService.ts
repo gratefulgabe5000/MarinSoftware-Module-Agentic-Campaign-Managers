@@ -14,8 +14,11 @@ import {
   MarinCampaignUpdateRequest,
   MarinCampaignListRequest,
   MarinCampaignListResponse,
+  MarinAdGroupRequest,
+  MarinAdGroupResponse,
+  MarinAdGroupUpdateRequest,
 } from '../types/marinDispatcher.types';
-import { validateCampaignRequest, ValidationResult } from '../utils/marinTypeValidators';
+import { validateCampaignRequest, validateAdGroupRequest, ValidationResult } from '../utils/marinTypeValidators';
 import config from '../config/env';
 
 /**
@@ -221,5 +224,106 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
       success: false,
       error: 'getCampaignStatus not yet implemented',
     };
+  }
+
+  // ========================================================================
+  // Ad Group Methods (Phase 2B.1)
+  // ========================================================================
+
+  /**
+   * Create an ad group in Marin Dispatcher
+   *
+   * @param campaignId - The campaign ID to create the ad group in
+   * @param adGroupData - The ad group data to create
+   * @returns PlatformAPIResponse with ad group creation results
+   */
+  async createAdGroup(
+    campaignId: string,
+    adGroupData: Omit<MarinAdGroupRequest, 'accountId' | 'campaignId'>
+  ): Promise<PlatformAPIResponse> {
+    try {
+      console.log(`[Marin Dispatcher] Creating ad group in campaign: ${campaignId}`);
+      console.log(`[Marin Dispatcher] Ad group data:`, adGroupData);
+
+      const request: MarinAdGroupRequest = {
+        accountId: this.accountId,
+        campaignId,
+        ...adGroupData
+      };
+
+      // Validate request
+      const validation = validateAdGroupRequest(request);
+      if (!validation.isValid) {
+        console.error(`[Marin Dispatcher] Ad group validation failed:`, validation.errors);
+        return {
+          success: false,
+          error: `Validation failed: ${validation.errors.join(', ')}`
+        };
+      }
+
+      const segment = AWSXRay.getSegment();
+      const subsegment = segment?.addNewSubsegment('MarinDispatcher.createAdGroup');
+
+      const response = await this.httpClient.post<MarinAdGroupResponse>(
+        this.buildApiPath(`/campaigns/${campaignId}/adgroups`),  // InfraDocs format: /dispatcher/${publisher}/campaigns/{id}/adgroups
+        request
+      );
+
+      subsegment?.close();
+
+      console.log(`[Marin Dispatcher] Ad group created successfully: ${response.data.id}`);
+
+      return {
+        success: true,
+        adGroupId: response.data.id,
+        details: response.data
+      };
+    } catch (error) {
+      return this.handleError(error, 'createAdGroup');
+    }
+  }
+
+  /**
+   * Update an ad group in Marin Dispatcher
+   *
+   * @param adGroupId - The ad group ID to update
+   * @param updates - The fields to update
+   * @returns PlatformAPIResponse with ad group update results
+   */
+  async updateAdGroup(
+    adGroupId: string,
+    updates: MarinAdGroupUpdateRequest
+  ): Promise<PlatformAPIResponse> {
+    try {
+      console.log(`[Marin Dispatcher] Updating ad group: ${adGroupId}`);
+      console.log(`[Marin Dispatcher] Updates:`, updates);
+
+      const request: MarinAdGroupUpdateRequest = { ...updates };
+
+      // Remove undefined fields
+      Object.keys(request).forEach(key =>
+        request[key as keyof MarinAdGroupUpdateRequest] === undefined && delete request[key as keyof MarinAdGroupUpdateRequest]
+      );
+
+      const segment = AWSXRay.getSegment();
+      const subsegment = segment?.addNewSubsegment('MarinDispatcher.updateAdGroup');
+
+      const response = await this.httpClient.put<MarinAdGroupResponse>(
+        this.buildApiPath(`/adgroups/${adGroupId}`),  // InfraDocs format: /dispatcher/${publisher}/adgroups/{id}
+        request
+      );
+
+      subsegment?.close();
+
+      console.log(`[Marin Dispatcher] Ad group updated successfully: ${response.data.id}`);
+
+      return {
+        success: true,
+        adGroupId: response.data.id,
+        details: response.data
+      };
+    } catch (error) {
+      return this.handleError(error, 'updateAdGroup');
+    }
   }
 }
