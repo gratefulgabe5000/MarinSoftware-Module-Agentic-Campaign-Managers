@@ -17,8 +17,11 @@ import {
   MarinAdGroupRequest,
   MarinAdGroupResponse,
   MarinAdGroupUpdateRequest,
+  MarinAdRequest,
+  MarinAdResponse,
+  MarinAdUpdateRequest,
 } from '../types/marinDispatcher.types';
-import { validateCampaignRequest, validateAdGroupRequest, ValidationResult } from '../utils/marinTypeValidators';
+import { validateCampaignRequest, validateAdGroupRequest, validateAdRequest, ValidationResult } from '../utils/marinTypeValidators';
 import config from '../config/env';
 
 /**
@@ -502,6 +505,120 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
       };
     } catch (error) {
       return this.handleError(error, 'updateAdGroup');
+    }
+  }
+
+  // ========================================================================
+  // Ad Methods (Phase 2B.2)
+  // ========================================================================
+
+  /**
+   * Create an ad in Marin Dispatcher
+   *
+   * @param adGroupId - The ad group ID to create the ad in
+   * @param adData - The ad data to create (without accountId and adGroupId)
+   * @returns PlatformAPIResponse with ad creation results
+   */
+  async createAd(
+    adGroupId: string,
+    adData: Omit<MarinAdRequest, 'accountId' | 'adGroupId'>
+  ): Promise<PlatformAPIResponse> {
+    try {
+      console.log(`[Marin Dispatcher] Creating ad in ad group: ${adGroupId}`);
+      console.log(`[Marin Dispatcher] Ad data:`, adData);
+
+      // Build complete request with accountId and adGroupId
+      const request: MarinAdRequest = {
+        accountId: this.accountId,
+        adGroupId,
+        ...adData,
+        type: adData.type || 'RESPONSIVE_SEARCH_AD' // Ensure type is set, but allow override
+      };
+
+      // Validate request
+      const validation = validateAdRequest(request);
+      if (!validation.isValid) {
+        console.error(`[Marin Dispatcher] Ad validation failed:`, validation.errors);
+        return {
+          success: false,
+          error: `Validation failed: ${validation.errors.join(', ')}`
+        };
+      }
+
+      const segment = AWSXRay.getSegment();
+      const subsegment = segment?.addNewSubsegment('MarinDispatcher.createAd');
+
+      // Make API call to create ad
+      const response = await this.httpClient.post<MarinAdResponse>(
+        this.buildApiPath(`/adgroups/${adGroupId}/ads`),  // InfraDocs format: /dispatcher/${publisher}/adgroups/{id}/ads
+        request
+      );
+
+      subsegment?.close();
+
+      console.log(`[Marin Dispatcher] Ad created successfully: ${response.data.id}`);
+
+      return {
+        success: true,
+        adId: response.data.id,
+        details: response.data
+      };
+    } catch (error) {
+      return this.handleError(error, 'createAd');
+    }
+  }
+
+  /**
+   * Update an ad in Marin Dispatcher
+   *
+   * @param adId - The ad ID to update
+   * @param updates - The fields to update
+   * @returns PlatformAPIResponse with ad update results
+   */
+  async updateAd(
+    adId: string,
+    updates: MarinAdUpdateRequest
+  ): Promise<PlatformAPIResponse> {
+    try {
+      console.log(`[Marin Dispatcher] Updating ad: ${adId}`);
+      console.log(`[Marin Dispatcher] Updates:`, updates);
+
+      const request: MarinAdUpdateRequest = { ...updates };
+
+      // Remove undefined fields
+      Object.keys(request).forEach(key =>
+        request[key as keyof MarinAdUpdateRequest] === undefined && delete request[key as keyof MarinAdUpdateRequest]
+      );
+
+      // Check if there are any fields to update
+      if (Object.keys(request).length === 0) {
+        console.warn(`[Marin Dispatcher] No valid fields to update for ad: ${adId}`);
+        return {
+          success: false,
+          error: 'No valid fields to update'
+        };
+      }
+
+      const segment = AWSXRay.getSegment();
+      const subsegment = segment?.addNewSubsegment('MarinDispatcher.updateAd');
+
+      // Make API call to update ad
+      const response = await this.httpClient.put<MarinAdResponse>(
+        this.buildApiPath(`/ads/${adId}`),  // InfraDocs format: /dispatcher/${publisher}/ads/{id}
+        request
+      );
+
+      subsegment?.close();
+
+      console.log(`[Marin Dispatcher] Ad updated successfully: ${response.data.id}`);
+
+      return {
+        success: true,
+        adId: response.data.id,
+        details: response.data
+      };
+    } catch (error) {
+      return this.handleError(error, 'updateAd');
     }
   }
 }
