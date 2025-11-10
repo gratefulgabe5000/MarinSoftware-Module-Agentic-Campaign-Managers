@@ -724,3 +724,728 @@ After completing Phase 2.1 manual testing:
 ---
 
 **End of Manual Testing Instructions**
+
+
+**Step 4.1.2**: Create a test CampaignPlan object
+```javascript
+const campaignPlan = {
+  objective: 'Test objective',
+  targetAudience: {},
+  budget: { total: 1000, currency: 'USD' },
+  timeline: { startDate: '2025-01-01', duration: 30 },
+  platforms: ['Google Ads'],
+  kpis: { primary: 'Conversions' }
+};
+```
+
+**Step 4.1.3**: Call createCampaign method
+```javascript
+service.createCampaign(campaignPlan, 'Test Campaign').then(result => {
+  console.log('createCampaign result:', result);
+  console.log('Success:', result.success);
+  console.log('Error:', result.error);
+}).catch(error => {
+  console.error('Unexpected error:', error.message);
+});
+```
+
+**Expected Result**:
+```javascript
+{
+  success: false,
+  error: 'createCampaign not yet implemented'
+}
+```
+
+### Test 4.2: Test updateCampaign Method
+
+**Step 4.2.1**: Call updateCampaign method
+```javascript
+service.updateCampaign('test-campaign-id', { budget: { total: 2000, currency: 'USD' } }).then(result => {
+  console.log('updateCampaign result:', result);
+  console.log('Success:', result.success);
+  console.log('Error:', result.error);
+}).catch(error => {
+  console.error('Unexpected error:', error.message);
+});
+```
+
+**Expected Result**:
+```javascript
+{
+  success: false,
+  error: 'updateCampaign not yet implemented'
+}
+```
+
+### Test 4.3: Test pauseCampaign Method
+
+**Step 4.3.1**: Call pauseCampaign method
+```javascript
+service.pauseCampaign('test-campaign-id').then(result => {
+  console.log('pauseCampaign result:', result);
+  console.log('Success:', result.success);
+  console.log('Error:', result.error);
+}).catch(error => {
+  console.error('Unexpected error:', error.message);
+});
+```
+
+**Expected Result**:
+```javascript
+{
+  success: false,
+  error: 'pauseCampaign not yet implemented'
+}
+```
+
+### Test 4.4: Test resumeCampaign Method
+
+**Step 4.4.1**: Call resumeCampaign method
+```javascript
+service.resumeCampaign('test-campaign-id').then(result => {
+  console.log('resumeCampaign result:', result);
+  console.log('Success:', result.success);
+  console.log('Error:', result.error);
+}).catch(error => {
+  console.error('Unexpected error:', error.message);
+});
+```
+
+**Expected Result**:
+```javascript
+{
+  success: false,
+  error: 'resumeCampaign not yet implemented'
+}
+```
+
+### Test 4.5: Test deleteCampaign Method
+
+**Step 4.5.1**: Call deleteCampaign method
+```javascript
+service.deleteCampaign('test-campaign-id').then(result => {
+  console.log('deleteCampaign result:', result);
+  console.log('Success:', result.success);
+  console.log('Error:', result.error);
+}).catch(error => {
+  console.error('Unexpected error:', error.message);
+});
+```
+
+**Expected Result**:
+```javascript
+{
+  success: false,
+  error: 'deleteCampaign not yet implemented'
+}
+```
+
+### Test 4.6: Test getCampaignStatus Method
+
+**Step 4.6.1**: Call getCampaignStatus method
+```javascript
+service.getCampaignStatus('test-campaign-id').then(result => {
+  console.log('getCampaignStatus result:', result);
+  console.log('Success:', result.success);
+  console.log('Error:', result.error);
+}).catch(error => {
+  console.error('Unexpected error:', error.message);
+});
+```
+
+**Expected Result**:
+```javascript
+{
+  success: false,
+  error: 'getCampaignStatus not yet implemented'
+}
+   ```
+
+---
+
+## Test 5: Helper Methods (Private Methods - Indirect Testing)
+
+**Objective**: Verify private helper methods work correctly through public methods.
+
+### Test 5.1: Verify buildApiPath Method
+
+**Note**: `buildApiPath` is a private method, so we test it indirectly through `isAuthenticated()`.
+
+**Step 5.1.1**: Create service with publisher "google"
+```javascript
+const serviceGoogle = new MarinDispatcherService(undefined, 'google');
+```
+
+**Step 5.1.2**: Call isAuthenticated (this uses buildApiPath internally)
+```javascript
+serviceGoogle.isAuthenticated().then(result => {
+  console.log('isAuthenticated with google publisher:', result);
+}).catch(error => {
+  // Check error message for API path
+  console.log('Error message:', error.message);
+  console.log('Error config URL:', error.config?.url);
+});
+```
+
+**Expected Result**: 
+- If error occurs, check `error.config.url` contains `/dispatcher/google/campaigns`
+- API path should follow format: `{baseUrl}/dispatcher/{publisher}/campaigns`
+
+**Step 5.1.3**: Create service with publisher "meta"
+```javascript
+const serviceMeta = new MarinDispatcherService(undefined, 'meta');
+```
+
+**Step 5.1.4**: Call isAuthenticated
+```javascript
+serviceMeta.isAuthenticated().then(result => {
+  console.log('isAuthenticated with meta publisher:', result);
+}).catch(error => {
+  console.log('Error config URL:', error.config?.url);
+});
+```
+
+**Expected Result**: 
+- If error occurs, check `error.config.url` contains `/dispatcher/meta/campaigns`
+
+### Test 5.2: Verify mapCampaignPlanToRequest Method
+
+**Note**: `mapCampaignPlanToRequest` is a private method used by `createCampaign()`. Since `createCampaign()` is a placeholder, we cannot fully test this yet. However, we can verify the method exists by checking the compiled code.
+
+**Step 5.2.1**: Verify method exists in compiled code
+```
+Get-Content dist/services/marinDispatcherService.js | Select-String "mapCampaignPlanToRequest"
+```
+
+**Expected Result**: Method exists in compiled code
+
+### Test 5.3: Verify mapResponseToPlatformResponse Method
+
+**Note**: `mapResponseToPlatformResponse` is a private method used by public methods. Since all public methods are placeholders, we cannot fully test this yet.
+
+**Step 5.3.1**: Verify method exists in compiled code
+```
+Get-Content dist/services/marinDispatcherService.js | Select-String "mapResponseToPlatformResponse"
+```
+
+**Expected Result**: Method exists in compiled code
+
+---
+
+## Test 6: HTTP Client Configuration
+
+**Objective**: Verify the axios HTTP client is configured correctly.
+
+### Test 6.1: Verify HTTP Client Properties
+
+**Step 6.1.1**: Create service instance
+```javascript
+const service = new MarinDispatcherService();
+```
+
+**Step 6.1.2**: Inspect HTTP client (if accessible)
+```javascript
+// Note: httpClient is private, so we test indirectly through isAuthenticated
+// Check that requests use correct baseURL and timeout
+```
+
+**Step 6.1.3**: Call isAuthenticated and inspect error (if API unavailable)
+```javascript
+service.isAuthenticated().then(result => {
+  console.log('Result:', result);
+}).catch(error => {
+  if (error.config) {
+    console.log('Base URL:', error.config.baseURL);
+    console.log('Timeout:', error.config.timeout);
+    console.log('Headers:', error.config.headers);
+  }
+});
+```
+
+**Expected Results**:
+- `baseURL`: Should match `MARIN_DISPATCHER_BASE_URL` or `DISPATCHER_URL`
+- `timeout`: Should match `MARIN_DISPATCHER_TIMEOUT` (default: 10000)
+- `headers`: Should include `Content-Type: application/json` and `Accept: application/json`
+
+---
+
+## Test 7: TypeScript Type Safety
+
+**Objective**: Verify TypeScript compilation and type safety.
+
+### Test 7.1: Verify TypeScript Compilation
+
+**Step 7.1.1**: Run TypeScript compiler
+```
+npm run build
+```
+
+**Expected Result**: Compilation succeeds with no errors
+
+**Step 7.1.2**: Check for any type errors
+```
+# Look for "error TS" in output
+```
+
+**Expected Result**: No TypeScript errors
+
+### Test 7.2: Verify Exported Types
+
+**Step 7.2.1**: Check that service exports correctly
+```javascript
+const { MarinDispatcherService } = require('./dist/services/marinDispatcherService.js');
+console.log('MarinDispatcherService type:', typeof MarinDispatcherService);
+```
+
+**Expected Result**: `"function"`
+
+---
+
+## Test 8: Integration with BasePlatformAPI
+
+**Objective**: Verify the service correctly extends BasePlatformAPI.
+
+### Test 8.1: Verify Inheritance
+
+**Step 8.1.1**: Import BasePlatformAPI
+```javascript
+const { BasePlatformAPI } = require('./dist/services/platformApiService.js');
+```
+
+**Step 8.1.2**: Create service instance
+```javascript
+const service = new MarinDispatcherService();
+```
+
+**Step 8.1.3**: Verify service is instance of BasePlatformAPI
+```javascript
+console.log('Is instance of BasePlatformAPI:', service instanceof BasePlatformAPI);
+```
+
+**Expected Result**: `true`
+
+### Test 8.2: Verify IPlatformAPI Interface Implementation
+
+**Step 8.2.1**: Verify all required methods exist
+```javascript
+const service = new MarinDispatcherService();
+console.log('createCampaign:', typeof service.createCampaign);
+console.log('updateCampaign:', typeof service.updateCampaign);
+console.log('pauseCampaign:', typeof service.pauseCampaign);
+console.log('resumeCampaign:', typeof service.resumeCampaign);
+console.log('deleteCampaign:', typeof service.deleteCampaign);
+console.log('getCampaignStatus:', typeof service.getCampaignStatus);
+console.log('isAuthenticated:', typeof service.isAuthenticated);
+```
+
+**Expected Results**: All methods should be `"function"`
+
+---
+
+## Test Results Summary
+
+After completing all tests, document your results:
+
+### Test Results Checklist
+
+- [ ] **Test 1**: Service Constructor - Default Parameters
+  - [ ] Service creates with default parameters
+  - [ ] Service throws error when config is missing
+  
+- [ ] **Test 2**: Service Constructor - Custom Parameters
+  - [ ] Service creates with custom accountId
+  - [ ] Service creates with custom accountId and publisher
+  
+- [ ] **Test 3**: isAuthenticated Method
+  - [ ] Method returns boolean
+  - [ ] Method handles API errors gracefully
+  - [ ] Method uses correct API path format
+  
+- [ ] **Test 4**: Placeholder Methods
+  - [ ] createCampaign returns "not yet implemented"
+  - [ ] updateCampaign returns "not yet implemented"
+  - [ ] pauseCampaign returns "not yet implemented"
+  - [ ] resumeCampaign returns "not yet implemented"
+  - [ ] deleteCampaign returns "not yet implemented"
+  - [ ] getCampaignStatus returns "not yet implemented"
+  
+- [ ] **Test 5**: Helper Methods
+  - [ ] buildApiPath generates correct paths
+  - [ ] mapCampaignPlanToRequest exists in code
+  - [ ] mapResponseToPlatformResponse exists in code
+  
+- [ ] **Test 6**: HTTP Client Configuration
+  - [ ] HTTP client uses correct baseURL
+  - [ ] HTTP client uses correct timeout
+  - [ ] HTTP client uses correct headers
+  
+- [ ] **Test 7**: TypeScript Type Safety
+  - [ ] TypeScript compilation succeeds
+  - [ ] Service exports correctly
+  
+- [ ] **Test 8**: Integration with BasePlatformAPI
+  - [ ] Service extends BasePlatformAPI
+  - [ ] All IPlatformAPI methods are implemented
+
+---
+
+## Troubleshooting
+
+### Issue: "Cannot find module" errors
+
+**Solution**: 
+1. Ensure you've run `npm run build` to compile TypeScript
+2. Verify you're in the correct directory (backend/)
+3. Use relative paths from backend directory: `./dist/services/marinDispatcherService.js`
+
+### Issue: "DISPATCHER_URL or MARIN_DISPATCHER_BASE_URL must be set" error
+
+**Solution**:
+1. Set environment variable: `$env:MARIN_DISPATCHER_BASE_URL = "http://your-api-url"`
+2. Or create `.env` file with `MARIN_DISPATCHER_BASE_URL=http://your-api-url`
+
+### Issue: isAuthenticated returns false
+
+**Possible Causes**:
+1. API endpoint is not accessible
+2. API URL is incorrect
+3. Network connectivity issues
+
+**Solution**: This is expected if the API is not available. The method should return `false` gracefully without throwing errors.
+
+### Issue: TypeScript compilation errors
+
+**Solution**:
+1. Check for syntax errors in `src/services/marinDispatcherService.ts`
+2. Verify all imports are correct
+3. Run `npm install` to ensure dependencies are installed
+
+---
+
+## Next Steps
+
+After completing Phase 2.1 manual testing:
+
+1. **Document Results**: Record all test results in this document or a separate test results file
+2. **Report Issues**: If any tests fail, document the issue and expected vs actual behavior
+3. **Proceed to Phase 2.2**: Once all Phase 2.1 tests pass, proceed to Phase 2.2 (Campaign CRUD Methods)
+
+---
+
+## Notes
+
+- **No Scripts**: These instructions are designed for manual execution. Do not create automated test scripts.
+- **Node.js REPL**: Use Node.js REPL for interactive testing. Exit with `.exit` command.
+- **Environment Variables**: Ensure environment variables are set before testing. You may need to restart Node.js REPL after setting environment variables.
+- **API Availability**: Some tests require a valid API endpoint. If the API is not available, tests will fail gracefully (return `false` instead of throwing errors).
+
+---
+
+**End of Manual Testing Instructions**
+
+
+**Version**: 1.0  
+**Created**: 2025-11-10  
+**Purpose**: Manual testing guide for Phase 2.1 (Base Service Structure)  
+**Reusable**: Yes - Use this guide each time you need to test Phase 2.1
+
+---
+
+## Prerequisites
+
+Before starting manual testing, ensure:
+
+1. **Environment Setup**:
+   - Navigate to: `Module-Agentic_Campaign_Manager/backend`
+   - Verify `.env` file exists with Marin Dispatcher configuration:
+     ```env
+     MARIN_DISPATCHER_BASE_URL=http://localhost:3000  # Or actual ALB URL
+     MARIN_DISPATCHER_ACCOUNT_ID=5533110357
+     MARIN_DISPATCHER_PUBLISHER=google
+     MARIN_DISPATCHER_TIMEOUT=10000
+     ```
+   - Or set `DISPATCHER_URL` environment variable (takes precedence)
+
+2. **Dependencies**:
+   - TypeScript compiled: `npm run build` (should complete without errors)
+   - Node.js and npm available
+   - `ts-node` available: `npx ts-node --version` (should show version)
+
+3. **Service Files**:
+   - `src/services/marinDispatcherService.ts` exists
+   - `src/config/env.ts` has `marinDispatcher` configuration
+
+---
+
+## Test Execution
+
+### Option 1: Using Manual Test Script (Recommended)
+
+**Note**: Due to PowerShell output buffering/redirection issues, output will be written to a file.
+
+1. **Navigate to backend directory**:
+   ```powershell
+   cd "Module-Agentic_Campaign_Manager\backend"
+   ```
+
+2. **Run the manual test script with output redirection**:
+   ```powershell
+   npx ts-node test-manual.ts > test-output.txt 2>&1
+   ```
+
+3. **Check the output file**:
+   ```powershell
+   Get-Content test-output.txt
+   ```
+
+4. **Expected Output**:
+   ```
+   === Marin Dispatcher Service Manual Test ===
+
+   Test 1: Verify config is loaded
+     - Config exists: true
+     - marinDispatcher exists: true
+     - marinDispatcher.accountId: 5533110357
+     - marinDispatcher.timeout: 10000
+     - marinDispatcher.baseUrl: [your configured URL]
+     ✓ Config loaded successfully
+
+   Test 2: Create service with default publisher
+     - Service created: true
+     - Service is instance of MarinDispatcherService: true
+     ✓ Service created successfully
+
+   Test 3: Create service with custom accountId and publisher
+     - Service created: true
+     ✓ Service created with custom parameters
+
+   Test 4: Test isAuthenticated method
+     - Calling isAuthenticated...
+     - Result: [true/false]
+     - Type: boolean
+     ✓ isAuthenticated completed (result may be false if API not available)
+
+   Test 5: Test placeholder methods
+     - createCampaign result: [object with success: false, error: 'createCampaign not yet implemented']
+     - Expected error: true
+     - updateCampaign result: true
+     - pauseCampaign result: true
+     - resumeCampaign result: true
+     - deleteCampaign result: true
+     - getCampaignStatus result: true
+     ✓ All placeholder methods return expected errors
+
+   === All manual tests completed successfully! ===
+   ```
+
+5. **Verify Results**:
+   - All tests should show `✓` (checkmark)
+   - No errors should occur (except for `isAuthenticated` if API is unavailable)
+   - All placeholder methods should return expected "not yet implemented" errors
+
+6. **Clean up output file** (optional):
+   ```powershell
+   Remove-Item test-output.txt
+   ```
+
+**Alternative**: Use the PowerShell wrapper script:
+```powershell
+.\run-test.ps1
+```
+This script handles output redirection automatically.
+
+---
+
+### Option 2: Interactive Node.js Testing
+
+1. **Start Node.js REPL with TypeScript support**:
+   ```powershell
+   npx ts-node
+   ```
+
+2. **Import the service**:
+   ```typescript
+   import { MarinDispatcherService } from './src/services/marinDispatcherService';
+   import config from './src/config/env';
+   ```
+
+3. **Test 1: Verify Config**:
+   ```typescript
+   console.log('Config loaded:', !!config);
+   console.log('marinDispatcher:', config.marinDispatcher);
+   // Expected: Should show config object with marinDispatcher property
+   ```
+
+4. **Test 2: Create Service (Default)**:
+   ```typescript
+   const service = new MarinDispatcherService();
+   console.log('Service created:', !!service);
+   // Expected: Service instance created successfully
+   ```
+
+5. **Test 3: Create Service (Custom)**:
+   ```typescript
+   const service2 = new MarinDispatcherService('custom-account-id', 'meta');
+   console.log('Service created:', !!service2);
+   // Expected: Service instance created with custom parameters
+   ```
+
+6. **Test 4: Test isAuthenticated**:
+   ```typescript
+   const isAuth = await service.isAuthenticated();
+   console.log('isAuthenticated result:', isAuth);
+   // Expected: boolean (true if API available, false if not)
+   ```
+
+7. **Test 5: Test Placeholder Methods**:
+   ```typescript
+   const result = await service.createCampaign({...}, 'Test');
+   console.log('createCampaign:', result);
+   // Expected: { success: false, error: 'createCampaign not yet implemented' }
+   
+   // Repeat for: updateCampaign, pauseCampaign, resumeCampaign, deleteCampaign, getCampaignStatus
+   ```
+
+---
+
+## Test Checklist
+
+Use this checklist to verify Phase 2.1 implementation:
+
+### ✅ Configuration Tests
+- [ ] Config file loads correctly
+- [ ] `config.marinDispatcher` exists
+- [ ] `config.marinDispatcher.accountId` is defined
+- [ ] `config.marinDispatcher.timeout` is defined
+- [ ] `config.marinDispatcher.baseUrl` is defined (or `DISPATCHER_URL` env var is set)
+
+### ✅ Constructor Tests
+- [ ] Service can be created with default publisher (`new MarinDispatcherService()`)
+- [ ] Service can be created with custom accountId (`new MarinDispatcherService('custom-id')`)
+- [ ] Service can be created with custom publisher (`new MarinDispatcherService('custom-id', 'meta')`)
+- [ ] Service uses `DISPATCHER_URL` from environment if set
+- [ ] Service falls back to `config.marinDispatcher.baseUrl` if `DISPATCHER_URL` not set
+- [ ] Service throws error if neither `DISPATCHER_URL` nor `baseUrl` is set
+
+### ✅ isAuthenticated Method Tests
+- [ ] Method exists and is callable
+- [ ] Method returns a boolean
+- [ ] Method returns `true` if API is reachable (may require actual API)
+- [ ] Method returns `false` if API is not reachable (expected in test environment)
+- [ ] Method handles errors gracefully (doesn't throw)
+
+### ✅ Placeholder Method Tests
+- [ ] `createCampaign` returns `{ success: false, error: 'createCampaign not yet implemented' }`
+- [ ] `updateCampaign` returns `{ success: false, error: 'updateCampaign not yet implemented' }`
+- [ ] `pauseCampaign` returns `{ success: false, error: 'pauseCampaign not yet implemented' }`
+- [ ] `resumeCampaign` returns `{ success: false, error: 'resumeCampaign not yet implemented' }`
+- [ ] `deleteCampaign` returns `{ success: false, error: 'deleteCampaign not yet implemented' }`
+- [ ] `getCampaignStatus` returns `{ success: false, error: 'getCampaignStatus not yet implemented' }`
+
+---
+
+## Expected Results
+
+### Success Criteria
+
+All tests should pass if Phase 2.1 is correctly implemented:
+
+1. **Config Loading**: ✅ Config loads with `marinDispatcher` property
+2. **Service Creation**: ✅ Service can be instantiated with various parameters
+3. **isAuthenticated**: ✅ Method exists and returns boolean (may be `false` if API unavailable)
+4. **Placeholder Methods**: ✅ All return expected "not yet implemented" errors
+
+### Common Issues
+
+| Issue | Symptom | Solution |
+|-------|---------|----------|
+| Config not loaded | `config.marinDispatcher` is undefined | Check `.env` file exists and has correct variables |
+| Service creation fails | Error: "DISPATCHER_URL or MARIN_DISPATCHER_BASE_URL must be set" | Set `DISPATCHER_URL` or `MARIN_DISPATCHER_BASE_URL` in `.env` |
+| isAuthenticated fails | Network error or timeout | Expected if API is not available - method should return `false` |
+| TypeScript errors | Compilation fails | Run `npm run build` to check for TypeScript errors |
+
+---
+
+## Troubleshooting
+
+### Issue: Config not loading
+
+**Check**:
+1. `.env` file exists in `backend/` directory
+2. `.env` file contains `MARIN_DISPATCHER_*` variables
+3. `dotenv` is configured in `src/config/env.ts`
+
+**Fix**:
+```powershell
+# Verify .env file
+Get-Content .env | Select-String "MARIN_DISPATCHER"
+
+# If missing, add:
+# MARIN_DISPATCHER_BASE_URL=http://localhost:3000
+# MARIN_DISPATCHER_ACCOUNT_ID=5533110357
+# MARIN_DISPATCHER_PUBLISHER=google
+# MARIN_DISPATCHER_TIMEOUT=10000
+```
+
+### Issue: Service creation fails
+
+**Check**:
+1. `DISPATCHER_URL` environment variable is set, OR
+2. `MARIN_DISPATCHER_BASE_URL` is set in `.env`
+
+**Fix**:
+```powershell
+# Option 1: Set environment variable
+$env:DISPATCHER_URL = "http://your-dispatcher-url:3000"
+
+# Option 2: Add to .env file
+# MARIN_DISPATCHER_BASE_URL=http://your-dispatcher-url:3000
+```
+
+### Issue: isAuthenticated always returns false
+
+**Expected Behavior**: If the API is not available (e.g., in local development), `isAuthenticated` will return `false`. This is expected and not a failure.
+
+**To Test with Real API**:
+1. Ensure `DISPATCHER_URL` points to actual API endpoint
+2. Ensure network connectivity to the API
+3. Run test again - should return `true` if API is reachable
+
+---
+
+## Test Script Location
+
+The manual test script is located at:
+```
+Module-Agentic_Campaign_Manager/backend/test-manual.ts
+```
+
+To update or modify the test script, edit this file.
+
+---
+
+## Next Steps
+
+After Phase 2.1 testing is complete:
+
+1. ✅ Verify all tests pass
+2. ✅ Document any issues found
+3. ✅ Proceed to Phase 2.2 (CRUD Operations Implementation)
+4. ✅ Phase 2.2 will implement the placeholder methods
+
+---
+
+## Notes
+
+- **No Jest Tests**: Phase 2.1 uses manual testing only (Jest mock issues to be resolved later)
+- **API Availability**: `isAuthenticated` may return `false` if API is not available - this is expected
+- **Placeholder Methods**: All CRUD methods return "not yet implemented" - this is correct for Phase 2.1
+- **Reusability**: This guide can be used each time Phase 2.1 needs to be tested
+
+---
+
+**Last Updated**: 2025-11-10  
+**Maintained By**: Development Team  
+**Related Documents**: TASKLIST-Marin-Dispatcher-Integration.md (Phase 2.1)
+
