@@ -1,0 +1,1069 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Meridian - AI-Powered Marketing Platform
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, staging, prod]
+  
+  CognitoUserPoolId:
+    Type: String
+    Description: Cognito User Pool ID (from teammate)
+  
+  # Database Parameters
+  DatabaseUsername:
+    Type: String
+    Default: meridian_admin
+    NoEcho: true
+  
+  DatabasePassword:
+    Type: String
+    NoEcho: true
+    Description: PostgreSQL password (min 8 chars)
+
+Globals:
+  Function:
+    Runtime: nodejs20.x
+    Timeout: 30
+    MemorySize: 512
+    Tracing: Active  # Enable X-Ray
+    Environment:
+      Variables:
+        ENVIRONMENT: !Ref Environment
+        DYNAMODB_TABLE: !Ref ClickEventsTable
+        POSTGRES_HOST: !GetAtt PostgresDB.Endpoint.Address
+        POSTGRES_DB: meridian
+        POSTGRES_USER: !Ref DatabaseUsername
+        REDIS_HOST: !GetAtt RedisCache.RedisEndpoint.Address
+        REDIS_PORT: !GetAtt RedisCache.RedisEndpoint.Port
+  Api:
+    Cors:
+      AllowOrigin: "'*'"
+      AllowHeaders: "'Content-Type,Authorization,X-Meridian-Mode'"
+      AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+    TracingEnabled: true
+
+Resources:
+  #############################################################################
+  # API GATEWAY
+  #############################################################################
+  
+  MeridianApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub meridian-api-${Environment}
+      StageName: !Ref Environment
+      Auth:
+        DefaultAuthorizer: CognitoAuthorizer
+        Authorizers:
+          CognitoAuthorizer:
+            UserPoolArn: !Sub 'arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${CognitoUserPoolId}'
+            Identity:
+              Header: Authorization
+      AccessLogSetting:
+        DestinationArn: !GetAtt ApiLogGroup.Arn
+        Format: '$context.requestId $context.status $context.error.message'
+
+  ApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/apigateway/meridian-${Environment}
+      RetentionInDays: 7
+
+  #############################################################################
+  # LAMBDA FUNCTIONS
+  #############################################################################
+
+  # Main API - Entry Point
+  MainApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub meridian-main-api-${Environment}
+      CodeUri: ./src/main-api
+      Handler: index.handler
+      Policies:
+        - AWSLambdaExecute
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - lambda:InvokeFunction
+              Resource: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:meridian-*'
+      Events:
+        ApiRoot:
+          Type: Api
+          Properties:
+            RestApiId: !Ref MeridianApi
+            Path: /{proxy+}
+            Method: ANY
+
+  # Orchestrator - Routes Direct vs Agentic
+  OrchestratorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub meridian-orchestrator-${Environment}
+      CodeUri: ./src/orchestrator
+      Handler: index.handler
+      Environment:
+        Variables:
+          BEDROCK_MODEL_ID: anthropic.claude-sonnet-4-20250514
+      Policies:
+        - AWSLambdaExecute
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+              Resource: '*'
+            - Effect: Allow
+              Action:
+                - lambda:InvokeFunction
+              Resource: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:meridian-*'
+
+  # Campaign Management
+  CampaignMgmtFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub meridian-campaign-mgmt-${Environment}
+      CodeUri: ./src/campaign-mgmt
+      Handler: index.handler
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref LambdaSecurityGroup
+        SubnetIds:
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+      Policies:
+        - AWSLambdaVPCAccessExecutionRole
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - rds:*
+              Resource: !GetAtt PostgresDB.DBInstanceArn
+            - Effect: Allow
+              Action:
+                - elasticache:*
+              Resource: !GetAtt RedisCache.Arn
+      Environment:
+        Variables:
+          DISPATCHER_URL: !GetAtt DispatcherService.LoadBalancerUrl
+
+  # Ad Fraud Ingest
+  AdFraudIngestFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub meridian-fraud-ingest-${Environment}
+      CodeUri: ./src/fraud-ingest
+      Handler: index.handler
+      Policies:
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt FraudQueue.QueueName
+
+  # Ad Fraud Detection
+  AdFraudDetectFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub meridian-fraud-detect-${Environment}
+      CodeUri: ./src/fraud-detect
+      Handler: index.handler
+      Timeout: 60
+      MemorySize: 1024
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ClickEventsTable
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+              Resource: '*'
+      Events:
+        FraudQueueEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt FraudQueue.Arn
+            BatchSize: 10
+
+  # Bulk Create Router
+  BulkCreateRouterFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub meridian-bulk-router-${Environment}
+      CodeUri: ./src/bulk-router
+      Handler: index.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref JobStatusTable
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt BulkQueue.QueueName
+
+  # Bulk Worker
+  BulkWorkerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub meridian-bulk-worker-${Environment}
+      CodeUri: ./src/bulk-worker
+      Handler: index.handler
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref LambdaSecurityGroup
+        SubnetIds:
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+      Policies:
+        - AWSLambdaVPCAccessExecutionRole
+        - DynamoDBCrudPolicy:
+            TableName: !Ref JobStatusTable
+      Events:
+        BulkQueueEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt BulkQueue.Arn
+            BatchSize: 10
+
+  # Copy Refresh Router
+  CopyRefreshRouterFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub meridian-copy-router-${Environment}
+      CodeUri: ./src/copy-router
+      Handler: index.handler
+      Policies:
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt CopyQueue.QueueName
+
+  # Copy Worker
+  CopyWorkerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub meridian-copy-worker-${Environment}
+      CodeUri: ./src/copy-worker
+      Handler: index.handler
+      Timeout: 120
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+              Resource: '*'
+        - S3CrudPolicy:
+            BucketName: !Ref ContentBucket
+      Events:
+        CopyQueueEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt CopyQueue.Arn
+            BatchSize: 5
+
+  # Video Router
+  VideoRouterFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub meridian-video-router-${Environment}
+      CodeUri: ./src/video-router
+      Handler: index.handler
+      Policies:
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt VideoQueue.QueueName
+        - StepFunctionsExecutionPolicy:
+            StateMachineName: !GetAtt VideoGenerationStateMachine.Name
+
+  #############################################################################
+  # SQS QUEUES
+  #############################################################################
+
+  FraudQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub meridian-fraud-queue-${Environment}
+      VisibilityTimeout: 180
+      MessageRetentionPeriod: 345600  # 4 days
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt FraudDLQ.Arn
+        maxReceiveCount: 3
+
+  FraudDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub meridian-fraud-dlq-${Environment}
+      MessageRetentionPeriod: 1209600  # 14 days
+
+  BulkQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub meridian-bulk-queue-${Environment}
+      VisibilityTimeout: 300
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt BulkDLQ.Arn
+        maxReceiveCount: 3
+
+  BulkDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub meridian-bulk-dlq-${Environment}
+
+  CopyQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub meridian-copy-queue-${Environment}
+      VisibilityTimeout: 240
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt CopyDLQ.Arn
+        maxReceiveCount: 3
+
+  CopyDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub meridian-copy-dlq-${Environment}
+
+  VideoQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub meridian-video-queue-${Environment}
+      VisibilityTimeout: 900  # 15 minutes for Step Functions
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt VideoDLQ.Arn
+        maxReceiveCount: 2
+
+  VideoDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub meridian-video-dlq-${Environment}
+
+  #############################################################################
+  # STEP FUNCTIONS - Video Generation
+  #############################################################################
+
+  VideoGenerationStateMachine:
+    Type: AWS::Serverless::StateMachine
+    Properties:
+      Name: !Sub meridian-video-generation-${Environment}
+      DefinitionUri: ./statemachines/video-generation.asl.json
+      DefinitionSubstitutions:
+        VideoWorkerFunctionArn: !GetAtt VideoWorkerFunction.Arn
+      Policies:
+        - LambdaInvokePolicy:
+            FunctionName: !Ref VideoWorkerFunction
+      Tracing:
+        Enabled: true
+
+  VideoWorkerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub meridian-video-worker-${Environment}
+      CodeUri: ./src/video-worker
+      Handler: index.handler
+      Timeout: 300
+      MemorySize: 2048
+      Policies:
+        - S3CrudPolicy:
+            BucketName: !Ref ContentBucket
+
+  #############################################################################
+  # DYNAMODB TABLES
+  #############################################################################
+
+  ClickEventsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub meridian-click-events-${Environment}
+      BillingMode: PAY_PER_REQUEST
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+      TimeToLiveSpecification:
+        Enabled: true
+        AttributeName: ttl
+      AttributeDefinitions:
+        - AttributeName: click_id
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: N
+        - AttributeName: user_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: click_id
+          KeyType: HASH
+        - AttributeName: timestamp
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: user-timestamp-index
+          KeySchema:
+            - AttributeName: user_id
+              KeyType: HASH
+            - AttributeName: timestamp
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
+  JobStatusTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub meridian-job-status-${Environment}
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: job_id
+          AttributeType: S
+        - AttributeName: user_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: job_id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: user-index
+          KeySchema:
+            - AttributeName: user_id
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
+  #############################################################################
+  # RDS POSTGRESQL
+  #############################################################################
+
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Subnet group for Meridian PostgreSQL
+      SubnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+
+  PostgresDB:
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: Snapshot
+    Properties:
+      DBInstanceIdentifier: !Sub meridian-postgres-${Environment}
+      Engine: postgres
+      EngineVersion: '15.4'
+      DBInstanceClass: db.t4g.micro  # For dev, use larger for prod
+      AllocatedStorage: 20
+      StorageType: gp3
+      MasterUsername: !Ref DatabaseUsername
+      MasterUserPassword: !Ref DatabasePassword
+      DBName: meridian
+      VPCSecurityGroups:
+        - !Ref DatabaseSecurityGroup
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      BackupRetentionPeriod: 7
+      PreferredBackupWindow: "03:00-04:00"
+      PreferredMaintenanceWindow: "sun:04:00-sun:05:00"
+      EnableCloudwatchLogsExports:
+        - postgresql
+      PubliclyAccessible: false
+
+  #############################################################################
+  # ELASTICACHE REDIS
+  #############################################################################
+
+  CacheSubnetGroup:
+    Type: AWS::ElastiCache::SubnetGroup
+    Properties:
+      Description: Subnet group for Meridian Redis
+      SubnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+
+  RedisCache:
+    Type: AWS::ElastiCache::CacheCluster
+    Properties:
+      CacheNodeType: cache.t4g.micro  # For dev
+      Engine: redis
+      NumCacheNodes: 1
+      VpcSecurityGroupIds:
+        - !Ref CacheSecurityGroup
+      CacheSubnetGroupName: !Ref CacheSubnetGroup
+
+  #############################################################################
+  # S3 BUCKETS
+  #############################################################################
+
+  ContentBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub meridian-content-${Environment}-${AWS::AccountId}
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteOldVersions
+            Status: Enabled
+            NoncurrentVersionExpirationInDays: 30
+
+  # S3 for Iceberg Data Lake
+  IcebergBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub meridian-iceberg-${Environment}-${AWS::AccountId}
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: TransitionToGlacier
+            Status: Enabled
+            Transitions:
+              - TransitionInDays: 90
+                StorageClass: GLACIER
+
+  #############################################################################
+  # KINESIS FOR ICEBERG STREAMING
+  #############################################################################
+
+  ClickEventsStream:
+    Type: AWS::Kinesis::Stream
+    Properties:
+      Name: !Sub meridian-click-events-${Environment}
+      ShardCount: 1
+      StreamModeDetails:
+        StreamMode: PROVISIONED
+
+  # Lambda to stream DynamoDB changes to Kinesis
+  DynamoToKinesisFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub meridian-dynamo-to-kinesis-${Environment}
+      CodeUri: ./src/dynamo-to-kinesis
+      Handler: index.handler
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - kinesis:PutRecord
+                - kinesis:PutRecords
+              Resource: !GetAtt ClickEventsStream.Arn
+      Events:
+        DynamoDBStream:
+          Type: DynamoDB
+          Properties:
+            Stream: !GetAtt ClickEventsTable.StreamArn
+            StartingPosition: LATEST
+            BatchSize: 100
+
+  # Kinesis Firehose to S3 (Iceberg)
+  ClickEventsFirehose:
+    Type: AWS::KinesisFirehose::DeliveryStream
+    Properties:
+      DeliveryStreamName: !Sub meridian-click-events-firehose-${Environment}
+      DeliveryStreamType: KinesisStreamAsSource
+      KinesisStreamSourceConfiguration:
+        KinesisStreamARN: !GetAtt ClickEventsStream.Arn
+        RoleARN: !GetAtt FirehoseRole.Arn
+      ExtendedS3DestinationConfiguration:
+        BucketARN: !GetAtt IcebergBucket.Arn
+        Prefix: 'clicks/year=!{timestamp:yyyy}/month=!{timestamp:MM}/day=!{timestamp:dd}/'
+        ErrorOutputPrefix: 'errors/'
+        RoleARN: !GetAtt FirehoseRole.Arn
+        CompressionFormat: UNCOMPRESSED
+        DataFormatConversionConfiguration:
+          SchemaConfiguration:
+            DatabaseName: !Ref GlueDatabase
+            TableName: click_events
+            RoleARN: !GetAtt FirehoseRole.Arn
+          InputFormatConfiguration:
+            Deserializer:
+              OpenXRecordDeserializer: {}
+          OutputFormatConfiguration:
+            Serializer:
+              ParquetSerDe: {}
+
+  FirehoseRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: firehose.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: FirehosePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:GetObject
+                Resource: !Sub '${IcebergBucket.Arn}/*'
+              - Effect: Allow
+                Action:
+                  - kinesis:DescribeStream
+                  - kinesis:GetRecords
+                  - kinesis:GetShardIterator
+                Resource: !GetAtt ClickEventsStream.Arn
+              - Effect: Allow
+                Action:
+                  - glue:GetTable
+                  - glue:GetTableVersion
+                  - glue:GetTableVersions
+                Resource: '*'
+
+  #############################################################################
+  # GLUE DATA CATALOG (for Iceberg)
+  #############################################################################
+
+  GlueDatabase:
+    Type: AWS::Glue::Database
+    Properties:
+      CatalogId: !Ref AWS::AccountId
+      DatabaseInput:
+        Name: !Sub meridian_${Environment}
+        Description: Meridian analytics database
+
+  GlueCrawler:
+    Type: AWS::Glue::Crawler
+    Properties:
+      Name: !Sub meridian-crawler-${Environment}
+      Role: !GetAtt GlueCrawlerRole.Arn
+      DatabaseName: !Ref GlueDatabase
+      Targets:
+        S3Targets:
+          - Path: !Sub 's3://${IcebergBucket}/clicks/'
+      SchemaChangePolicy:
+        UpdateBehavior: UPDATE_IN_DATABASE
+      Schedule:
+        ScheduleExpression: 'cron(0 */6 * * ? *)'  # Every 6 hours
+
+  GlueCrawlerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: glue.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole
+      Policies:
+        - PolicyName: S3Access
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                Resource: !Sub '${IcebergBucket.Arn}/*'
+
+  #############################################################################
+  # VPC NETWORKING
+  #############################################################################
+
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      Tags:
+        - Key: Name
+          Value: !Sub meridian-vpc-${Environment}
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub meridian-igw-${Environment}
+
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.1.0/24
+      AvailabilityZone: !Select [0, !GetAZs '']
+      MapPublicIpOnLaunch: true
+
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.2.0/24
+      AvailabilityZone: !Select [1, !GetAZs '']
+      MapPublicIpOnLaunch: true
+
+  PrivateSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.10.0/24
+      AvailabilityZone: !Select [0, !GetAZs '']
+
+  PrivateSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.11.0/24
+      AvailabilityZone: !Select [1, !GetAZs '']
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: AttachGateway
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnetRouteTableAssociation1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet1
+      RouteTableId: !Ref PublicRouteTable
+
+  PublicSubnetRouteTableAssociation2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet2
+      RouteTableId: !Ref PublicRouteTable
+
+  # NAT Gateway for private subnets
+  NatGatewayEIP:
+    Type: AWS::EC2::EIP
+    DependsOn: AttachGateway
+    Properties:
+      Domain: vpc
+
+  NatGateway:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NatGatewayEIP.AllocationId
+      SubnetId: !Ref PublicSubnet1
+
+  PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+
+  PrivateRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway
+
+  PrivateSubnetRouteTableAssociation1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnet1
+      RouteTableId: !Ref PrivateRouteTable
+
+  PrivateSubnetRouteTableAssociation2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnet2
+      RouteTableId: !Ref PrivateRouteTable
+
+  #############################################################################
+  # SECURITY GROUPS
+  #############################################################################
+
+  LambdaSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for Lambda functions
+      VpcId: !Ref VPC
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+
+  DatabaseSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for RDS PostgreSQL
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          SourceSecurityGroupId: !Ref LambdaSecurityGroup
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          SourceSecurityGroupId: !Ref DispatcherSecurityGroup
+
+  CacheSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for ElastiCache Redis
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 6379
+          ToPort: 6379
+          SourceSecurityGroupId: !Ref LambdaSecurityGroup
+        - IpProtocol: tcp
+          FromPort: 6379
+          ToPort: 6379
+          SourceSecurityGroupId: !Ref DispatcherSecurityGroup
+
+  DispatcherSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for Dispatcher ECS service
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3000
+          ToPort: 3000
+          SourceSecurityGroupId: !Ref LambdaSecurityGroup
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+
+  ALBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for ALB
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          SourceSecurityGroupId: !Ref LambdaSecurityGroup
+
+  #############################################################################
+  # ECS FARGATE - DISPATCHER SERVICE
+  #############################################################################
+
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub meridian-cluster-${Environment}
+      CapacityProviders:
+        - FARGATE
+        - FARGATE_SPOT
+      DefaultCapacityProviderStrategy:
+        - CapacityProvider: FARGATE_SPOT
+          Weight: 1
+          Base: 0
+
+  DispatcherTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub meridian-dispatcher-${Environment}
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      Cpu: '512'
+      Memory: '1024'
+      ExecutionRoleArn: !GetAtt ECSExecutionRole.Arn
+      TaskRoleArn: !GetAtt DispatcherTaskRole.Arn
+      ContainerDefinitions:
+        - Name: dispatcher
+          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/meridian-dispatcher:latest
+          PortMappings:
+            - ContainerPort: 3000
+          Environment:
+            - Name: ENVIRONMENT
+              Value: !Ref Environment
+            - Name: REDIS_HOST
+              Value: !GetAtt RedisCache.RedisEndpoint.Address
+            - Name: REDIS_PORT
+              Value: !GetAtt RedisCache.RedisEndpoint.Port
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref DispatcherLogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: dispatcher
+
+  DispatcherLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/ecs/meridian-dispatcher-${Environment}
+      RetentionInDays: 7
+
+  DispatcherService:
+    Type: AWS::ECS::Service
+    DependsOn: ALBListener
+    Properties:
+      ServiceName: !Sub meridian-dispatcher-${Environment}
+      Cluster: !Ref ECSCluster
+      TaskDefinition: !Ref DispatcherTaskDefinition
+      DesiredCount: 2
+      LaunchType: FARGATE
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          Subnets:
+            - !Ref PrivateSubnet1
+            - !Ref PrivateSubnet2
+          SecurityGroups:
+            - !Ref DispatcherSecurityGroup
+      LoadBalancers:
+        - ContainerName: dispatcher
+          ContainerPort: 3000
+          TargetGroupArn: !Ref DispatcherTargetGroup
+
+  DispatcherALB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Sub meridian-dispatcher-alb-${Environment}
+      Type: application
+      Scheme: internal
+      Subnets:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+      SecurityGroups:
+        - !Ref ALBSecurityGroup
+
+  DispatcherTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub meridian-dispatcher-tg-${Environment}
+      Port: 3000
+      Protocol: HTTP
+      VpcId: !Ref VPC
+      TargetType: ip
+      HealthCheckPath: /health
+      HealthCheckIntervalSeconds: 30
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 3
+
+  ALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref DispatcherALB
+      Port: 80
+      Protocol: HTTP
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref DispatcherTargetGroup
+
+  ECSExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+
+  DispatcherTaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: DispatcherPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - elasticache:*
+                Resource: !GetAtt RedisCache.Arn
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - xray:PutTraceSegments
+                  - xray:PutTelemetryRecords
+                Resource: '*'
+
+  #############################################################################
+  # CLOUDWATCH ALARMS
+  #############################################################################
+
+  ApiErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub meridian-api-errors-${Environment}
+      AlarmDescription: Alert when API error rate exceeds threshold
+      MetricName: 5XXError
+      Namespace: AWS/ApiGateway
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 10
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: ApiName
+          Value: !Sub meridian-api-${Environment}
+
+  FraudQueueDepthAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub meridian-fraud-queue-depth-${Environment}
+      AlarmDescription: Alert when fraud queue has too many messages
+      MetricName: ApproximateNumberOfMessagesVisible
+      Namespace: AWS/SQS
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 1000
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt FraudQueue.QueueName
+
+Outputs:
+  ApiEndpoint:
+    Description: API Gateway endpoint URL
+    Value: !Sub 'https://${MeridianApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}'
+    Export:
+      Name: !Sub MeridianApiEndpoint-${Environment}
+
+  DispatcherUrl:
+    Description: Dispatcher ALB URL (internal)
+    Value: !Sub 'http://${DispatcherALB.DNSName}'
+    Export:
+      Name: !Sub MeridianDispatcherUrl-${Environment}
+
+  DynamoDBTableName:
+    Description: DynamoDB table for click events
+    Value: !Ref ClickEventsTable
+
+  PostgresEndpoint:
+    Description: PostgreSQL endpoint
+    Value: !GetAtt PostgresDB.Endpoint.Address
+
+  RedisEndpoint:
+    Description: Redis endpoint
+    Value: !GetAtt RedisCache.RedisEndpoint.Address
+
+  IcebergBucket:
+    Description: S3 bucket for Iceberg data lake
+    Value: !Ref IcebergBucket
+
+  GlueDatabase:
+    Description: Glue database for analytics
+    Value: !Ref GlueDatabase

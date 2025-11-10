@@ -1,0 +1,2548 @@
+# Task List: Marin Dispatcher Integration Implementation
+
+**Document Version**: 2.0  
+**Created**: 2025-11-09  
+**Last Updated**: 2025-11-09  
+**Updated**: Aligned with InfraDocs (source of truth) - Added Lambda integration phase, X-Ray tracing, DISPATCHER_URL usage  
+**Project Timeline**: 2-3 days for full implementation  
+**Target**: Complete Marin Dispatcher API integration into Agentic Campaign Manager  
+**Framework**: TypeScript + Node.js + Express  
+**Integration**: Feature addition to Agentic Campaign Manager Module  
+**Collaborators**: GABE, VANES (working in parallel)
+
+---
+
+## Overview
+
+This document provides a granular, step-by-step task list for implementing the Marin Dispatcher API integration. Tasks are organized into phases matching the PRD structure. Each phase includes backend implementation, type definitions, integration, and testing tasks.
+
+**Workflow Rules**:
+- Complete all tasks in a subphase before proceeding
+- Pause for confirmation after each subphase completion
+- Run unit tests after each subphase completion (explicit unit test subphases included)
+- Do not proceed to next phase until current phase is tested and confirmed
+- Follow existing Agentic Campaign Manager code patterns and architecture
+- Use PowerShell syntax for all commands
+- When testing, use mock data if live APIs are unavailable
+- **Parallel Work**: GABE and VANES can work on different subphases simultaneously
+- **Dependencies**: Check task dependencies before starting work
+
+**Collaborator Assignments**:
+- **GABE**: Type definitions, core service implementation, batch job service, X-Ray tracing
+- **VANES**: Ad structure methods, Lambda integration, testing, documentation
+
+**Architecture Alignment**:
+- **Source of Truth**: InfraDocs is the authoritative architecture documentation
+- **Service Usage**: Service will be used BY Lambda functions (CampaignMgmtFunction, BulkWorkerFunction)
+- **Dispatcher URL**: Use `DISPATCHER_URL` from environment (CloudFormation exports), not custom env vars
+- **API Path Format**: Use `/dispatcher/${publisher}/campaigns` format (InfraDocs pattern)
+- **Lambda Integration**: Service must integrate with Lambda event format `{ action, data, user, mode }`
+
+---
+
+## Phase 0: Project Setup & Configuration (1 hour)
+
+### Subphase 0.1: Environment Configuration (30 minutes)
+
+#### Task 0.1.1: Add Environment Variables to .env File
+**Assigned to**: GABE  
+**Dependencies**: None
+
+- [ ] Navigate to `backend/` directory
+- [ ] Open `.env` file (create if not exists)
+- [ ] Add Marin Dispatcher configuration variables (for local development only):
+  ```
+  # Marin Dispatcher Configuration (Local Development Only)
+  # In Lambda, DISPATCHER_URL is set by CloudFormation from MeridianDispatcherUrl-${Environment}
+  # For local dev, you can set a local Dispatcher URL or use the actual ALB URL
+  MARIN_DISPATCHER_BASE_URL=http://localhost:3000  # Local dev only
+  MARIN_DISPATCHER_ACCOUNT_ID=5533110357
+  MARIN_DISPATCHER_PUBLISHER=google
+  MARIN_DISPATCHER_TIMEOUT=10000
+  
+  # Note: In Lambda deployment, DISPATCHER_URL is automatically set by template-service.yaml
+  # DISPATCHER_URL is imported from CloudFormation export: MeridianDispatcherUrl-${Environment}
+  ```
+- [ ] Verify `.env` file is in `.gitignore`
+- [ ] Create `.env.example` file with placeholder values (if not exists)
+- [ ] Document environment variables in README
+- [ ] **Note:** In Lambda, `DISPATCHER_URL` is set automatically by CloudFormation (InfraDocs pattern)
+
+#### Task 0.1.2: Update Environment Configuration Module
+**Assigned to**: GABE  
+**Dependencies**: Task 0.1.1
+
+- [ ] Navigate to `backend/src/config/` directory
+- [ ] Open `env.ts` file
+- [ ] Add Marin Dispatcher configuration section:
+  ```typescript
+  marinDispatcher: {
+    // Use DISPATCHER_URL from environment (InfraDocs pattern - set by CloudFormation in Lambda)
+    // Fallback to MARIN_DISPATCHER_BASE_URL for local development
+    baseUrl: process.env.DISPATCHER_URL || process.env.MARIN_DISPATCHER_BASE_URL || '',
+    accountId: process.env.MARIN_DISPATCHER_ACCOUNT_ID || '',
+    publisher: process.env.MARIN_DISPATCHER_PUBLISHER || 'google',
+    timeout: parseInt(process.env.MARIN_DISPATCHER_TIMEOUT || '10000'),
+  },
+  ```
+- [ ] Export marinDispatcher config
+- [ ] Add TypeScript types for config structure
+- [ ] Add validation for required environment variables
+- [ ] Add error handling for missing config
+- [ ] **Note:** `DISPATCHER_URL` is set by CloudFormation in Lambda (from `MeridianDispatcherUrl-${Environment}`)
+- [ ] Test config loading in development mode
+- [ ] Test config loading in Lambda environment (verify DISPATCHER_URL is available)
+
+#### Task 0.1.3: Verify Project Structure
+**Assigned to**: VANES  
+**Dependencies**: None
+
+- [ ] Navigate to `Module-Agentic_Campaign_Manager` directory
+- [ ] Verify backend structure exists:
+  - `backend/src/services/`
+  - `backend/src/types/`
+  - `backend/src/config/`
+  - `backend/src/routes/`
+- [ ] Verify existing platform services:
+  - `backend/src/services/platformApiService.ts` (IPlatformAPI interface)
+  - `backend/src/services/googleAdsService.ts` (reference implementation)
+  - `backend/src/services/campaignCreationService.ts` (orchestrator)
+- [ ] Verify existing types:
+  - `backend/src/types/campaign.types.ts`
+  - `backend/src/types/ai.types.ts`
+- [ ] Create directory structure for new files:
+  - `backend/src/services/` (for marinDispatcherService.ts, marinBatchJobService.ts)
+  - `backend/src/types/` (for marinDispatcher.types.ts)
+- [ ] Verify `package.json` exists in `backend/` directory
+- [ ] Verify `tsconfig.json` exists in `backend/` directory
+
+### Subphase 0.2: Dependencies & Tools Setup (30 minutes)
+
+#### Task 0.2.1: Install Required Dependencies
+**Assigned to**: GABE  
+**Dependencies**: Task 0.1.3
+
+- [ ] Navigate to `backend/` directory
+- [ ] Verify `axios` is installed: `npm list axios`
+- [ ] If not installed, install axios: `npm install axios`
+- [ ] Verify `@types/node` is installed for TypeScript
+- [ ] Verify existing dependencies are up to date: `npm outdated`
+- [ ] Run `npm install` to ensure all dependencies are installed
+- [ ] Check for any dependency conflicts
+- [ ] Verify TypeScript compilation works: `npm run build`
+
+#### Task 0.2.2: Setup Development Environment
+**Assigned to**: VANES  
+**Dependencies**: Task 0.1.3
+
+- [ ] Navigate to `backend/` directory
+- [ ] Verify development server runs: `npm run dev`
+- [ ] Test health check endpoint: `GET http://localhost:3001/api/health`
+- [ ] Verify TypeScript compilation: `npm run build`
+- [ ] Check for any build errors
+- [ ] Verify test framework is configured: `npm test`
+- [ ] Create test data fixtures directory: `backend/src/__tests__/fixtures/`
+- [ ] Create mock Marin API responses in fixtures directory
+
+---
+
+## Phase 1: Type Definitions & Configuration (2-3 hours)
+
+### Subphase 1.1: Core Type Definitions (1.5 hours)
+
+#### Task 1.1.1: Create Marin Dispatcher Base Types
+**Assigned to**: GABE  
+**Dependencies**: Subphase 0.1 complete
+
+- [ ] Create `backend/src/types/marinDispatcher.types.ts` file
+- [ ] Add base request/response types:
+  ```typescript
+  export interface MarinBaseRequest {
+    accountId: string;
+  }
+
+  export interface MarinBaseResponse {
+    resourceId?: string;
+    status: 'SUCCESS' | 'FAILURE';
+    errors?: string[];
+    warnings?: string[];
+  }
+  ```
+- [ ] Add campaign request/response types:
+  ```typescript
+  export interface MarinCampaignRequest {
+    accountId: string;
+    name: string;
+    status: 'ENABLED' | 'PAUSED' | 'REMOVED';
+    budget: {
+      amount: number;  // In dollars, NOT micros
+      deliveryMethod: 'STANDARD' | 'ACCELERATED';
+    };
+    biddingStrategy: string;
+    objective?: string;  // For Meta campaigns
+  }
+
+  export interface MarinCampaignResponse extends MarinBaseResponse {
+    id: string;
+    accountId: string;
+    name: string;
+    status: string;
+    budget: {
+      amount: number;
+      deliveryMethod: string;
+    };
+    biddingStrategy: string;
+    createdAt?: string;
+    updatedAt?: string;
+  }
+  ```
+- [ ] Add campaign update types:
+  ```typescript
+  export interface MarinCampaignUpdateRequest {
+    name?: string;
+    status?: 'ENABLED' | 'PAUSED' | 'REMOVED';
+    budget?: {
+      amount: number;
+      deliveryMethod: 'STANDARD' | 'ACCELERATED';
+    };
+    biddingStrategy?: string;
+  }
+  ```
+- [ ] Add campaign list/query types:
+  ```typescript
+  export interface MarinCampaignListRequest {
+    accountId: string;
+    limit?: number;
+    offset?: number;
+  }
+
+  export interface MarinCampaignListResponse {
+    campaigns: MarinCampaignResponse[];
+    total: number;
+    limit: number;
+    offset: number;
+  }
+  ```
+- [ ] Export all types
+- [ ] Add JSDoc comments for all interfaces
+- [ ] Add validation helper types
+
+#### Task 1.1.2: Create Ad Structure Type Definitions
+**Assigned to**: VANES  
+**Dependencies**: Task 1.1.1
+
+- [ ] Open `backend/src/types/marinDispatcher.types.ts` file
+- [ ] Add ad group types:
+  ```typescript
+  export interface MarinAdGroupRequest {
+    accountId: string;
+    campaignId: string;
+    name: string;
+    status?: 'ENABLED' | 'PAUSED' | 'REMOVED';
+    cpcBid?: number;
+    cpmBid?: number;
+  }
+
+  export interface MarinAdGroupResponse extends MarinBaseResponse {
+    id: string;
+    accountId: string;
+    campaignId: string;
+    name: string;
+    status: string;
+    cpcBid?: number;
+    cpmBid?: number;
+  }
+
+  export interface MarinAdGroupUpdateRequest {
+    name?: string;
+    status?: 'ENABLED' | 'PAUSED' | 'REMOVED';
+    cpcBid?: number;
+    cpmBid?: number;
+  }
+  ```
+- [ ] Add ad types:
+  ```typescript
+  export interface MarinAdRequest {
+    accountId: string;
+    adGroupId: string;
+    type: 'RESPONSIVE_SEARCH_AD';
+    headlines: {
+      text: string;
+      pinned?: boolean;
+    }[];
+    descriptions: {
+      text: string;
+    }[];
+    finalUrl: string;
+    displayUrl?: string;
+    paths?: string[];
+  }
+
+  export interface MarinAdResponse extends MarinBaseResponse {
+    id: string;
+    accountId: string;
+    adGroupId: string;
+    type: string;
+    headlines: { text: string; pinned?: boolean }[];
+    descriptions: { text: string }[];
+    finalUrl: string;
+    displayUrl?: string;
+    paths?: string[];
+  }
+
+  export interface MarinAdUpdateRequest {
+    headlines?: { text: string; pinned?: boolean }[];
+    descriptions?: { text: string }[];
+    finalUrl?: string;
+    displayUrl?: string;
+    paths?: string[];
+  }
+  ```
+- [ ] Add keyword types:
+  ```typescript
+  export interface MarinKeywordRequest {
+    accountId: string;
+    adGroupId: string;
+    text: string;
+    matchType: 'BROAD' | 'PHRASE' | 'EXACT';
+    cpcBid?: number;
+    status?: 'ENABLED' | 'PAUSED' | 'REMOVED';
+  }
+
+  export interface MarinKeywordResponse extends MarinBaseResponse {
+    id: string;
+    accountId: string;
+    adGroupId: string;
+    text: string;
+    matchType: string;
+    cpcBid?: number;
+    status: string;
+  }
+
+  export interface MarinKeywordUpdateRequest {
+    text?: string;
+    matchType?: 'BROAD' | 'PHRASE' | 'EXACT';
+    cpcBid?: number;
+    status?: 'ENABLED' | 'PAUSED' | 'REMOVED';
+  }
+
+  export interface MarinBulkKeywordRequest {
+    accountId: string;
+    adGroupId: string;
+    keywords: MarinKeywordRequest[];
+  }
+  ```
+- [ ] Export all ad structure types
+- [ ] Add JSDoc comments for all interfaces
+- [ ] Add validation helper types
+
+#### Task 1.1.3: Create Batch Job Type Definitions
+**Assigned to**: GABE  
+**Dependencies**: Task 1.1.1
+
+- [ ] Open `backend/src/types/marinDispatcher.types.ts` file
+- [ ] Add batch operation types:
+  ```typescript
+  export type BatchOperationType = 'CREATE' | 'UPDATE';
+  export type BatchResourceType = 'CAMPAIGN' | 'ADGROUP' | 'AD' | 'KEYWORD';
+
+  export interface BatchOperation {
+    operationType: BatchOperationType;
+    resourceType: BatchResourceType;
+    resourceId?: string;  // Required for UPDATE operations
+    data: MarinCampaignRequest | MarinAdGroupRequest | MarinAdRequest | MarinKeywordRequest;
+  }
+
+  export interface BatchJobCreateRequest {
+    accountId: string;
+  }
+
+  export interface BatchJobCreateResponse {
+    batchJobId: string;
+    status: 'PENDING';
+  }
+  ```
+- [ ] Add batch job status types:
+  ```typescript
+  export interface BatchJobStatus {
+    resourceName: string;  // e.g., "customers/5533110357/batchJobs/batch-12345"
+    id: string;  // Batch job ID
+    status: 'PENDING' | 'RUNNING' | 'DONE' | 'FAILED';
+    metadata: {
+      progress: number;  // 0-100 percentage
+      totalOperations: number;
+      completedOperations: number;
+    };
+  }
+  ```
+- [ ] Add batch job operations types:
+  ```typescript
+  export interface AddOperationsRequest {
+    operations: BatchOperation[];
+    sequenceToken?: string;  // For adding more operations (>1000)
+  }
+
+  export interface AddOperationsResponse {
+    nextSequenceToken?: string;  // For adding more operations
+    totalOperations: number;  // Total operations in batch job so far
+  }
+  ```
+- [ ] Add batch job result types:
+  ```typescript
+  export interface BatchJobResult {
+    index: number;  // Operation index (not operationIndex)
+    status: 'SUCCESS' | 'FAILURE';
+    resourceId: string | null;  // Created/updated resource ID
+    error: string | null;  // Error message if failed
+  }
+
+  export interface BulkCreateResponse {
+    summary: {
+      total: number;
+      succeeded: number;
+      failed: number;
+    };
+    results: BatchJobResult[];
+    nextPageToken: string | null;  // For pagination if >1000 results
+  }
+  ```
+- [ ] Export all batch job types
+- [ ] Add JSDoc comments for all interfaces
+- [ ] Add validation helper types
+
+#### Task 1.1.4: Create Type Validation Utilities
+**Assigned to**: VANES  
+**Dependencies**: Tasks 1.1.1, 1.1.2, 1.1.3
+
+- [ ] Create `backend/src/utils/marinTypeValidators.ts` file
+- [ ] Implement `validateCampaignRequest()` function:
+  - Validate accountId is not empty
+  - Validate name is not empty and max 255 characters
+  - Validate status is valid enum value
+  - Validate budget.amount is positive number
+  - Validate budget.deliveryMethod is valid enum value
+  - Validate biddingStrategy is not empty
+  - Return validation errors array
+- [ ] Implement `validateAdGroupRequest()` function:
+  - Validate accountId, campaignId, name
+  - Validate status if provided
+  - Validate bid amounts if provided
+  - Return validation errors array
+- [ ] Implement `validateAdRequest()` function:
+  - Validate accountId, adGroupId
+  - Validate headlines (min 3, max 15, each max 30 chars)
+  - Validate descriptions (min 2, max 4, each max 90 chars)
+  - Validate finalUrl is valid URL
+  - Return validation errors array
+- [ ] Implement `validateKeywordRequest()` function:
+  - Validate accountId, adGroupId, text
+  - Validate text max 80 characters
+  - Validate matchType is valid enum value
+  - Validate cpcBid if provided
+  - Return validation errors array
+- [ ] Implement `validateBatchOperation()` function:
+  - Validate operationType and resourceType
+  - Validate resourceId for UPDATE operations
+  - Validate data matches resourceType
+  - Return validation errors array
+- [ ] Add unit tests for all validators
+- [ ] Export all validation functions
+
+### Subphase 1.2: Update Existing Types (30 minutes)
+
+#### Task 1.2.1: Update PlatformCampaignIds Interface
+**Assigned to**: GABE  
+**Dependencies**: Task 1.1.1
+
+- [ ] Navigate to `backend/src/types/` directory
+- [ ] Open `campaign.types.ts` file
+- [ ] Locate `PlatformCampaignIds` interface
+- [ ] Add `marin?` property:
+  ```typescript
+  export interface PlatformCampaignIds {
+    googleAds?: string;
+    meta?: string;
+    microsoft?: string;
+    marin?: string; // 🆕 Add this
+    [platform: string]: string | undefined;
+  }
+  ```
+- [ ] Verify TypeScript compilation: `npm run build`
+- [ ] Check for any type errors
+- [ ] Update any code that uses PlatformCampaignIds if needed
+
+#### Task 1.2.2: Verify IPlatformAPI Interface
+**Assigned to**: VANES  
+**Dependencies**: None
+
+- [ ] Navigate to `backend/src/services/` directory
+- [ ] Open `platformApiService.ts` file
+- [ ] Review `IPlatformAPI` interface definition
+- [ ] Verify all 8 required methods are defined:
+  - `createCampaign(campaignPlan: CampaignPlan, name: string): Promise<PlatformAPIResponse>`
+  - `updateCampaign(campaignId: string, updates: Partial<CampaignPlan>): Promise<PlatformAPIResponse>`
+  - `pauseCampaign(campaignId: string): Promise<PlatformAPIResponse>`
+  - `resumeCampaign(campaignId: string): Promise<PlatformAPIResponse>`
+  - `deleteCampaign(campaignId: string): Promise<PlatformAPIResponse>`
+  - `getCampaignStatus(campaignId: string): Promise<PlatformAPIResponse>`
+  - `isAuthenticated(): Promise<boolean>`
+  - (Optional) `queryCampaigns(accountId: string): Promise<PlatformAPIResponse>`
+- [ ] Review `BasePlatformAPI` abstract class
+- [ ] Verify `handleError()` method exists
+- [ ] Verify `PlatformAPIResponse` type is defined
+- [ ] Document any additional methods needed for ad structure
+
+### Subphase 1.3: Unit Tests for Type Definitions (30 minutes)
+
+#### Task 1.3.1: Create Type Definition Tests
+**Assigned to**: GABE  
+**Dependencies**: Tasks 1.1.1, 1.1.3
+
+- [ ] Create `backend/src/__tests__/types/marinDispatcher.types.test.ts` file
+- [ ] Test campaign request type structure
+- [ ] Test campaign response type structure
+- [ ] Test batch operation type structure
+- [ ] Test batch job status type structure
+- [ ] Test batch job result type structure
+- [ ] Test type exports
+- [ ] Run tests: `npm test -- marinDispatcher.types`
+
+#### Task 1.3.2: Create Type Validator Tests
+**Assigned to**: VANES  
+**Dependencies**: Task 1.1.4
+
+- [ ] Create `backend/src/__tests__/utils/marinTypeValidators.test.ts` file
+- [ ] Test `validateCampaignRequest()` with valid data
+- [ ] Test `validateCampaignRequest()` with invalid data
+- [ ] Test `validateAdGroupRequest()` with valid data
+- [ ] Test `validateAdGroupRequest()` with invalid data
+- [ ] Test `validateAdRequest()` with valid data
+- [ ] Test `validateAdRequest()` with invalid data
+- [ ] Test `validateKeywordRequest()` with valid data
+- [ ] Test `validateKeywordRequest()` with invalid data
+- [ ] Test `validateBatchOperation()` with valid data
+- [ ] Test `validateBatchOperation()` with invalid data
+- [ ] Run tests: `npm test -- marinTypeValidators`
+
+---
+
+## Phase 2: Core Service Implementation (2-3 hours)
+
+### Subphase 2.1: Base Service Structure (30 minutes)
+
+#### Task 2.1.1: Create MarinDispatcherService Class Structure
+**Assigned to**: GABE  
+**Dependencies**: Subphase 1.1 complete, Subphase 1.2 complete
+
+- [ ] Create `backend/src/services/marinDispatcherService.ts` file
+- [ ] Import required dependencies:
+  ```typescript
+  import axios, { AxiosInstance } from 'axios';
+  import AWSXRay from 'aws-xray-sdk-core';
+  import { BasePlatformAPI, IPlatformAPI } from './platformApiService';
+  import { CampaignPlan } from '../types/ai.types';
+  import { PlatformAPIResponse } from '../types/campaign.types';
+  import config from '../config/env';
+  import {
+    MarinCampaignRequest,
+    MarinCampaignResponse,
+    MarinCampaignUpdateRequest,
+    MarinCampaignListRequest,
+    MarinCampaignListResponse
+  } from '../types/marinDispatcher.types';
+  ```
+- [ ] Create class structure:
+  ```typescript
+  export class MarinDispatcherService extends BasePlatformAPI implements IPlatformAPI {
+    private apiUrl: string;  // Full ALB URL (e.g., http://meridian-dispatcher-alb-dev-1234567890.us-east-1.elb.amazonaws.com)
+    private accountId: string;
+    private publisher: string;
+    private httpClient: AxiosInstance;
+
+    constructor(accountId?: string, publisher: string = 'google') {
+      super('Marin Dispatcher');
+      
+      // Use DISPATCHER_URL from environment (InfraDocs pattern - set by CloudFormation)
+      // Fallback to baseUrl for local development
+      const dispatcherUrl = process.env.DISPATCHER_URL || config.marinDispatcher.baseUrl;
+      if (!dispatcherUrl) {
+        throw new Error('DISPATCHER_URL or MARIN_DISPATCHER_BASE_URL must be set');
+      }
+      
+      this.apiUrl = dispatcherUrl;  // Full ALB URL, not base path
+      this.accountId = accountId || config.marinDispatcher.accountId;
+      this.publisher = publisher;
+      
+      // Create axios instance with timeout
+      this.httpClient = axios.create({
+        baseURL: this.apiUrl,  // Full URL including protocol
+        timeout: config.marinDispatcher.timeout,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+    }
+    
+    /**
+     * Build API endpoint path
+     * Note: InfraDocs shows /dispatcher/ prefix, PRD shows /api/v2/dispatcher/
+     * Using InfraDocs format as source of truth, but verify actual API path
+     */
+    private buildApiPath(endpoint: string): string {
+      // InfraDocs pattern: /dispatcher/${publisher}/campaigns
+      // PRD shows: /api/v2/dispatcher/${publisher}/campaigns
+      // Using InfraDocs format (source of truth), verify with actual API
+      return `/dispatcher/${this.publisher}${endpoint}`;
+    }
+  }
+  ```
+- [ ] Add helper methods:
+  - `private buildApiPath(endpoint: string): string` - Build API path using InfraDocs format
+  - `private mapCampaignPlanToRequest(campaignPlan: CampaignPlan, name: string): MarinCampaignRequest`
+  - `private mapResponseToPlatformResponse(response: MarinCampaignResponse): PlatformAPIResponse`
+- [ ] Add X-Ray tracing wrapper:
+  ```typescript
+  import AWSXRay from 'aws-xray-sdk-core';
+  import { captureHTTPs } from 'aws-xray-sdk-core';
+  
+  // Wrap axios with X-Ray
+  const https = captureHTTPs(require('https'));
+  ```
+- [ ] Add error handling wrapper method
+- [ ] Verify TypeScript compilation
+
+#### Task 2.1.2: Implement isAuthenticated Method
+**Assigned to**: GABE  
+**Dependencies**: Task 2.1.1
+
+- [ ] Implement `isAuthenticated()` method:
+  ```typescript
+  async isAuthenticated(): Promise<boolean> {
+    const segment = AWSXRay.getSegment();
+    const subsegment = segment?.addNewSubsegment('MarinDispatcher.isAuthenticated');
+    
+    try {
+      // For now, Marin Dispatcher doesn't require auth (internal network)
+      // Just verify we can reach the API
+      // Use InfraDocs path format: /dispatcher/${publisher}/campaigns
+      const response = await this.httpClient.get(
+        this.buildApiPath('/campaigns'),
+        {
+          params: { accountId: this.accountId, limit: 1 }
+        }
+      );
+      
+      subsegment?.close();
+      return response.status === 200;
+    } catch (error) {
+      subsegment?.close();
+      this.logger.error('Marin Dispatcher authentication check failed', error);
+      return false;
+    }
+  }
+  ```
+- [ ] Add X-Ray tracing (wrap HTTP calls with segments)
+- [ ] Add error handling
+- [ ] Add logging
+- [ ] Test with mock HTTP client
+
+### Subphase 2.2: Campaign CRUD Methods (2 hours)
+
+#### Task 2.2.1: Implement createCampaign Method
+**Assigned to**: GABE  
+**Dependencies**: Task 2.1.1
+
+- [ ] Implement `createCampaign()` method:
+  ```typescript
+  async createCampaign(
+    campaignPlan: CampaignPlan,
+    name: string
+  ): Promise<PlatformAPIResponse> {
+    try {
+      // Map CampaignPlan to MarinCampaignRequest
+      const request: MarinCampaignRequest = this.mapCampaignPlanToRequest(campaignPlan, name);
+      
+      // Validate request
+      const validationErrors = validateCampaignRequest(request);
+      if (validationErrors.length > 0) {
+        return {
+          success: false,
+          error: `Validation failed: ${validationErrors.join(', ')}`
+        };
+      }
+
+      // Make API call (using InfraDocs path format)
+      const segment = AWSXRay.getSegment();
+      const subsegment = segment?.addNewSubsegment('MarinDispatcher.createCampaign');
+      
+      const response = await this.httpClient.post<MarinCampaignResponse>(
+        this.buildApiPath('/campaigns'),  // InfraDocs format: /dispatcher/${publisher}/campaigns
+        request
+      );
+      
+      subsegment?.close();
+
+      // Map response to PlatformAPIResponse
+      return this.mapResponseToPlatformResponse(response.data);
+    } catch (error) {
+      return this.handleError(error, 'createCampaign');
+    }
+  }
+  ```
+- [ ] Implement `mapCampaignPlanToRequest()` helper:
+  - Extract budget amount (NO micros conversion - already in dollars)
+  - Set deliveryMethod to 'STANDARD'
+  - Set biddingStrategy (default to 'MANUAL_CPC')
+  - Set status to 'ENABLED'
+  - Include objective if provided (for Meta campaigns)
+- [ ] Implement `mapResponseToPlatformResponse()` helper:
+  - Map resourceId to campaignId
+  - Map status to success boolean
+  - Include errors and warnings in details
+- [ ] Add error handling for API errors
+- [ ] Add logging for debugging
+- [ ] Add unit tests
+
+#### Task 2.2.2: Implement updateCampaign Method
+**Assigned to**: GABE  
+**Dependencies**: Task 2.2.1
+
+- [ ] Implement `updateCampaign()` method:
+  ```typescript
+  async updateCampaign(
+    campaignId: string,
+    updates: Partial<CampaignPlan>
+  ): Promise<PlatformAPIResponse> {
+    try {
+      // Map updates to MarinCampaignUpdateRequest
+      const request: MarinCampaignUpdateRequest = {
+        name: updates.name,
+        status: updates.status as any, // Map if needed
+        budget: updates.budget ? {
+          amount: updates.budget.amount, // NO micros conversion
+          deliveryMethod: 'STANDARD'
+        } : undefined,
+        biddingStrategy: updates.biddingStrategy
+      };
+
+      // Remove undefined fields
+      Object.keys(request).forEach(key => 
+        request[key] === undefined && delete request[key]
+      );
+
+      // Make API call (using InfraDocs path format)
+      const segment = AWSXRay.getSegment();
+      const subsegment = segment?.addNewSubsegment('MarinDispatcher.updateCampaign');
+      
+      const response = await this.httpClient.put<MarinCampaignResponse>(
+        this.buildApiPath(`/campaigns/${campaignId}`),  // InfraDocs format: /dispatcher/${publisher}/campaigns/{id}
+        request
+      );
+      
+      subsegment?.close();
+
+      return this.mapResponseToPlatformResponse(response.data);
+    } catch (error) {
+      return this.handleError(error, 'updateCampaign');
+    }
+  }
+  ```
+- [ ] Add validation for campaignId
+- [ ] Add error handling
+- [ ] Add logging
+- [ ] Add unit tests
+
+#### Task 2.2.3: Implement pauseCampaign Method
+**Assigned to**: GABE  
+**Dependencies**: Task 2.2.2
+
+- [ ] Implement `pauseCampaign()` method:
+  ```typescript
+  async pauseCampaign(campaignId: string): Promise<PlatformAPIResponse> {
+    return this.updateCampaign(campaignId, { status: 'PAUSED' as any });
+  }
+  ```
+- [ ] Add validation for campaignId
+- [ ] Add error handling
+- [ ] Add logging
+- [ ] Add unit tests
+
+#### Task 2.2.4: Implement resumeCampaign Method
+**Assigned to**: GABE  
+**Dependencies**: Task 2.2.2
+
+- [ ] Implement `resumeCampaign()` method:
+  ```typescript
+  async resumeCampaign(campaignId: string): Promise<PlatformAPIResponse> {
+    return this.updateCampaign(campaignId, { status: 'ENABLED' as any });
+  }
+  ```
+- [ ] Add validation for campaignId
+- [ ] Add error handling
+- [ ] Add logging
+- [ ] Add unit tests
+
+#### Task 2.2.5: Implement deleteCampaign Method
+**Assigned to**: GABE  
+**Dependencies**: Task 2.2.2
+
+- [ ] Implement `deleteCampaign()` method:
+  ```typescript
+  async deleteCampaign(campaignId: string): Promise<PlatformAPIResponse> {
+    // Marin Dispatcher uses status update to REMOVED
+    return this.updateCampaign(campaignId, { status: 'REMOVED' as any });
+  }
+  ```
+- [ ] Add validation for campaignId
+- [ ] Add error handling
+- [ ] Add logging
+- [ ] Add unit tests
+
+#### Task 2.2.6: Implement getCampaignStatus Method
+**Assigned to**: GABE  
+**Dependencies**: Task 2.1.1
+
+- [ ] Implement `getCampaignStatus()` method:
+  ```typescript
+  async getCampaignStatus(campaignId: string): Promise<PlatformAPIResponse> {
+    const segment = AWSXRay.getSegment();
+    const subsegment = segment?.addNewSubsegment('MarinDispatcher.getCampaignStatus');
+    
+    try {
+      const response = await this.httpClient.get<MarinCampaignResponse>(
+        this.buildApiPath(`/campaigns/${campaignId}`)  // InfraDocs format: /dispatcher/${publisher}/campaigns/{id}
+      );
+      
+      subsegment?.close();
+
+      return {
+        success: true,
+        campaignId: response.data.id,
+        details: {
+          name: response.data.name,
+          status: response.data.status,
+          budget: response.data.budget.amount,
+          biddingStrategy: response.data.biddingStrategy
+        }
+      };
+    } catch (error) {
+      return this.handleError(error, 'getCampaignStatus');
+    }
+  }
+  ```
+- [ ] Add validation for campaignId
+- [ ] Add error handling for 404 (campaign not found)
+- [ ] Add logging
+- [ ] Add unit tests
+
+#### Task 2.2.7: Implement queryCampaigns Method (Optional)
+**Assigned to**: GABE  
+**Dependencies**: Task 2.2.6
+
+- [ ] Implement `queryCampaigns()` method:
+  ```typescript
+  async queryCampaigns(accountId?: string): Promise<PlatformAPIResponse> {
+    try {
+      const request: MarinCampaignListRequest = {
+        accountId: accountId || this.accountId,
+        limit: 100
+      };
+
+      const segment = AWSXRay.getSegment();
+      const subsegment = segment?.addNewSubsegment('MarinDispatcher.queryCampaigns');
+      
+      const response = await this.httpClient.get<MarinCampaignListResponse>(
+        this.buildApiPath('/campaigns'),  // InfraDocs format: /dispatcher/${publisher}/campaigns
+        { params: request }
+      );
+      
+      subsegment?.close();
+
+      return {
+        success: true,
+        details: {
+          campaigns: response.data.campaigns,
+          total: response.data.total
+        }
+      };
+    } catch (error) {
+      return this.handleError(error, 'queryCampaigns');
+    }
+  }
+  ```
+- [ ] Add error handling
+- [ ] Add logging
+- [ ] Add unit tests
+
+### Subphase 2.3: Unit Tests for Core Campaign Methods (1 hour)
+
+#### Task 2.3.1: Create Service Test File
+**Assigned to**: GABE  
+**Dependencies**: Subphase 2.2 complete
+
+- [ ] Create `backend/src/__tests__/services/marinDispatcherService.test.ts` file
+- [ ] Setup test fixtures with mock data
+- [ ] Mock axios HTTP client
+- [ ] Test `isAuthenticated()` method:
+  - Test successful authentication
+  - Test failed authentication
+- [ ] Test `createCampaign()` method:
+  - Test successful campaign creation
+  - Test validation errors
+  - Test API errors
+  - Test budget mapping (no micros conversion)
+- [ ] Test `updateCampaign()` method:
+  - Test successful update
+  - Test partial updates
+  - Test API errors
+- [ ] Test `pauseCampaign()` method
+- [ ] Test `resumeCampaign()` method
+- [ ] Test `deleteCampaign()` method
+- [ ] Test `getCampaignStatus()` method:
+  - Test successful status retrieval
+  - Test campaign not found (404)
+- [ ] Test `queryCampaigns()` method (if implemented)
+- [ ] Run all tests: `npm test -- marinDispatcherService`
+
+---
+
+## Phase 2B: Ad Structure Implementation (3-4 hours)
+
+### Subphase 2B.1: Ad Group Methods (1 hour)
+
+#### Task 2B.1.1: Implement createAdGroup Method
+**Assigned to**: VANES  
+**Dependencies**: Task 2.1.1, Task 1.1.2
+
+- [ ] Open `backend/src/services/marinDispatcherService.ts` file
+- [ ] Add ad group methods to class (outside IPlatformAPI interface)
+- [ ] Implement `createAdGroup()` method:
+  ```typescript
+  async createAdGroup(
+    campaignId: string,
+    adGroupData: MarinAdGroupRequest
+  ): Promise<PlatformAPIResponse> {
+    try {
+      const request: MarinAdGroupRequest = {
+        accountId: this.accountId,
+        campaignId,
+        ...adGroupData
+      };
+
+      // Validate request
+      const validationErrors = validateAdGroupRequest(request);
+      if (validationErrors.length > 0) {
+        return {
+          success: false,
+          error: `Validation failed: ${validationErrors.join(', ')}`
+        };
+      }
+
+      const segment = AWSXRay.getSegment();
+      const subsegment = segment?.addNewSubsegment('MarinDispatcher.createAdGroup');
+      
+      const response = await this.httpClient.post<MarinAdGroupResponse>(
+        this.buildApiPath('/adgroups'),  // InfraDocs format: /dispatcher/${publisher}/adgroups
+        request
+      );
+      
+      subsegment?.close();
+
+      return {
+        success: true,
+        adGroupId: response.data.id,
+        details: response.data
+      };
+    } catch (error) {
+      return this.handleError(error, 'createAdGroup');
+    }
+  }
+  ```
+- [ ] Add validation
+- [ ] Add error handling
+- [ ] Add logging
+- [ ] Add unit tests
+
+#### Task 2B.1.2: Implement updateAdGroup Method
+**Assigned to**: VANES  
+**Dependencies**: Task 2B.1.1
+
+- [ ] Implement `updateAdGroup()` method:
+  ```typescript
+  async updateAdGroup(
+    adGroupId: string,
+    updates: MarinAdGroupUpdateRequest
+  ): Promise<PlatformAPIResponse> {
+    try {
+      const request: MarinAdGroupUpdateRequest = { ...updates };
+
+      // Remove undefined fields
+      Object.keys(request).forEach(key => 
+        request[key] === undefined && delete request[key]
+      );
+
+      const segment = AWSXRay.getSegment();
+      const subsegment = segment?.addNewSubsegment('MarinDispatcher.updateAdGroup');
+      
+      const response = await this.httpClient.put<MarinAdGroupResponse>(
+        this.buildApiPath(`/adgroups/${adGroupId}`),  // InfraDocs format: /dispatcher/${publisher}/adgroups/{id}
+        request
+      );
+      
+      subsegment?.close();
+
+      return {
+        success: true,
+        adGroupId: response.data.id,
+        details: response.data
+      };
+    } catch (error) {
+      return this.handleError(error, 'updateAdGroup');
+    }
+  }
+  ```
+- [ ] Add validation
+- [ ] Add error handling
+- [ ] Add logging
+- [ ] Add unit tests
+
+### Subphase 2B.2: Ad Methods (1 hour)
+
+#### Task 2B.2.1: Implement createAd Method
+**Assigned to**: VANES  
+**Dependencies**: Task 2B.1.1, Task 1.1.2
+
+- [ ] Implement `createAd()` method:
+  ```typescript
+  async createAd(
+    adGroupId: string,
+    adData: MarinAdRequest
+  ): Promise<PlatformAPIResponse> {
+    try {
+      const request: MarinAdRequest = {
+        accountId: this.accountId,
+        adGroupId,
+        type: 'RESPONSIVE_SEARCH_AD',
+        ...adData
+      };
+
+      // Validate request
+      const validationErrors = validateAdRequest(request);
+      if (validationErrors.length > 0) {
+        return {
+          success: false,
+          error: `Validation failed: ${validationErrors.join(', ')}`
+        };
+      }
+
+      const segment = AWSXRay.getSegment();
+      const subsegment = segment?.addNewSubsegment('MarinDispatcher.createAd');
+      
+      const response = await this.httpClient.post<MarinAdResponse>(
+        this.buildApiPath('/ads'),  // InfraDocs format: /dispatcher/${publisher}/ads
+        request
+      );
+      
+      subsegment?.close();
+
+      return {
+        success: true,
+        adId: response.data.id,
+        details: response.data
+      };
+    } catch (error) {
+      return this.handleError(error, 'createAd');
+    }
+  }
+  ```
+- [ ] Add validation for headlines (min 3, max 15, each max 30 chars)
+- [ ] Add validation for descriptions (min 2, max 4, each max 90 chars)
+- [ ] Add validation for finalUrl
+- [ ] Add error handling
+- [ ] Add logging
+- [ ] Add unit tests
+
+#### Task 2B.2.2: Implement updateAd Method
+**Assigned to**: VANES  
+**Dependencies**: Task 2B.2.1
+
+- [ ] Implement `updateAd()` method:
+  ```typescript
+  async updateAd(
+    adId: string,
+    updates: MarinAdUpdateRequest
+  ): Promise<PlatformAPIResponse> {
+    try {
+      const request: MarinAdUpdateRequest = { ...updates };
+
+      // Remove undefined fields
+      Object.keys(request).forEach(key => 
+        request[key] === undefined && delete request[key]
+      );
+
+      const segment = AWSXRay.getSegment();
+      const subsegment = segment?.addNewSubsegment('MarinDispatcher.updateAd');
+      
+      const response = await this.httpClient.put<MarinAdResponse>(
+        this.buildApiPath(`/ads/${adId}`),  // InfraDocs format: /dispatcher/${publisher}/ads/{id}
+        request
+      );
+      
+      subsegment?.close();
+
+      return {
+        success: true,
+        adId: response.data.id,
+        details: response.data
+      };
+    } catch (error) {
+      return this.handleError(error, 'updateAd');
+    }
+  }
+  ```
+- [ ] Add validation
+- [ ] Add error handling
+- [ ] Add logging
+- [ ] Add unit tests
+
+### Subphase 2B.3: Keyword Methods (1 hour)
+
+#### Task 2B.3.1: Implement createKeywords Method
+**Assigned to**: VANES  
+**Dependencies**: Task 2B.2.1, Task 1.1.2
+
+- [ ] Implement `createKeywords()` method:
+  ```typescript
+  async createKeywords(
+    adGroupId: string,
+    keywords: MarinKeywordRequest[]
+  ): Promise<PlatformAPIResponse> {
+    try {
+      const request: MarinBulkKeywordRequest = {
+        accountId: this.accountId,
+        adGroupId,
+        keywords: keywords.map(kw => ({
+          accountId: this.accountId,
+          adGroupId,
+          ...kw
+        }))
+      };
+
+      // Validate all keywords
+      const validationErrors: string[] = [];
+      request.keywords.forEach((kw, index) => {
+        const errors = validateKeywordRequest(kw);
+        if (errors.length > 0) {
+          validationErrors.push(`Keyword ${index}: ${errors.join(', ')}`);
+        }
+      });
+
+      if (validationErrors.length > 0) {
+        return {
+          success: false,
+          error: `Validation failed: ${validationErrors.join('; ')}`
+        };
+      }
+
+      const segment = AWSXRay.getSegment();
+      const subsegment = segment?.addNewSubsegment('MarinDispatcher.createKeywords');
+      
+      const response = await this.httpClient.post<{ keywords: MarinKeywordResponse[] }>(
+        this.buildApiPath('/keywords'),  // InfraDocs format: /dispatcher/${publisher}/keywords
+        request
+      );
+      
+      subsegment?.close();
+
+      return {
+        success: true,
+        keywords: response.data.keywords,
+        details: response.data
+      };
+    } catch (error) {
+      return this.handleError(error, 'createKeywords');
+    }
+  }
+  ```
+- [ ] Add validation for each keyword
+- [ ] Add validation for keyword text (max 80 chars)
+- [ ] Add validation for matchType
+- [ ] Add error handling
+- [ ] Add logging
+- [ ] Add unit tests
+
+#### Task 2B.3.2: Implement updateKeywords Method
+**Assigned to**: VANES  
+**Dependencies**: Task 2B.3.1
+
+- [ ] Implement `updateKeywords()` method:
+  ```typescript
+  async updateKeywords(
+    keywordId: string,
+    updates: MarinKeywordUpdateRequest
+  ): Promise<PlatformAPIResponse> {
+    try {
+      const request: MarinKeywordUpdateRequest = { ...updates };
+
+      // Remove undefined fields
+      Object.keys(request).forEach(key => 
+        request[key] === undefined && delete request[key]
+      );
+
+      const segment = AWSXRay.getSegment();
+      const subsegment = segment?.addNewSubsegment('MarinDispatcher.updateKeywords');
+      
+      const response = await this.httpClient.put<MarinKeywordResponse>(
+        this.buildApiPath(`/keywords/${keywordId}`),  // InfraDocs format: /dispatcher/${publisher}/keywords/{id}
+        request
+      );
+      
+      subsegment?.close();
+
+      return {
+        success: true,
+        keywordId: response.data.id,
+        details: response.data
+      };
+    } catch (error) {
+      return this.handleError(error, 'updateKeywords');
+    }
+  }
+  ```
+- [ ] Add validation
+- [ ] Add error handling
+- [ ] Add logging
+- [ ] Add unit tests
+
+### Subphase 2B.4: Unit Tests for Ad Structure Methods (1 hour)
+
+#### Task 2B.4.1: Create Ad Structure Test File
+**Assigned to**: VANES  
+**Dependencies**: Subphase 2B.3 complete
+
+- [ ] Create `backend/src/__tests__/services/marinDispatcherService.adStructure.test.ts` file
+- [ ] Setup test fixtures with mock ad structure data
+- [ ] Mock axios HTTP client
+- [ ] Test `createAdGroup()` method:
+  - Test successful ad group creation
+  - Test validation errors
+  - Test API errors
+- [ ] Test `updateAdGroup()` method
+- [ ] Test `createAd()` method:
+  - Test successful ad creation
+  - Test headline validation (min 3, max 15, each max 30)
+  - Test description validation (min 2, max 4, each max 90)
+  - Test URL validation
+  - Test API errors
+- [ ] Test `updateAd()` method
+- [ ] Test `createKeywords()` method:
+  - Test successful keyword creation
+  - Test keyword validation (max 80 chars)
+  - Test matchType validation
+  - Test bulk keyword creation
+  - Test API errors
+- [ ] Test `updateKeywords()` method
+- [ ] Run all tests: `npm test -- marinDispatcherService.adStructure`
+
+---
+
+## Phase 2C: Batch Job Service Implementation (4-5 hours)
+
+### Subphase 2C.1: Batch Job Service Structure (30 minutes)
+
+#### Task 2C.1.1: Create MarinBatchJobService Class Structure
+**Assigned to**: GABE  
+**Dependencies**: Task 1.1.3
+
+- [ ] Create `backend/src/services/marinBatchJobService.ts` file
+- [ ] Import required dependencies:
+  ```typescript
+  import axios, { AxiosInstance } from 'axios';
+  import AWSXRay from 'aws-xray-sdk-core';
+  import config from '../config/env';
+  import {
+    BatchOperation,
+    BatchJobCreateRequest,
+    BatchJobCreateResponse,
+    BatchJobStatus,
+    AddOperationsRequest,
+    AddOperationsResponse,
+    BulkCreateResponse,
+    BatchJobResult
+  } from '../types/marinDispatcher.types';
+  ```
+- [ ] Create class structure:
+  ```typescript
+  export class MarinBatchJobService {
+    private apiUrl: string;
+    private accountId: string;
+    private publisher: string;
+    private httpClient: AxiosInstance;
+
+    constructor(accountId?: string, publisher: string = 'google') {
+      // Use DISPATCHER_URL from environment (InfraDocs pattern - set by CloudFormation)
+      // Fallback to baseUrl for local development
+      const dispatcherUrl = process.env.DISPATCHER_URL || config.marinDispatcher.baseUrl;
+      if (!dispatcherUrl) {
+        throw new Error('DISPATCHER_URL or MARIN_DISPATCHER_BASE_URL must be set');
+      }
+      
+      this.apiUrl = dispatcherUrl;  // Full ALB URL, not base path
+      this.accountId = accountId || config.marinDispatcher.accountId;
+      this.publisher = publisher;
+      
+      this.httpClient = axios.create({
+        baseURL: this.apiUrl,  // Full URL including protocol
+        timeout: config.marinDispatcher.timeout,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+    }
+    
+    /**
+     * Build API endpoint path
+     * InfraDocs pattern: /dispatcher/${publisher}/campaigns
+     * Note: PRD shows /api/v2/dispatcher/... but InfraDocs is source of truth
+     * Verify actual API path format with Dispatcher team
+     */
+    private buildApiPath(endpoint: string): string {
+      return `/dispatcher/${this.publisher}${endpoint}`;
+    }
+  }
+  ```
+- [ ] Add helper methods:
+  - `private buildApiPath(endpoint: string): string` - Build API path using InfraDocs format
+  - `private delay(ms: number): Promise<void>`
+- [ ] Add X-Ray tracing support
+- [ ] Verify TypeScript compilation
+
+### Subphase 2C.2: Batch Job Core Methods (2 hours)
+
+#### Task 2C.2.1: Implement createBatchJob Method
+**Assigned to**: GABE  
+**Dependencies**: Task 2C.1.1
+
+- [ ] Implement `createBatchJob()` method:
+  ```typescript
+  async createBatchJob(): Promise<{ batchJobId: string }> {
+    try {
+      const request: BatchJobCreateRequest = {
+        accountId: this.accountId
+      };
+
+      const segment = AWSXRay.getSegment();
+      const subsegment = segment?.addNewSubsegment('MarinBatchJobService.createBatchJob');
+      
+      const response = await this.httpClient.post<BatchJobCreateResponse>(
+        this.buildApiPath('/batch-jobs'),  // InfraDocs format: /dispatcher/${publisher}/batch-jobs
+        request
+      );
+      
+      subsegment?.close();
+
+      return { batchJobId: response.data.batchJobId };
+    } catch (error) {
+      throw new Error(`Failed to create batch job: ${error.message}`);
+    }
+  }
+  ```
+- [ ] Add error handling
+- [ ] Add logging
+- [ ] Add unit tests
+
+#### Task 2C.2.2: Implement addOperationsToBatch Method
+**Assigned to**: GABE  
+**Dependencies**: Task 2C.2.1
+
+- [ ] Implement `addOperationsToBatch()` method:
+  ```typescript
+  async addOperationsToBatch(
+    batchJobId: string,
+    operations: BatchOperation[],
+    sequenceToken?: string
+  ): Promise<{ sequenceToken?: string; totalOperationsAdded: number }> {
+    try {
+      // Validate operations (max 1000 per request)
+      if (operations.length > 1000) {
+        throw new Error('Maximum 1000 operations per request');
+      }
+
+      const payload: AddOperationsRequest = { operations };
+      if (sequenceToken) {
+        payload.sequenceToken = sequenceToken;
+      }
+
+      const segment = AWSXRay.getSegment();
+      const subsegment = segment?.addNewSubsegment('MarinBatchJobService.addOperationsToBatch');
+      
+      const response = await this.httpClient.post<AddOperationsResponse>(
+        this.buildApiPath(`/batch-jobs/${batchJobId}/operations`),  // InfraDocs format
+        payload
+      );
+      
+      subsegment?.close();
+
+      return {
+        sequenceToken: response.data.nextSequenceToken,
+        totalOperationsAdded: response.data.totalOperations
+      };
+    } catch (error) {
+      throw new Error(`Failed to add operations to batch: ${error.message}`);
+    }
+  }
+  ```
+- [ ] Add validation for max 1000 operations
+- [ ] Add validation for operation structure
+- [ ] Add error handling
+- [ ] Add logging
+- [ ] Add unit tests
+
+#### Task 2C.2.3: Implement runBatchJob Method
+**Assigned to**: GABE  
+**Dependencies**: Task 2C.2.2
+
+- [ ] Implement `runBatchJob()` method:
+  ```typescript
+  async runBatchJob(batchJobId: string): Promise<void> {
+    try {
+      const segment = AWSXRay.getSegment();
+      const subsegment = segment?.addNewSubsegment('MarinBatchJobService.runBatchJob');
+      
+      await this.httpClient.post(
+        this.buildApiPath(`/batch-jobs/${batchJobId}/run`)  // InfraDocs format
+      );
+      
+      subsegment?.close();
+    } catch (error) {
+      throw new Error(`Failed to run batch job: ${error.message}`);
+    }
+  }
+  ```
+- [ ] Add validation for batchJobId
+- [ ] Add error handling
+- [ ] Add logging
+- [ ] Add unit tests
+
+#### Task 2C.2.4: Implement pollBatchJobStatus Method
+**Assigned to**: GABE  
+**Dependencies**: Task 2C.2.3
+
+- [ ] Implement `pollBatchJobStatus()` method:
+  ```typescript
+  async pollBatchJobStatus(
+    batchJobId: string,
+    maxAttempts: number = 120,
+    intervalMs: number = 5000
+  ): Promise<BatchJobStatus> {
+    for (let i = 0; i < maxAttempts; i++) {
+      try {
+        const segment = AWSXRay.getSegment();
+        const subsegment = segment?.addNewSubsegment('MarinBatchJobService.pollBatchJobStatus');
+        
+        const response = await this.httpClient.get<BatchJobStatus>(
+          this.buildApiPath(`/batch-jobs/${batchJobId}`)  // InfraDocs format
+        );
+        
+        subsegment?.close();
+
+        const status = response.data;
+
+        // Check status field, NOT done field
+        if (status.status === 'DONE' || status.status === 'FAILED') {
+          return status;
+        }
+
+        // Exponential backoff (5s, 10s, 15s, max 30s)
+        const delay = Math.min(intervalMs * (i + 1), 30000);
+        await this.delay(delay);
+      } catch (error) {
+        if (i === maxAttempts - 1) {
+          throw new Error(`Batch job polling failed: ${error.message}`);
+        }
+        // Continue polling on error
+        await this.delay(intervalMs);
+      }
+    }
+
+    throw new Error('Batch job timeout: exceeded max polling attempts');
+  }
+  ```
+- [ ] Implement `delay()` helper method
+- [ ] Add exponential backoff logic
+- [ ] Add progress logging
+- [ ] Add error handling
+- [ ] Add unit tests with mocked polling
+
+#### Task 2C.2.5: Implement getBatchJobResults Method
+**Assigned to**: GABE  
+**Dependencies**: Task 2C.2.4
+
+- [ ] Implement `getBatchJobResults()` method:
+  ```typescript
+  async getBatchJobResults(batchJobId: string): Promise<BulkCreateResponse> {
+    try {
+      const segment = AWSXRay.getSegment();
+      const subsegment = segment?.addNewSubsegment('MarinBatchJobService.getBatchJobResults');
+      
+      const response = await this.httpClient.get<BulkCreateResponse>(
+        this.buildApiPath(`/batch-jobs/${batchJobId}/results`)  // InfraDocs format
+      );
+      
+      subsegment?.close();
+
+      return response.data;  // Returns { summary, results, nextPageToken }
+    } catch (error) {
+      throw new Error(`Failed to get batch job results: ${error.message}`);
+    }
+  }
+  ```
+- [ ] Add validation for batchJobId
+- [ ] Add error handling
+- [ ] Add logging
+- [ ] Add unit tests
+
+### Subphase 2C.3: High-Level Batch Job Orchestration (1.5 hours)
+
+#### Task 2C.3.1: Implement bulkCreateCampaigns Method
+**Assigned to**: GABE  
+**Dependencies**: Subphase 2C.2 complete
+
+- [ ] Implement `bulkCreateCampaigns()` high-level method:
+  ```typescript
+  async bulkCreateCampaigns(
+    campaigns: MarinCampaignRequest[]
+  ): Promise<BulkCreateResponse> {
+    try {
+      // 1. Create batch job
+      const { batchJobId } = await this.createBatchJob();
+
+      // 2. Add operations in chunks of 1000 (Marin format)
+      const operations: BatchOperation[] = campaigns.map(campaign => ({
+        operationType: 'CREATE',
+        resourceType: 'CAMPAIGN',
+        data: {
+          accountId: this.accountId,
+          ...campaign
+        }
+      }));
+
+      let sequenceToken: string | undefined;
+      for (let i = 0; i < operations.length; i += 1000) {
+        const chunk = operations.slice(i, i + 1000);
+        const result = await this.addOperationsToBatch(
+          batchJobId,
+          chunk,
+          sequenceToken
+        );
+        sequenceToken = result.nextSequenceToken;
+      }
+
+      // 3. Run batch job
+      await this.runBatchJob(batchJobId);
+
+      // 4. Poll until complete
+      const status = await this.pollBatchJobStatus(batchJobId);
+
+      if (status.status === 'FAILED') {
+        throw new Error(`Batch job failed: ${batchJobId}`);
+      }
+
+      // 5. Get results (includes summary)
+      const response = await this.getBatchJobResults(batchJobId);
+
+      return response;  // Returns { summary: { total, succeeded, failed }, results, nextPageToken }
+    } catch (error) {
+      throw new Error(`Bulk campaign creation failed: ${error.message}`);
+    }
+  }
+  ```
+- [ ] Add progress tracking
+- [ ] Add error handling for partial failures
+- [ ] Add logging for each step
+- [ ] Add unit tests with mocked batch job flow
+
+#### Task 2C.3.2: Implement Helper Methods for Chunking
+**Assigned to**: GABE  
+**Dependencies**: Task 2C.3.1
+
+- [ ] Add `chunkOperations()` helper method:
+  ```typescript
+  private chunkOperations<T>(items: T[], chunkSize: number): T[][] {
+    const chunks: T[][] = [];
+    for (let i = 0; i < items.length; i += chunkSize) {
+      chunks.push(items.slice(i, i + chunkSize));
+    }
+    return chunks;
+  }
+  ```
+- [ ] Add `createBatchOperationsFromCampaigns()` helper method
+- [ ] Add unit tests for chunking logic
+
+### Subphase 2C.4: Unit Tests for Batch Job Service (1 hour)
+
+#### Task 2C.4.1: Create Batch Job Test File
+**Assigned to**: GABE  
+**Dependencies**: Subphase 2C.3 complete
+
+- [ ] Create `backend/src/__tests__/services/marinBatchJobService.test.ts` file
+- [ ] Setup test fixtures with mock batch job data
+- [ ] Mock axios HTTP client
+- [ ] Test `createBatchJob()` method
+- [ ] Test `addOperationsToBatch()` method:
+  - Test with <1000 operations
+  - Test with exactly 1000 operations
+  - Test with >1000 operations (should fail)
+  - Test with sequenceToken
+- [ ] Test `runBatchJob()` method
+- [ ] Test `pollBatchJobStatus()` method:
+  - Test polling until DONE
+  - Test polling until FAILED
+  - Test timeout scenario
+  - Test exponential backoff
+- [ ] Test `getBatchJobResults()` method
+- [ ] Test `bulkCreateCampaigns()` method:
+  - Test with <1000 campaigns
+  - Test with >1000 campaigns (multiple chunks)
+  - Test successful completion
+  - Test partial failures
+  - Test full failure
+- [ ] Run all tests: `npm test -- marinBatchJobService`
+
+---
+
+## Phase 2D: Lambda Integration (2-3 hours)
+
+### Subphase 2D.1: Lambda Client Library (1 hour)
+
+#### Task 2D.1.1: Create Lambda Event Types
+**Assigned to**: VANES  
+**Dependencies**: Subphase 1.1 complete
+
+- [ ] Create `backend/src/types/lambda.types.ts` file
+- [ ] Add Lambda event types:
+  ```typescript
+  export interface LambdaEvent {
+    action: string;  // e.g., "create_campaign", "update_campaign"
+    data: any;       // Operation-specific data
+    user: {
+      sub: string;   // User ID
+      email?: string;
+      'cognito:groups'?: string[];
+    };
+    mode?: 'direct' | 'agentic';
+  }
+
+  export interface LambdaResponse {
+    success: boolean;
+    result?: any;
+    error?: string;
+    details?: any;
+  }
+  ```
+- [ ] Export all Lambda types
+- [ ] Add JSDoc comments
+
+#### Task 2D.1.2: Create Lambda Client Wrapper
+**Assigned to**: VANES  
+**Dependencies**: Task 2D.1.1, Subphase 2.2 complete
+
+- [ ] Create `backend/src/lib/marinDispatcherClient.ts` file
+- [ ] Create client wrapper for Lambda functions:
+  ```typescript
+  import { MarinDispatcherService } from '../services/marinDispatcherService';
+  import { LambdaEvent, LambdaResponse } from '../types/lambda.types';
+  import AWSXRay from 'aws-xray-sdk-core';
+
+  export class MarinDispatcherClient {
+    private service: MarinDispatcherService;
+    
+    constructor(accountId?: string, publisher: string = 'google') {
+      this.service = new MarinDispatcherService(accountId, publisher);
+    }
+    
+    /**
+     * Handle Lambda event and call appropriate service method
+     * Maps Lambda event format to service methods
+     */
+    async handleLambdaEvent(event: LambdaEvent): Promise<LambdaResponse> {
+      const segment = AWSXRay.getSegment();
+      const subsegment = segment?.addNewSubsegment('MarinDispatcherClient.handleLambdaEvent');
+      
+      try {
+        const { action, data, user } = event;
+        let result;
+        
+        switch (action) {
+          case 'create_campaign':
+            result = await this.service.createCampaign(data.campaignPlan, data.name);
+            break;
+          case 'update_campaign':
+            result = await this.service.updateCampaign(data.campaignId, data.updates);
+            break;
+          case 'pause_campaign':
+            result = await this.service.pauseCampaign(data.campaignId);
+            break;
+          case 'resume_campaign':
+            result = await this.service.resumeCampaign(data.campaignId);
+            break;
+          case 'delete_campaign':
+            result = await this.service.deleteCampaign(data.campaignId);
+            break;
+          case 'get_campaign_status':
+            result = await this.service.getCampaignStatus(data.campaignId);
+            break;
+          default:
+            throw new Error(`Unknown action: ${action}`);
+        }
+        
+        subsegment?.close();
+        
+        // Map PlatformAPIResponse to LambdaResponse format
+        return {
+          success: result.success,
+          result: result.details || result,
+          error: result.error,
+          details: result
+        };
+      } catch (error) {
+        subsegment?.close();
+        return {
+          success: false,
+          error: error.message,
+          details: error
+        };
+      }
+    }
+  }
+  ```
+- [ ] Add X-Ray tracing wrapper
+- [ ] Add error format mapping
+- [ ] Add unit tests
+
+#### Task 2D.1.3: Create Batch Job Lambda Client
+**Assigned to**: VANES  
+**Dependencies**: Task 2D.1.2, Subphase 2C.3 complete
+
+- [ ] Create `backend/src/lib/marinBatchJobClient.ts` file
+- [ ] Create batch job client wrapper for Lambda functions:
+  ```typescript
+  import { MarinBatchJobService } from '../services/marinBatchJobService';
+  import { LambdaEvent, LambdaResponse } from '../types/lambda.types';
+  import AWSXRay from 'aws-xray-sdk-core';
+
+  export class MarinBatchJobClient {
+    private service: MarinBatchJobService;
+    
+    constructor(accountId?: string, publisher: string = 'google') {
+      this.service = new MarinBatchJobService(accountId, publisher);
+    }
+    
+    /**
+     * Handle SQS event for bulk campaign creation
+     * Processes SQS message and calls batch job service
+     */
+    async handleSqsEvent(event: any): Promise<LambdaResponse> {
+      const segment = AWSXRay.getSegment();
+      const subsegment = segment?.addNewSubsegment('MarinBatchJobClient.handleSqsEvent');
+      
+      try {
+        // Process SQS records
+        const results = [];
+        for (const record of event.Records) {
+          const message = JSON.parse(record.body);
+          const { jobId, campaigns } = message;
+          
+          const result = await this.service.bulkCreateCampaigns(campaigns);
+          results.push({ jobId, result });
+        }
+        
+        subsegment?.close();
+        return {
+          success: true,
+          result: results
+        };
+      } catch (error) {
+        subsegment?.close();
+        return {
+          success: false,
+          error: error.message,
+          details: error
+        };
+      }
+    }
+  }
+  ```
+- [ ] Add X-Ray tracing
+- [ ] Add error handling
+- [ ] Add unit tests
+
+### Subphase 2D.2: Lambda Handler Examples (1 hour)
+
+#### Task 2D.2.1: Create CampaignMgmtFunction Handler Example
+**Assigned to**: VANES  
+**Dependencies**: Task 2D.1.2
+
+- [ ] Create `backend/src/examples/campaign-mgmt-handler.js` file
+- [ ] Show how CampaignMgmtFunction uses service:
+  ```javascript
+  const { MarinDispatcherClient } = require('./lib/marinDispatcherClient');
+  const AWSXRay = require('aws-xray-sdk-core');
+  const { Pool } = require('pg');
+
+  // PostgreSQL connection pool
+  const pool = new Pool({
+    host: process.env.POSTGRES_HOST,
+    database: process.env.POSTGRES_DB,
+    user: process.env.POSTGRES_USER,
+    password: process.env.DB_PASSWORD,  // From Secrets Manager
+    port: 5432,
+    max: 10
+  });
+
+  // Wrap pool with X-Ray
+  AWSXRay.capturePostgres(pool);
+
+  const dispatcherClient = new MarinDispatcherClient();
+
+  exports.handler = async (event) => {
+    const segment = AWSXRay.getSegment();
+    const subsegment = segment.addNewSubsegment('CampaignMgmtFunction');
+    
+    try {
+      const { action, data, user } = event;
+      
+      // For create_campaign action:
+      if (action === 'create_campaign') {
+        const client = await pool.connect();
+        try {
+          await client.query('BEGIN');
+          
+          // Insert into PostgreSQL
+          const result = await client.query(
+            `INSERT INTO campaigns (user_id, name, budget, status, created_at) 
+             VALUES ($1, $2, $3, $4, NOW()) RETURNING *`,
+            [user.sub, data.name, data.budget, 'active']
+          );
+          
+          const campaign = result.rows[0];
+          
+          // Call Dispatcher via client (uses DISPATCHER_URL from environment)
+          const dispatcherResult = await dispatcherClient.handleLambdaEvent({
+            action: 'create_campaign',
+            data: {
+              campaignPlan: data.campaignPlan,
+              name: campaign.name
+            },
+            user
+          });
+          
+          if (dispatcherResult.success) {
+            // Update with external ID
+            await client.query(
+              'UPDATE campaigns SET marin_id = $1 WHERE id = $2',
+              [dispatcherResult.result.campaignId, campaign.id]
+            );
+            campaign.marin_id = dispatcherResult.result.campaignId;
+          }
+          
+          await client.query('COMMIT');
+          
+          subsegment.close();
+          return {
+            success: true,
+            result: { campaign }
+          };
+        } catch (error) {
+          await client.query('ROLLBACK');
+          throw error;
+        } finally {
+          client.release();
+        }
+      }
+      
+      // For other actions, use dispatcher client directly
+      const result = await dispatcherClient.handleLambdaEvent(event);
+      
+      subsegment.close();
+      return result;
+    } catch (error) {
+      subsegment.close();
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  };
+  ```
+- [ ] Show Dispatcher URL usage from environment (`process.env.DISPATCHER_URL`)
+- [ ] Show X-Ray tracing integration
+- [ ] Show PostgreSQL integration
+- [ ] Document Lambda deployment structure
+
+#### Task 2D.2.2: Create BulkWorkerFunction Handler Example
+**Assigned to**: VANES  
+**Dependencies**: Task 2D.1.3, Subphase 2C.3 complete
+
+- [ ] Create `backend/src/examples/bulk-worker-handler.js` file
+- [ ] Show how BulkWorkerFunction uses batch job service:
+  ```javascript
+  const { MarinBatchJobClient } = require('./lib/marinBatchJobClient');
+  const AWSXRay = require('aws-xray-sdk-core');
+  const AWS = require('aws-sdk');
+  const dynamodb = new AWS.DynamoDB.DocumentClient();
+
+  const batchJobClient = new MarinBatchJobClient();
+
+  exports.handler = async (event) => {
+    const segment = AWSXRay.getSegment();
+    const subsegment = segment.addNewSubsegment('BulkWorkerFunction');
+    
+    // Process SQS messages
+    for (const record of event.Records) {
+      const message = JSON.parse(record.body);
+      const { jobId, campaigns, userId } = message;
+      
+      try {
+        // Update job status to RUNNING
+        await dynamodb.update({
+          TableName: process.env.DYNAMODB_JOB_STATUS,
+          Key: { job_id: jobId },
+          UpdateExpression: 'SET #status = :status, updated_at = :now',
+          ExpressionAttributeNames: { '#status': 'status' },
+          ExpressionAttributeValues: {
+            ':status': 'RUNNING',
+            ':now': new Date().toISOString()
+          }
+        }).promise();
+        
+        // Call Dispatcher via batch job client (uses DISPATCHER_URL from environment)
+        const result = await batchJobClient.handleSqsEvent({ Records: [record] });
+        
+        // Update job status with results
+        await dynamodb.update({
+          TableName: process.env.DYNAMODB_JOB_STATUS,
+          Key: { job_id: jobId },
+          UpdateExpression: 'SET #status = :status, result = :result, updated_at = :now',
+          ExpressionAttributeNames: { '#status': 'status' },
+          ExpressionAttributeValues: {
+            ':status': result.success ? 'COMPLETED' : 'FAILED',
+            ':result': result,
+            ':now': new Date().toISOString()
+          }
+        }).promise();
+        
+        subsegment.close();
+        return { success: true, result };
+      } catch (error) {
+        // Update job status to FAILED
+        await dynamodb.update({
+          TableName: process.env.DYNAMODB_JOB_STATUS,
+          Key: { job_id: jobId },
+          UpdateExpression: 'SET #status = :status, error = :error, updated_at = :now',
+          ExpressionAttributeNames: { '#status': 'status' },
+          ExpressionAttributeValues: {
+            ':status': 'FAILED',
+            ':error': error.message,
+            ':now': new Date().toISOString()
+          }
+        }).promise();
+        
+        subsegment.close();
+        return {
+          success: false,
+          error: error.message
+        };
+      }
+    }
+  };
+  ```
+- [ ] Show SQS message processing
+- [ ] Show JobStatusTable updates
+- [ ] Show Dispatcher URL usage from environment
+- [ ] Show X-Ray tracing integration
+
+### Subphase 2D.3: Lambda Deployment Structure (1 hour)
+
+#### Task 2D.3.1: Create Lambda Directory Structure
+**Assigned to**: VANES  
+**Dependencies**: Task 2D.2.2
+
+- [ ] Create Lambda deployment structure:
+  ```
+  src/
+  ├── campaign-mgmt/
+  │   ├── index.js              # Handler (uses MarinDispatcherClient)
+  │   ├── package.json
+  │   ├── handlers/
+  │   │   ├── create.js         # Uses dispatcher client
+  │   │   ├── read.js
+  │   │   ├── update.js
+  │   │   └── delete.js
+  │   └── lib/
+  │       ├── db.js             # Database connection
+  │       └── dispatcher.js     # Import MarinDispatcherClient
+  ├── bulk-worker/
+  │   ├── index.js              # Handler (uses MarinBatchJobClient)
+  │   ├── package.json
+  │   └── lib/
+  │       └── batchJob.js       # Import MarinBatchJobClient
+  └── shared/                    # Shared Lambda Layer
+      └── nodejs/
+          └── node_modules/
+              └── @meridian/
+                  └── dispatcher/  # MarinDispatcherClient library
+  ```
+- [ ] Create `src/campaign-mgmt/lib/dispatcher.js`:
+  ```javascript
+  const { MarinDispatcherClient } = require('../../lib/marinDispatcherClient');
+  
+  // Export client instance
+  module.exports = new MarinDispatcherClient();
+  ```
+- [ ] Create `src/bulk-worker/lib/batchJob.js`:
+  ```javascript
+  const { MarinBatchJobClient } = require('../../lib/marinBatchJobClient');
+  
+  // Export client instance
+  module.exports = new MarinBatchJobClient();
+  ```
+- [ ] Document Lambda deployment structure
+- [ ] Add SAM template notes for Lambda deployment
+
+#### Task 2D.3.2: Create Lambda Package Configuration
+**Assigned to**: VANES  
+**Dependencies**: Task 2D.3.1
+
+- [ ] Create `src/campaign-mgmt/package.json`:
+  ```json
+  {
+    "name": "meridian-campaign-mgmt",
+    "version": "1.0.0",
+    "dependencies": {
+      "pg": "^8.11.0",
+      "axios": "^1.6.0",
+      "aws-xray-sdk-core": "^3.5.3"
+    }
+  }
+  ```
+- [ ] Create `src/bulk-worker/package.json`:
+  ```json
+  {
+    "name": "meridian-bulk-worker",
+    "version": "1.0.0",
+    "dependencies": {
+      "aws-sdk": "^2.1467.0",
+      "aws-xray-sdk-core": "^3.5.3"
+    }
+  }
+  ```
+- [ ] Document package dependencies
+- [ ] Note that DISPATCHER_URL is set by CloudFormation in Lambda environment
+
+### Subphase 2D.4: Unit Tests for Lambda Integration (30 minutes)
+
+#### Task 2D.4.1: Create Lambda Client Tests
+**Assigned to**: VANES  
+**Dependencies**: Subphase 2D.1 complete
+
+- [ ] Create `backend/src/__tests__/lib/marinDispatcherClient.test.ts` file
+- [ ] Test `handleLambdaEvent()` method:
+  - Test with create_campaign action
+  - Test with update_campaign action
+  - Test with unknown action
+  - Test error handling
+  - Test response format mapping
+- [ ] Test X-Ray tracing integration
+- [ ] Run tests: `npm test -- marinDispatcherClient`
+
+#### Task 2D.4.2: Create Lambda Handler Tests
+**Assigned to**: VANES  
+**Dependencies**: Task 2D.2.1
+
+- [ ] Create `backend/src/__tests__/examples/campaign-mgmt-handler.test.js` file
+- [ ] Test Lambda event handling
+- [ ] Test Dispatcher client integration
+- [ ] Test PostgreSQL integration
+- [ ] Test error handling
+- [ ] Run tests: `npm test -- campaign-mgmt-handler`
+
+---
+
+## Phase 3: Integration (30 minutes)
+
+### Subphase 3.1: Service Registration (15 minutes)
+
+#### Task 3.1.1: Register MarinDispatcherService in CampaignCreationService (Optional)
+**Assigned to**: VANES  
+**Dependencies**: Subphase 2.2 complete
+
+- [ ] **Note:** This task is optional - service is primarily used by Lambda functions
+- [ ] **If orchestrator needs Marin support:** Navigate to `backend/src/services/` directory
+- [ ] **If orchestrator needs Marin support:** Open `campaignCreationService.ts` file
+- [ ] **If orchestrator needs Marin support:** Import MarinDispatcherService:
+  ```typescript
+  import { MarinDispatcherService } from './marinDispatcherService';
+  ```
+- [ ] **If orchestrator needs Marin support:** Locate constructor or service registration method
+- [ ] **If orchestrator needs Marin support:** Register Marin service:
+  ```typescript
+  // In constructor or initialization method
+  const marinService = new MarinDispatcherService();
+  this.registerPlatformService('marin', marinService);
+  ```
+- [ ] **If orchestrator needs Marin support:** Verify service is registered correctly
+- [ ] **If orchestrator needs Marin support:** Test service registration with a simple test
+- [ ] **Primary Usage:** Service is used by Lambda functions (CampaignMgmtFunction, BulkWorkerFunction) via MarinDispatcherClient
+- [ ] Verify TypeScript compilation
+
+#### Task 3.1.2: Verify Lambda Integration
+**Assigned to**: VANES  
+**Dependencies**: Subphase 2D.2 complete
+
+- [ ] Verify MarinDispatcherClient can be imported in Lambda functions
+- [ ] Test that client uses DISPATCHER_URL from environment
+- [ ] Test that client handles Lambda event format correctly
+- [ ] Test that client returns Lambda response format correctly
+- [ ] Verify X-Ray tracing is working in Lambda context
+- [ ] Add integration test for Lambda client usage
+- [ ] **Note:** Service is primarily used by Lambda functions, not orchestrator
+
+### Subphase 3.2: Integration Testing (15 minutes)
+
+#### Task 3.2.1: Create Integration Test
+**Assigned to**: VANES  
+**Dependencies**: Subphase 2D.2 complete
+
+- [ ] Create `backend/src/__tests__/integration/marinIntegration.test.ts` file
+- [ ] Test Lambda client integration:
+  - Test MarinDispatcherClient with Lambda event format
+  - Test MarinBatchJobClient with SQS event format
+  - Test response format matches Lambda contract
+- [ ] Test Dispatcher URL usage from environment
+- [ ] Test X-Ray tracing in integration context
+- [ ] Test error handling in Lambda context
+- [ ] **Optional:** Test service registration in CampaignCreationService (if orchestrator uses it)
+- [ ] **Optional:** Test multi-platform creation (Marin + Google Ads) via orchestrator
+- [ ] Run integration tests: `npm test -- marinIntegration`
+
+---
+
+## Phase 4: Testing & Validation (3-4 hours)
+
+### Subphase 4.1: Connection & Authentication Tests (30 minutes)
+
+#### Task 4.1.1: Test API Connectivity
+**Assigned to**: GABE  
+**Dependencies**: Subphase 3.1 complete
+
+- [ ] Test `isAuthenticated()` method with actual API
+- [ ] Verify API endpoint is reachable
+- [ ] Test with invalid account ID
+- [ ] Test with invalid publisher
+- [ ] Document connection requirements
+- [ ] Create connection test script
+
+#### Task 4.1.2: Test Environment Configuration
+**Assigned to**: VANES  
+**Dependencies**: Subphase 0.1 complete
+
+- [ ] Verify all environment variables are loaded correctly
+- [ ] Test with missing environment variables
+- [ ] Test with invalid environment variables
+- [ ] Verify error messages are clear
+- [ ] Document environment setup
+
+### Subphase 4.2: Campaign Lifecycle Tests (1 hour)
+
+#### Task 4.2.1: Test Campaign CRUD Operations
+**Assigned to**: GABE  
+**Dependencies**: Subphase 4.1 complete
+
+- [ ] Test `createCampaign()` with valid data:
+  - Verify campaign is created in Marin system
+  - Verify response includes campaign ID
+  - Verify budget is NOT converted to micros
+  - Verify status is ENABLED
+- [ ] Test `getCampaignStatus()` with created campaign
+- [ ] Test `updateCampaign()` with name change
+- [ ] Test `updateCampaign()` with status change
+- [ ] Test `pauseCampaign()` method
+- [ ] Test `resumeCampaign()` method
+- [ ] Test `deleteCampaign()` method (status to REMOVED)
+- [ ] Test error scenarios:
+  - Invalid account ID
+  - Invalid campaign ID
+  - Malformed request body
+  - Network timeout
+- [ ] Document test results
+
+#### Task 4.2.2: Test Campaign Query Operations
+**Assigned to**: VANES  
+**Dependencies**: Task 4.2.1
+
+- [ ] Test `queryCampaigns()` method (if implemented)
+- [ ] Verify campaign list is returned
+- [ ] Test with limit parameter
+- [ ] Test with offset parameter
+- [ ] Test error scenarios
+- [ ] Document test results
+
+### Subphase 4.3: Ad Structure Tests (1 hour)
+
+#### Task 4.3.1: Test Ad Group Operations
+**Assigned to**: VANES  
+**Dependencies**: Subphase 2B.1 complete
+
+- [ ] Test `createAdGroup()` with valid data:
+  - Create campaign first
+  - Create ad group in campaign
+  - Verify ad group is created
+  - Verify response includes ad group ID
+- [ ] Test `updateAdGroup()` with name change
+- [ ] Test `updateAdGroup()` with bid change
+- [ ] Test error scenarios:
+  - Invalid campaign ID
+  - Invalid ad group data
+  - Network errors
+- [ ] Document test results
+
+#### Task 4.3.2: Test Ad Operations
+**Assigned to**: VANES  
+**Dependencies**: Subphase 2B.2 complete
+
+- [ ] Test `createAd()` with valid data:
+  - Create campaign and ad group first
+  - Create responsive search ad
+  - Verify headlines (min 3, max 15)
+  - Verify descriptions (min 2, max 4)
+  - Verify character limits (30 for headlines, 90 for descriptions)
+  - Verify finalUrl is set
+- [ ] Test `updateAd()` with headline changes
+- [ ] Test `updateAd()` with description changes
+- [ ] Test error scenarios:
+  - Too few headlines (<3)
+  - Too many headlines (>15)
+  - Headline too long (>30 chars)
+  - Too few descriptions (<2)
+  - Too many descriptions (>4)
+  - Description too long (>90 chars)
+  - Invalid URL
+- [ ] Document test results
+
+#### Task 4.3.3: Test Keyword Operations
+**Assigned to**: VANES  
+**Dependencies**: Subphase 2B.3 complete
+
+- [ ] Test `createKeywords()` with valid data:
+  - Create campaign and ad group first
+  - Create multiple keywords (bulk)
+  - Verify all keywords are created
+  - Verify match types are correct
+  - Verify bids are set correctly
+- [ ] Test `updateKeywords()` with bid changes
+- [ ] Test error scenarios:
+  - Keyword too long (>80 chars)
+  - Invalid match type
+  - Invalid ad group ID
+  - Network errors
+- [ ] Document test results
+
+### Subphase 4.4: Batch Job Tests (1.5 hours)
+
+#### Task 4.4.1: Test Batch Job Creation
+**Assigned to**: GABE  
+**Dependencies**: Subphase 2C.1 complete
+
+- [ ] Test `createBatchJob()` method:
+  - Verify batch job is created
+  - Verify batch job ID is returned
+  - Verify status is PENDING
+- [ ] Test error scenarios
+- [ ] Document test results
+
+#### Task 4.4.2: Test Batch Job Operations
+**Assigned to**: GABE  
+**Dependencies**: Subphase 2C.2 complete
+
+- [ ] Test `addOperationsToBatch()` method:
+  - Test with 10 operations
+  - Test with exactly 1000 operations
+  - Test with >1000 operations (should fail or use sequenceToken)
+  - Test with sequenceToken for >1000 operations
+  - Verify operations are added
+- [ ] Test `runBatchJob()` method:
+  - Verify batch job starts
+  - Verify status changes to RUNNING
+- [ ] Test `pollBatchJobStatus()` method:
+  - Test polling until DONE
+  - Test polling until FAILED
+  - Test exponential backoff
+  - Test timeout scenario
+  - Verify status field is checked (not done field)
+- [ ] Test `getBatchJobResults()` method:
+  - Verify results are returned
+  - Verify summary object is included
+  - Verify results array structure
+- [ ] Document test results
+
+#### Task 4.4.3: Test Bulk Campaign Creation
+**Assigned to**: GABE  
+**Dependencies**: Subphase 2C.3 complete
+
+- [ ] Test `bulkCreateCampaigns()` with 10 campaigns:
+  - Verify all campaigns are created
+  - Verify summary shows correct counts
+  - Verify completion time is reasonable
+- [ ] Test `bulkCreateCampaigns()` with 100 campaigns:
+  - Verify chunking works correctly
+  - Verify sequenceToken handling
+  - Verify all campaigns are created
+- [ ] Test `bulkCreateCampaigns()` with >1000 campaigns:
+  - Verify multiple chunks are created
+  - Verify sequenceToken is used correctly
+  - Verify all campaigns are processed
+- [ ] Test partial failure scenario:
+  - Create batch with 5 valid and 5 invalid campaigns
+  - Verify summary shows correct succeeded/failed counts
+  - Verify error messages are included in results
+- [ ] Test full failure scenario:
+  - Create batch with all invalid campaigns
+  - Verify error handling
+  - Verify summary shows all failed
+- [ ] Test timeout scenario:
+  - Mock long-running batch job
+  - Verify timeout is handled correctly
+- [ ] Document test results
+
+### Subphase 4.5: Integration Tests (30 minutes)
+
+#### Task 4.5.1: Test REST API Integration
+**Assigned to**: VANES  
+**Dependencies**: Subphase 4.2 complete
+
+- [ ] Test campaign creation via REST API:
+  - POST `/api/campaigns` with `platforms: ["marin"]`
+  - Verify campaign is created
+  - Verify response includes Marin campaign ID
+- [ ] Test multi-platform creation:
+  - POST `/api/campaigns` with `platforms: ["marin", "googleAds"]`
+  - Verify campaigns are created on both platforms
+  - Verify response includes both platform IDs
+- [ ] Test campaign update via REST API:
+  - PUT `/api/campaigns/:id` with Marin platform
+  - Verify campaign is updated
+- [ ] Test campaign pause/resume via REST API
+- [ ] Test campaign delete via REST API
+- [ ] Test error handling in REST API context
+- [ ] Document test results
+
+#### Task 4.5.2: Test End-to-End Workflow
+**Assigned to**: VANES  
+**Dependencies**: Subphase 4.5.1 complete
+
+- [ ] Test complete campaign creation workflow:
+  1. Create campaign via REST API
+  2. Create ad group
+  3. Create ad
+  4. Create keywords
+  5. Verify full structure in Marin system
+- [ ] Test bulk campaign creation workflow:
+  1. Create 10 campaigns via batch job
+  2. Verify all campaigns are created
+  3. Verify results are correct
+- [ ] Test error recovery workflow:
+  1. Create campaign with invalid data
+  2. Verify error is returned
+  3. Retry with valid data
+  4. Verify success
+- [ ] Document test results
+
+---
+
+## Phase 5: Documentation & Cleanup (1 hour)
+
+### Subphase 5.1: Code Documentation (30 minutes)
+
+#### Task 5.1.1: Add JSDoc Comments
+**Assigned to**: GABE  
+**Dependencies**: All implementation phases complete
+
+- [ ] Add JSDoc comments to all public methods in `marinDispatcherService.ts`
+- [ ] Add JSDoc comments to all public methods in `marinBatchJobService.ts`
+- [ ] Add JSDoc comments to all public methods in `marinDispatcherClient.ts`
+- [ ] Add JSDoc comments to all public methods in `marinBatchJobClient.ts`
+- [ ] Add JSDoc comments to all type definitions in `marinDispatcher.types.ts`
+- [ ] Add JSDoc comments to Lambda types in `lambda.types.ts`
+- [ ] Include parameter descriptions
+- [ ] Include return type descriptions
+- [ ] Include example usage
+- [ ] Include error scenarios
+- [ ] Document DISPATCHER_URL usage (InfraDocs pattern)
+- [ ] Document Lambda integration patterns
+- [ ] Verify JSDoc generates correctly
+
+#### Task 5.1.2: Create API Documentation
+**Assigned to**: VANES  
+**Dependencies**: All implementation phases complete
+
+- [ ] Create `backend/docs/marin-dispatcher-integration.md` file
+- [ ] Document API endpoints (InfraDocs path format: `/dispatcher/${publisher}/...`)
+- [ ] Document request/response formats
+- [ ] Document error codes
+- [ ] Document usage examples:
+  - Service class usage (for orchestrator, if needed)
+  - Lambda client usage (primary pattern - InfraDocs)
+  - Lambda handler examples
+- [ ] Document batch job workflow
+- [ ] Document DISPATCHER_URL environment variable (InfraDocs pattern)
+- [ ] Document Lambda integration patterns
+- [ ] Document X-Ray tracing integration
+- [ ] Document VPC requirements (for Lambda functions)
+- [ ] Document best practices
+- [ ] Include troubleshooting guide
+
+### Subphase 5.2: Code Cleanup (30 minutes)
+
+#### Task 5.2.1: Code Review & Refactoring
+**Assigned to**: GABE  
+**Dependencies**: All implementation phases complete
+
+- [ ] Review all code for consistency
+- [ ] Remove any console.log statements
+- [ ] Remove any commented-out code
+- [ ] Ensure all error handling is consistent
+- [ ] Ensure all logging is consistent
+- [ ] Refactor any duplicate code
+- [ ] Verify TypeScript strict mode compliance
+- [ ] Run linter and fix any issues
+
+#### Task 5.2.2: Final Testing & Validation
+**Assigned to**: VANES  
+**Dependencies**: Task 5.2.1
+
+- [ ] Run all unit tests: `npm test`
+- [ ] Run all integration tests
+- [ ] Verify all tests pass
+- [ ] Test with actual Marin Dispatcher API (if available)
+- [ ] Verify no TypeScript errors
+- [ ] Verify no linting errors
+- [ ] Create final test report
+
+---
+
+## Success Criteria Checklist
+
+### Functionality
+- [ ] All 8 IPlatformAPI methods implemented and working
+- [ ] Campaign CRUD operations complete
+- [ ] Ad group, ad, and keyword management functional
+- [ ] Bulk campaign creation via BatchJobService
+- [ ] Batch job polling with proper timeout handling
+- [ ] Partial failure handling in batch operations
+- [ ] Error handling covers all failure scenarios
+- [ ] Response format matches existing platform services
+- [ ] No breaking changes to REST API
+
+### Code Quality
+- [ ] 100% TypeScript type coverage
+- [ ] Code follows existing patterns (GoogleAdsService template)
+- [ ] All methods documented with JSDoc comments
+- [ ] Unit test coverage >80%
+- [ ] Zero console errors or warnings
+- [ ] Zero TypeScript errors
+- [ ] Zero linting errors
+
+### Performance
+- [ ] API response time <500ms for single operations (P95)
+- [ ] Batch job completion <60 seconds for 100 campaigns
+- [ ] Handle >1000 operations with sequenceToken
+- [ ] Proper timeout handling
+
+### Integration
+- [ ] MarinDispatcherClient works in Lambda functions (CampaignMgmtFunction, BulkWorkerFunction)
+- [ ] Lambda functions use DISPATCHER_URL from environment (InfraDocs pattern)
+- [ ] Lambda event format handled correctly
+- [ ] Lambda response format matches contract
+- [ ] X-Ray tracing works in Lambda context
+- [ ] **Optional:** Marin service registered in CampaignCreationService (if orchestrator uses it)
+- [ ] **Optional:** Multi-platform campaigns work (Marin + others) via orchestrator
+- [ ] REST API endpoints work with Marin platform (if orchestrator uses it)
+- [ ] No breaking changes to existing functionality
+
+---
+
+## Notes
+
+- **Budget Handling**: ⚠️ **CRITICAL** - Marin uses `budget.amount` in dollars, NOT micros. No conversion needed.
+- **Field Names**: Use camelCase (deliveryMethod, biddingStrategy) not snake_case
+- **Batch Job Status**: Check `status === "DONE"` NOT `done` field
+- **Batch Operations**: Max 1000 operations per `addOperations` request, use sequenceToken for more
+- **Error Handling**: All methods should return PlatformAPIResponse format
+- **Testing**: Use mock data if live API unavailable, but test with real API before production
+- **Dispatcher URL**: ⚠️ **CRITICAL** - Use `DISPATCHER_URL` from environment (InfraDocs pattern - set by CloudFormation)
+- **API Path Format**: ⚠️ **CRITICAL** - Use `/dispatcher/${publisher}/campaigns` format (InfraDocs pattern, verify actual API path)
+- **Lambda Integration**: Service is used BY Lambda functions via MarinDispatcherClient, not just orchestrator
+- **X-Ray Tracing**: All HTTP calls must be wrapped with X-Ray segments (InfraDocs requirement)
+- **Lambda Event Format**: Service must handle Lambda event format `{ action, data, user, mode }` and return `{ success, result/error }`
+
+---
+
+## Dependencies & Parallel Work Guide
+
+### Phase 0 (Setup)
+- **GABE**: Environment config, dependencies
+- **VANES**: Project structure verification, dev environment
+- **Can work in parallel**: ✅ Yes
+
+### Phase 1 (Types)
+- **GABE**: Core types, batch job types, update PlatformCampaignIds
+- **VANES**: Ad structure types, type validators
+- **Can work in parallel**: ✅ Yes (after Task 1.1.1)
+
+### Phase 2 (Core Service)
+- **GABE**: Service structure, all campaign CRUD methods
+- **VANES**: (Waiting for Phase 2B)
+- **Can work in parallel**: ⚠️ No (sequential)
+
+### Phase 2B (Ad Structure)
+- **GABE**: (Waiting for Phase 2C)
+- **VANES**: All ad structure methods
+- **Can work in parallel**: ✅ Yes (with Phase 2C)
+
+### Phase 2C (Batch Jobs)
+- **GABE**: All batch job service implementation
+- **VANES**: (Working on Phase 2B)
+- **Can work in parallel**: ✅ Yes (with Phase 2B)
+
+### Phase 2D (Lambda Integration)
+- **GABE**: (Waiting)
+- **VANES**: Lambda client library, handler examples, deployment structure
+- **Can work in parallel**: ⚠️ No (VANES only, depends on Phase 2.2 and 2C.3)
+
+### Phase 3 (Integration)
+- **GABE**: (Waiting)
+- **VANES**: Lambda integration verification, integration tests
+- **Can work in parallel**: ⚠️ No (VANES only)
+
+### Phase 4 (Testing)
+- **GABE**: Connection tests, campaign lifecycle, batch job tests
+- **VANES**: Environment tests, ad structure tests, REST API tests
+- **Can work in parallel**: ✅ Yes
+
+### Phase 5 (Documentation)
+- **GABE**: JSDoc comments, code cleanup
+- **VANES**: API documentation, final testing
+- **Can work in parallel**: ✅ Yes
+
+---
+
+**Document Version**: 2.0  
+**Created**: 2025-11-09  
+**Last Updated**: 2025-11-09  
+**Project**: Marin Dispatcher Integration  
+**Integration**: Agentic Campaign Manager Module  
+**Architecture Alignment**: InfraDocs (source of truth) - Lambda integration, X-Ray tracing, DISPATCHER_URL pattern
+

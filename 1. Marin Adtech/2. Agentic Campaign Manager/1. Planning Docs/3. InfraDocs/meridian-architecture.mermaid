@@ -1,0 +1,90 @@
+graph TB
+    Client[React SWR/Vite/Amplify<br/>Mode: direct or agentic]
+    
+    Client -->|1. Login/Signup| Cognito[AWS Cognito<br/>User Pool]
+    Cognito -->|2. JWT Token| Client
+    
+    Client -->|3. API Call + Token<br/>+ X-Meridian-Mode header| APIGW[API Gateway<br/>+ Cognito Authorizer]
+    
+    APIGW -->|4. Validates Token| Cognito
+    APIGW -->|5. Authorized Request| MainAPI[Main API<br/>Node/Express Lambda<br/>Entry Point]
+    
+    MainAPI --> Orchestrator[Agent/Orchestrator<br/>Routes by mode]
+    
+    Orchestrator -->|Direct Mode<br/>Fast Path| DirectPath[Direct Execution]
+    Orchestrator -->|Agentic Mode<br/>LLM Enhancement| AgenticPath[Agentic Execution<br/>+ LLM Context]
+    
+    DirectPath --> CampaignMgmt[Campaign Mgmt<br/>Lambda]
+    AgenticPath --> CampaignMgmt
+    
+    DirectPath -->|Async| AdFraudIngest[Ad Fraud Ingest<br/>Lambda]
+    AgenticPath -->|Async| AdFraudIngest
+    AdFraudIngest --> FraudQueue[SQS<br/>Fraud Queue]
+    FraudQueue --> AdFraudDetect[Ad Fraud Detect<br/>Lambda]
+    
+    DirectPath -->|Async| BulkCreateRouter[Bulk Create<br/>Lambda]
+    AgenticPath -->|Async| BulkCreateRouter
+    BulkCreateRouter --> BulkQueue[SQS<br/>Bulk Queue]
+    BulkQueue --> BulkWorker[Bulk Worker<br/>Lambda]
+    
+    DirectPath -->|Async| CopyRefreshRouter[Copy Refresh<br/>Lambda]
+    AgenticPath -->|Async| CopyRefreshRouter
+    CopyRefreshRouter --> CopyQueue[SQS<br/>Copy Queue]
+    CopyQueue --> CopyWorker[Copy Worker<br/>Lambda]
+    
+    DirectPath -->|Async| VideoRouter[Video Gen<br/>Lambda]
+    AgenticPath -->|Async| VideoRouter
+    VideoRouter --> VideoQueue[SQS<br/>Video Queue]
+    VideoQueue --> VideoSteps[Step Functions<br/>Banana Orchestration]
+    
+    CampaignMgmt --> Dispatcher[Dispatcher<br/>ECS Fargate<br/>Rate Limiting & API Gateway]
+    BulkWorker --> Dispatcher
+    CopyWorker --> Dispatcher
+    
+    Dispatcher -->|API Calls| GoogleAds[Google Ads API]
+    Dispatcher -->|API Calls| MetaAds[Meta Ads API]
+    Dispatcher -->|Future| OtherAds[Other Ad Platforms]
+    
+    AdFraudDetect --> DynamoDB[(DynamoDB)]
+    CampaignMgmt --> PostgreSQL[(PostgreSQL)]
+    BulkWorker --> PostgreSQL
+    Dispatcher --> Redis[(Redis<br/>Rate Limiting & Cache<br/>OAuth Tokens)]
+    
+    DynamoDB -->|Stream| Iceberg[(S3 + Iceberg)]
+    PostgreSQL -->|Analytics| Iceberg
+    
+    Iceberg -->|Query| QueryLayer[Query Layer<br/>Athena]
+    
+    AgenticPath -.->|Context & Enhancement| Bedrock[Bedrock/Claude]
+    AdFraudDetect -.-> Bedrock
+    CopyWorker -.-> Bedrock
+    VideoSteps -.-> Banana[Banana AI APIs]
+    
+    APIGW -.->|Logs & Traces| XRay[X-Ray<br/>Distributed Tracing]
+    MainAPI -.->|Logs & Traces| XRay
+    Orchestrator -.->|Logs & Traces| XRay
+    DirectPath -.->|Logs & Traces| XRay
+    AgenticPath -.->|Logs & Traces| XRay
+    
+    XRay --> CloudWatch[CloudWatch<br/>Logs & Metrics & Dashboards]
+    
+    style DynamoDB fill:#4A90E2
+    style PostgreSQL fill:#4A90E2
+    style Redis fill:#4A90E2
+    style Iceberg fill:#50C878
+    style FraudQueue fill:#FFB84D
+    style BulkQueue fill:#FFB84D
+    style CopyQueue fill:#FFB84D
+    style VideoQueue fill:#FFB84D
+    style Bedrock fill:#9B59B6
+    style Orchestrator fill:#2ECC71
+    style DirectPath fill:#95E1D3
+    style AgenticPath fill:#2ECC71
+    style VideoSteps fill:#E74C3C
+    style XRay fill:#FF6B6B
+    style CloudWatch fill:#FF6B6B
+    style Dispatcher fill:#E74C3C
+    style GoogleAds fill:#34A853
+    style MetaAds fill:#1877F2
+    style Cognito fill:#DD344C
+    style MainAPI fill:#F38181

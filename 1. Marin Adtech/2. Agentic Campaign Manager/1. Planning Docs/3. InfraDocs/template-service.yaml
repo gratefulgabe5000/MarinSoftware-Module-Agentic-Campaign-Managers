@@ -1,0 +1,149 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Meridian Lambda Service - [SERVICE_NAME]
+
+# This template is for individual service teams
+# Replace [SERVICE_NAME] with your service name (e.g., campaign-mgmt, fraud-detect)
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, staging, prod]
+    Description: Environment name
+
+  ServiceName:
+    Type: String
+    Description: Name of your service (e.g., campaign-mgmt, fraud-detect, bulk-worker)
+
+Globals:
+  Function:
+    Runtime: nodejs20.x
+    Timeout: 30
+    MemorySize: 512
+    Tracing: Active  # X-Ray tracing
+    Environment:
+      Variables:
+        ENVIRONMENT: !Ref Environment
+        # Import shared infrastructure values
+        POSTGRES_HOST: !ImportValue 
+          Fn::Sub: MeridianPostgresHost-${Environment}
+        POSTGRES_PORT: !ImportValue 
+          Fn::Sub: MeridianPostgresPort-${Environment}
+        POSTGRES_DB: meridian
+        POSTGRES_USER: meridian_admin  # Store password in Secrets Manager!
+        REDIS_HOST: !ImportValue 
+          Fn::Sub: MeridianRedisHost-${Environment}
+        REDIS_PORT: !ImportValue 
+          Fn::Sub: MeridianRedisPort-${Environment}
+        DYNAMODB_CLICK_EVENTS: !ImportValue 
+          Fn::Sub: MeridianClickEventsTable-${Environment}
+        DYNAMODB_JOB_STATUS: !ImportValue 
+          Fn::Sub: MeridianJobStatusTable-${Environment}
+        CONTENT_BUCKET: !ImportValue 
+          Fn::Sub: MeridianContentBucket-${Environment}
+        DISPATCHER_URL: !ImportValue 
+          Fn::Sub: MeridianDispatcherUrl-${Environment}
+
+Resources:
+  # Your Lambda Function
+  ServiceFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub meridian-${ServiceName}-${Environment}
+      CodeUri: ./   # Current directory with your code
+      Handler: index.handler
+      Description: !Sub Meridian ${ServiceName} service
+      
+      # VPC Configuration
+      VpcConfig:
+        SecurityGroupIds:
+          - !ImportValue 
+              Fn::Sub: MeridianLambdaSG-${Environment}
+        SubnetIds:
+          - !ImportValue 
+              Fn::Sub: MeridianPrivateSubnet1-${Environment}
+          - !ImportValue 
+              Fn::Sub: MeridianPrivateSubnet2-${Environment}
+      
+      # IAM Permissions
+      Policies:
+        - AWSLambdaVPCAccessExecutionRole
+        - Version: '2012-10-17'
+          Statement:
+            # DynamoDB access
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:UpdateItem
+                - dynamodb:Query
+                - dynamodb:Scan
+              Resource:
+                - !Sub 
+                  - 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${TableName}'
+                  - TableName: !ImportValue 
+                      Fn::Sub: MeridianClickEventsTable-${Environment}
+                - !Sub 
+                  - 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${TableName}'
+                  - TableName: !ImportValue 
+                      Fn::Sub: MeridianJobStatusTable-${Environment}
+                - !Sub 
+                  - 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${TableName}/index/*'
+                  - TableName: !ImportValue 
+                      Fn::Sub: MeridianClickEventsTable-${Environment}
+            
+            # S3 access
+            - Effect: Allow
+              Action:
+                - s3:GetObject
+                - s3:PutObject
+                - s3:DeleteObject
+              Resource:
+                - !Sub 
+                  - 'arn:aws:s3:::${BucketName}/*'
+                  - BucketName: !ImportValue 
+                      Fn::Sub: MeridianContentBucket-${Environment}
+            
+            # Bedrock access (for AI services)
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+              Resource: '*'
+            
+            # Secrets Manager (for database password)
+            - Effect: Allow
+              Action:
+                - secretsmanager:GetSecretValue
+              Resource: !Sub 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:meridian/*'
+            
+            # X-Ray
+            - Effect: Allow
+              Action:
+                - xray:PutTraceSegments
+                - xray:PutTelemetryRecords
+              Resource: '*'
+
+  # CloudWatch Log Group
+  ServiceLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/meridian-${ServiceName}-${Environment}
+      RetentionInDays: 7
+
+Outputs:
+  FunctionName:
+    Description: Lambda function name
+    Value: !Ref ServiceFunction
+    Export:
+      Name: !Sub Meridian${ServiceName}Function-${Environment}
+
+  FunctionArn:
+    Description: Lambda function ARN
+    Value: !GetAtt ServiceFunction.Arn
+    Export:
+      Name: !Sub Meridian${ServiceName}FunctionArn-${Environment}
+
+  LogGroupName:
+    Description: CloudWatch Log Group
+    Value: !Ref ServiceLogGroup
