@@ -59,19 +59,21 @@ describe('API Routes', () => {
   });
 
   describe('Auth routes', () => {
-    it('should handle GET /api/auth/google/init', async () => {
-      const response = await request(app).get('/api/auth/google/init');
+    it('should handle GET /api/auth/google/authorize', async () => {
+      const response = await request(app).get('/api/auth/google/authorize');
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('authUrl');
     });
 
-    it('should handle GET /api/auth/tokens', async () => {
-      const response = await request(app).get('/api/auth/tokens');
+    it('should handle GET /api/auth/status', async () => {
+      const response = await request(app).get('/api/auth/status?platform=google');
 
       expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty('tokens');
+      expect(response.body).toHaveProperty('platform')
+      expect(response.body).toHaveProperty('connected');
     });
   });
 });
+
 
