@@ -1,5 +1,4 @@
 import { ProductInput } from '../types/product.types';
-import { CampaignPatterns } from '../types/campaign-patterns.types';
 import {
   KeywordSource,
   GeneratedKeyword,
@@ -391,7 +390,7 @@ export async function generateKeywordsForProduct(
   const validationResults = validateKeywords(keywordTexts);
 
   // Filter out invalid keywords
-  const validKeywords = rankedKeywords.filter((keyword, index) => 
+  const validKeywords = rankedKeywords.filter((_keyword, index) =>
     validationResults[index].valid
   );
 

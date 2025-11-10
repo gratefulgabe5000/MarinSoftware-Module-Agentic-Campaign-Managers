@@ -248,7 +248,7 @@ export function extractBiddingPatterns(
   // Calculate average CPC
   const totalCost = keywords.reduce((sum, kw) => sum + (kw.cost || 0), 0);
   const totalClicks = keywords.reduce((sum, kw) => sum + (kw.clicks || 0), 0);
-  const averageCPC = totalClicks > 0 ? totalCost / totalClicks : 1.50;
+  const averageCPC = totalClicks > 0 && totalCost > 0 ? totalCost / totalClicks : 1.50;
 
   // Determine bid strategy (default to MANUAL_CPC for MVP)
   const bidStrategy = 'MANUAL_CPC';
