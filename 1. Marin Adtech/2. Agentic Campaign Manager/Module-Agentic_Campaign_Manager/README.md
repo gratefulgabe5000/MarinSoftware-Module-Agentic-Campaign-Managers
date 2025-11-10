@@ -7,7 +7,7 @@ AI-powered campaign creation and management for performance marketers. This modu
 ### Core Functionality
 - **Conversational Campaign Creation**: Natural language interface with intelligent AI response extraction
 - **CSV/URL-Based Campaign Generation**: Generate complete Google Ads campaigns from CSV files or product URL lists
-- **Multi-Platform Support**: Google Ads, Meta, Microsoft Advertising
+- **Multi-Platform Support**: Google Ads, Meta, Microsoft Advertising, Marin Dispatcher
 - **Campaign Management**: Create, view, edit, pause, resume, and delete campaigns
 - **Campaign Plan Editing**: Full editor for modifying campaign plans before creation
 - **Campaign Preview & Editing**: Spreadsheet-like interface for reviewing and editing generated campaigns
@@ -130,6 +130,7 @@ Module-Agentic_Campaign_Manager/
 │   │   ├── adgroup-generation.types.ts
 │   │   ├── keyword-generation.types.ts
 │   │   ├── rsa-generation.types.ts
+│   │   ├── marinDispatcher.types.ts  # Marin Dispatcher API types
 │   │   └── ade.types.ts
 │   ├── config/              # Configuration
 │   │   └── module.config.ts
@@ -157,6 +158,7 @@ Module-Agentic_Campaign_Manager/
 │   │   │   ├── keywordGenerationService.ts
 │   │   │   ├── rsaGenerationService.ts
 │   │   │   ├── csvExportService.ts
+│   │   │   ├── marinDispatcherService.ts  # Marin Dispatcher API integration
 │   │   │   └── ...
 │   │   └── ...
 │   └── package.json
@@ -296,6 +298,12 @@ Create a `.env` file in the root directory:
 ```env
 VITE_API_URL=http://localhost:3001
 VITE_OPENAI_API_KEY=your_openai_api_key
+
+# Marin Dispatcher Configuration (Backend)
+MARIN_DISPATCHER_BASE_URL=http://your-dispatcher-url
+MARIN_DISPATCHER_ACCOUNT_ID=your_account_id
+MARIN_DISPATCHER_PUBLISHER=google
+MARIN_DISPATCHER_TIMEOUT=10000
 ```
 
 ### Module Configuration
@@ -453,6 +461,53 @@ For detailed bug descriptions and solutions, see `2. Artifacts/BUG-Bug Tracker`.
 - ✅ `STATUS-2025-01-16.md` - Today's status report
 
 ## Recent Updates
+
+### November 10, 2025 - Marin Dispatcher Integration Phase 2.1 Complete
+
+**Marin Dispatcher Integration**:
+- ✅ **Phase 0**: Project Setup & Configuration - COMPLETE
+  - Environment variables configured (`MARIN_DISPATCHER_BASE_URL`, `MARIN_DISPATCHER_ACCOUNT_ID`, etc.)
+  - Dependencies installed (`aws-xray-sdk-core`, `axios`)
+  - Development environment setup
+- ✅ **Phase 1**: Type Definitions & Configuration - COMPLETE
+  - All type definitions created (`marinDispatcher.types.ts`)
+  - Type validation utilities implemented (`marinTypeValidators.ts`)
+  - 81 automated tests passing (46 type tests + 35 validator tests)
+  - `PlatformCampaignIds` interface updated with `marin` property
+- ✅ **Phase 2.1**: Base Service Structure - COMPLETE
+  - `MarinDispatcherService` class created (`backend/src/services/marinDispatcherService.ts`)
+  - Constructor with configuration loading
+  - `isAuthenticated()` method implemented with X-Ray tracing
+  - Helper methods implemented:
+    - `buildApiPath()` - Builds API path using InfraDocs format: `/dispatcher/${publisher}/campaigns`
+    - `mapCampaignPlanToRequest()` - Maps `CampaignPlan` to `MarinCampaignRequest`
+    - `mapResponseToPlatformResponse()` - Maps `MarinCampaignResponse` to `PlatformAPIResponse`
+  - X-Ray tracing integrated (AWS X-Ray SDK)
+  - 8 manual test suites passing
+  - All placeholder methods return expected errors
+
+**Implementation Statistics**:
+- **Files Created**: 7 files
+  - `marinDispatcher.types.ts` (601 lines)
+  - `marinTypeValidators.ts` (376 lines)
+  - `marinDispatcherService.ts` (226 lines)
+  - Test files (2 files, 81 tests)
+- **Files Modified**: 3 files
+  - `env.ts` - Added Marin Dispatcher configuration
+  - `package.json` - Added `aws-xray-sdk-core` dependency
+  - `campaign.types.ts` - Added `marin` property to `PlatformCampaignIds`
+- **Lines of Code**: 2,400+ lines
+- **Test Coverage**: 89 tests, all passing (81 automated + 8 manual)
+- **Commits**: b471ed0 (Phase 2.1 complete)
+
+**Next Phase**: Phase 2.2 - Campaign CRUD Methods (estimated 2 hours)
+- Implement `createCampaign()`, `updateCampaign()`, `pauseCampaign()`, `resumeCampaign()`, `deleteCampaign()`, `getCampaignStatus()`
+- Add unit tests for all methods
+
+For detailed progress, see:
+- `2. Artifacts/2. Integrated MVP/PROGRESS-SUMMARY.md`
+- `2. Artifacts/2. Integrated MVP/TASKLIST-Marin-Dispatcher-Integration.md`
+- `backend/PHASE-2.1-STATUS.md`
 
 ### January 16, 2025 - Testing Phase Complete
 

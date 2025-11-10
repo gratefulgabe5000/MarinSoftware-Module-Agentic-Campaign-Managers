@@ -127,7 +127,7 @@ export class CampaignController {
       // For MVP, return success
       res.json({
         message: 'Campaign deleted',
-        campaignId: id,
+        id: id,
         deletedAt: new Date(),
       });
     } catch (error) {
@@ -183,7 +183,7 @@ export class CampaignController {
       // For MVP, return success
       res.json({
         message: 'Campaign paused',
-        campaignId: id,
+        id: id,
         status: 'paused',
         updatedAt: new Date(),
       });
@@ -222,7 +222,7 @@ export class CampaignController {
       // For MVP, return success
       res.json({
         message: 'Campaign resumed',
-        campaignId: id,
+        id: id,
         status: 'active',
         updatedAt: new Date(),
       });

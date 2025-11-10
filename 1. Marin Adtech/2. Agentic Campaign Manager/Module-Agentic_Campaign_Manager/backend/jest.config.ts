@@ -18,9 +18,7 @@ const config: Config = {
   coverageReporters: ['text', 'lcov', 'html'],
   transform: {
     '^.+\\.ts$': ['ts-jest', {
-      tsconfig: {
-        esModuleInterop: true,
-      },
+      tsconfig: 'tsconfig.json',
     }],
   },
   moduleFileExtensions: ['ts', 'js', 'json'],

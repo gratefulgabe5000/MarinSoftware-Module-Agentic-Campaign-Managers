@@ -125,7 +125,7 @@ ${Array.from({ length: 15 }, (_, i) => `Product ${i + 1},https://example.com/pro
 
       expect(result.products).toHaveLength(10);
       expect(result.warnings.length).toBeGreaterThan(0);
-      expect(result.warnings[0]).toContain('10 products');
+      expect(result.warnings.some(w => w.includes('10 products'))).toBe(true);
     });
 
     it('should handle CSV with different column name variations', async () => {

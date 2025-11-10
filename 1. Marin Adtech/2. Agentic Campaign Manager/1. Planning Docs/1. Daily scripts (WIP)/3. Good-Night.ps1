@@ -2,6 +2,10 @@
 # Don't stop on errors - we'll check exit codes manually
 $ErrorActionPreference = "Continue"
 
+# Fix encoding issues - set UTF-8 encoding for output and file operations
+$OutputEncoding = [System.Text.Encoding]::UTF8
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+
 Write-Host "Good night!" -ForegroundColor Magenta
 
 # Get today's date

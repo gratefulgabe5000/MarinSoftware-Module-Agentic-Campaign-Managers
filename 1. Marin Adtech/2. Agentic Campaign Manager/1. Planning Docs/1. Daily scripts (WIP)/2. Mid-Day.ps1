@@ -3,6 +3,10 @@
 # Don't stop on errors - we'll check exit codes manually
 $ErrorActionPreference = "Continue"
 
+# Fix encoding issues - set UTF-8 encoding for output and file operations
+$OutputEncoding = [System.Text.Encoding]::UTF8
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+
 Write-Host "Mid-Day / End-of-Phase" -ForegroundColor Cyan
 
 # Get repository root and change to it (git hooks need to be run from repo root)

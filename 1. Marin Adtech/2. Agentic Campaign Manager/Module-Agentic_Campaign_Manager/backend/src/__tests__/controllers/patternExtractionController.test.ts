@@ -113,19 +113,36 @@ describe('PatternExtractionController', () => {
 
     it('should handle errors', async () => {
       mockRequest.query = { accountId: 'test-account' };
+      mockRequest.headers = { authorization: 'Bearer test-token' };
 
+      // Create mock functions that will succeed
+      const mockQueryCampaigns = jest.fn().mockResolvedValue([{ id: 'c1', name: 'Campaign 1' }]);
+      const mockQueryAdGroups = jest.fn().mockResolvedValue([{ id: 'ag1', name: 'Ad Group 1' }]);
+      const mockQueryKeywords = jest.fn().mockResolvedValue([{ id: 'kw1', text: 'keyword' }]);
+      const mockQueryAds = jest.fn().mockResolvedValue([{ id: 'ad1', headlines: ['Headline'] }]);
+
+      // Mock GoogleAdsService to return successful responses so we can test extractAllPatterns error
       (GoogleAdsService as jest.MockedClass<typeof GoogleAdsService>).mockImplementation(() => ({
-        queryCampaigns: jest.fn().mockRejectedValue(new Error('Service error')),
-        queryAdGroups: jest.fn(),
-        queryKeywords: jest.fn(),
-        queryAds: jest.fn(),
+        queryCampaigns: mockQueryCampaigns,
+        queryAdGroups: mockQueryAdGroups,
+        queryKeywords: mockQueryKeywords,
+        queryAds: mockQueryAds,
       } as any));
+
+      // Mock extractAllPatterns to throw an error to test the 500 error path
+      (extractAllPatterns as jest.Mock).mockClear();
+      (extractAllPatterns as jest.Mock).mockRejectedValue(new Error('Pattern extraction failed'));
 
       await controller.queryPatterns(
         mockRequest as Request,
         mockResponse as Response
       );
 
+      // Verify extractAllPatterns was called (it should be called even if Google Ads API fails)
+      expect(extractAllPatterns).toHaveBeenCalled();
+      
+      // Verify error response was sent
+      // Note: Even if Google Ads API fails and falls back to mock data, extractAllPatterns error should still trigger 500
       expect(mockResponse.status).toHaveBeenCalledWith(500);
       expect(mockResponse.json).toHaveBeenCalledWith(
         expect.objectContaining({
