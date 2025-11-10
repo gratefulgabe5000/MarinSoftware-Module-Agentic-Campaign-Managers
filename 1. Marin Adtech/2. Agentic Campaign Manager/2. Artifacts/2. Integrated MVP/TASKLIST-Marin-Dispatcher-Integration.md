@@ -960,12 +960,12 @@ This document provides a granular, step-by-step task list for implementing the M
 ### Subphase 2B.1: Ad Group Methods (1 hour)
 
 #### Task 2B.1.1: Implement createAdGroup Method
-**Assigned to**: VANES  
+**Assigned to**: VANES
 **Dependencies**: Task 2.1.1, Task 1.1.2
 
-- [ ] Open `backend/src/services/marinDispatcherService.ts` file
-- [ ] Add ad group methods to class (outside IPlatformAPI interface)
-- [ ] Implement `createAdGroup()` method:
+- [x] Open `backend/src/services/marinDispatcherService.ts` file
+- [x] Add ad group methods to class (outside IPlatformAPI interface)
+- [x] Implement `createAdGroup()` method:
   ```typescript
   async createAdGroup(
     campaignId: string,
@@ -1007,16 +1007,16 @@ This document provides a granular, step-by-step task list for implementing the M
     }
   }
   ```
-- [ ] Add validation
-- [ ] Add error handling
-- [ ] Add logging
-- [ ] Add unit tests
+- [x] Add validation
+- [x] Add error handling
+- [x] Add logging
+- [ ] Add unit tests (deferred to Subphase 2B.4)
 
 #### Task 2B.1.2: Implement updateAdGroup Method
-**Assigned to**: VANES  
+**Assigned to**: VANES
 **Dependencies**: Task 2B.1.1
 
-- [ ] Implement `updateAdGroup()` method:
+- [x] Implement `updateAdGroup()` method:
   ```typescript
   async updateAdGroup(
     adGroupId: string,
@@ -1050,10 +1050,10 @@ This document provides a granular, step-by-step task list for implementing the M
     }
   }
   ```
-- [ ] Add validation
-- [ ] Add error handling
-- [ ] Add logging
-- [ ] Add unit tests
+- [x] Add validation
+- [x] Add error handling
+- [x] Add logging
+- [ ] Add unit tests (deferred to Subphase 2B.4)
 
 ### Subphase 2B.2: Ad Methods (1 hour)
 
