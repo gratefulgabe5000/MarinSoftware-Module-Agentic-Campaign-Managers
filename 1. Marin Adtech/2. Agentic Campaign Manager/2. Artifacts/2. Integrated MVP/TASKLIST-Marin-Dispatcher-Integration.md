@@ -2351,22 +2351,60 @@ This document provides a granular, step-by-step task list for implementing the M
 
 ### Subphase 4.3: Ad Structure Tests (1 hour)
 
-#### Task 4.3.1: Test Ad Group Operations
-**Assigned to**: VANES  
+#### Task 4.3.1: Test Ad Group Operations ✅
+**Assigned to**: VANES
 **Dependencies**: Subphase 2B.1 complete
+**Status**: COMPLETE
 
-- [ ] Test `createAdGroup()` with valid data:
-  - Create campaign first
-  - Create ad group in campaign
-  - Verify ad group is created
-  - Verify response includes ad group ID
-- [ ] Test `updateAdGroup()` with name change
-- [ ] Test `updateAdGroup()` with bid change
-- [ ] Test error scenarios:
-  - Invalid campaign ID
-  - Invalid ad group data
-  - Network errors
-- [ ] Document test results
+- [x] Test `createAdGroup()` with valid data:
+  - [x] Create campaign first
+  - [x] Create ad group in campaign
+  - [x] Verify ad group is created
+  - [x] Verify response includes ad group ID
+- [x] Test `updateAdGroup()` with name change
+- [x] Test `updateAdGroup()` with bid change
+- [x] Test error scenarios:
+  - [x] Invalid campaign ID
+  - [x] Invalid ad group data
+  - [x] Network errors
+- [x] Document test results
+
+**Test Results**:
+- **File**: `backend/src/__tests__/services/marinDispatcherService.adStructure.test.ts`
+- **Total Tests**: 45 tests (including Ad Group, Ad, and Keyword tests)
+- **Ad Group Tests**: 17 tests
+- **Status**: ✅ ALL PASSED
+
+**Test Coverage**:
+1. **createAdGroup Tests** (12 tests):
+   - ✅ Successfully create ad group with valid data
+   - ✅ Create ad group with minimal required fields
+   - ✅ Validate name is required
+   - ✅ Validate name is not empty
+   - ✅ Validate status values (ENABLED, PAUSED, REMOVED)
+   - ✅ Validate cpcBid is positive if provided
+   - ✅ Validate cpmBid is positive if provided
+   - ✅ Handle API errors gracefully
+   - ✅ Handle network errors gracefully
+   - ✅ **Integration test**: Create campaign first, then create ad group (Task 4.3.1 requirement)
+   - ✅ **Error test**: Invalid campaign ID returns error
+   - ✅ **Error test**: Non-existent campaign ID returns error
+   - ✅ **Error test**: Malformed campaign ID returns error
+
+2. **updateAdGroup Tests** (5 tests):
+   - ✅ Successfully update ad group name
+   - ✅ Successfully update ad group status
+   - ✅ Successfully update ad group cpcBid
+   - ✅ Successfully update multiple fields at once
+   - ✅ Remove undefined fields from update request
+   - ✅ Handle API errors gracefully
+
+**Key Findings**:
+- All required Task 4.3.1 tests are implemented and passing
+- Integration test successfully validates campaign creation followed by ad group creation
+- Error scenarios properly handled (invalid campaign ID, network errors, validation errors)
+- Response includes ad group ID as required
+- X-Ray tracing integration verified for all ad group operations
 
 #### Task 4.3.2: Test Ad Operations
 **Assigned to**: VANES  

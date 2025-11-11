@@ -232,10 +232,168 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
       expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
     });
+
+    // ========================================================================
+    // Task 4.3.1: Integration & Error Tests
+    // ========================================================================
+
+    it('should create campaign first, then create ad group in that campaign', async () => {
+      // Step 1: Create a campaign
+      const mockCampaignResponse: any = {
+        id: 'campaign-new-123',
+        accountId: 'test-account-123',
+        name: 'New Test Campaign',
+        status: 'SUCCESS',
+        campaignStatus: 'ENABLED',
+        budget: {
+          amount: 100.0,
+          deliveryMethod: 'STANDARD',
+        },
+        biddingStrategy: 'MANUAL_CPC',
+      };
+
+      const mockAdGroupResponse: MarinAdGroupResponse = {
+        id: 'adgroup-new-123',
+        accountId: 'test-account-123',
+        campaignId: 'campaign-new-123',
+        name: 'Test Ad Group in New Campaign',
+        adGroupStatus: 'ENABLED',
+        cpcBid: 2.0,
+        status: 'SUCCESS',
+      };
+
+      // Mock the campaign creation
+      mockHttpClient.post
+        .mockResolvedValueOnce({ data: mockCampaignResponse })
+        // Then mock the ad group creation
+        .mockResolvedValueOnce({ data: mockAdGroupResponse });
+
+      // Create campaign first
+      const campaignResult = await service.createCampaign(
+        {
+          objective: 'conversions',
+          budget: {
+            total: 100.0,
+            daily: 100.0,
+            currency: 'USD'
+          },
+          targetAudience: {
+            demographics: {
+              age: '25-54',
+              gender: 'All',
+              location: 'United States'
+            }
+          },
+          timeline: {
+            startDate: '2025-01-15',
+            endDate: '2025-02-15',
+            duration: 30
+          },
+          platforms: ['google'],
+          kpis: {
+            primary: 'conversions',
+            secondary: ['ctr', 'roas']
+          }
+        },
+        'New Test Campaign'
+      );
+
+      expect(campaignResult.success).toBe(true);
+      expect(campaignResult.campaignId).toBe('campaign-new-123');
+
+      // Then create ad group in that campaign
+      const adGroupResult = await service.createAdGroup('campaign-new-123', {
+        name: 'Test Ad Group in New Campaign',
+        status: 'ENABLED',
+        cpcBid: 2.0,
+      });
+
+      expect(adGroupResult.success).toBe(true);
+      expect(adGroupResult.adGroupId).toBe('adgroup-new-123');
+      expect(adGroupResult.details?.campaignId).toBe('campaign-new-123');
+
+      // Verify both API calls were made
+      expect(mockHttpClient.post).toHaveBeenCalledTimes(2);
+      expect(mockHttpClient.post).toHaveBeenNthCalledWith(
+        1,
+        '/dispatcher/google/campaigns',
+        expect.any(Object)
+      );
+      expect(mockHttpClient.post).toHaveBeenNthCalledWith(
+        2,
+        '/dispatcher/google/campaigns/campaign-new-123/adgroups',
+        expect.objectContaining({
+          campaignId: 'campaign-new-123',
+          name: 'Test Ad Group in New Campaign',
+        })
+      );
+    });
+
+    it('should return error when creating ad group with invalid campaign ID', async () => {
+      const invalidCampaignId = 'invalid-campaign-id';
+
+      // Mock API error for invalid campaign ID
+      mockHttpClient.post.mockRejectedValue({
+        response: {
+          status: 404,
+          data: {
+            error: 'Campaign not found',
+            message: `Campaign with ID ${invalidCampaignId} does not exist`
+          },
+        },
+      });
+
+      const result = await service.createAdGroup(invalidCampaignId, mockAdGroupData);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBeDefined();
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        `/dispatcher/google/campaigns/${invalidCampaignId}/adgroups`,
+        expect.any(Object)
+      );
+    });
+
+    it('should return error when creating ad group with non-existent campaign ID', async () => {
+      const nonExistentCampaignId = 'campaign-does-not-exist';
+
+      // Mock 404 error
+      mockHttpClient.post.mockRejectedValue({
+        response: {
+          status: 404,
+          data: { error: 'Not Found' },
+        },
+      });
+
+      const result = await service.createAdGroup(nonExistentCampaignId, {
+        name: 'Orphan Ad Group',
+        status: 'ENABLED',
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBeDefined();
+    });
+
+    it('should return error when creating ad group with malformed campaign ID', async () => {
+      const malformedCampaignId = '';
+
+      // This should fail even before the API call in some implementations,
+      // or return a 400 Bad Request from the API
+      mockHttpClient.post.mockRejectedValue({
+        response: {
+          status: 400,
+          data: { error: 'Invalid campaign ID format' },
+        },
+      });
+
+      const result = await service.createAdGroup(malformedCampaignId, mockAdGroupData);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBeDefined();
+    });
   });
 
   // ========================================================================
-  // updateAdGroup Tests (Task 2B.1.2)
+  // updateAdGroup Tests (Task 2B.1.2 & Task 4.3.1)
   // ========================================================================
 
   describe('updateAdGroup', () => {
