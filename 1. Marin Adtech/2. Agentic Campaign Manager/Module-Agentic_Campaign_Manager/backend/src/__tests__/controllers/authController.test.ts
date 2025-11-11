@@ -1,23 +1,48 @@
 import { Request, Response } from 'express';
 import { AuthController } from '../../controllers/authController';
+import { oauthService } from '../../services/oauthService';
+
+jest.mock('../../services/oauthService', () => ({
+  oauthService: {
+    generateGoogleAuthUrl: jest.fn().mockReturnValue('https://accounts.google.com/o/oauth2/auth'),
+    generateMetaAuthUrl: jest.fn().mockReturnValue('https://www.facebook.com/v18.0/dialog/oauth'),
+    generateMicrosoftAuthUrl: jest.fn().mockReturnValue('https://login.microsoftonline.com/common/oauth2/v2.0/authorize'),
+    validateState: jest.fn().mockReturnValue({ redirectUri: 'http://localhost:3000' }),
+    exchangeGoogleCode: jest.fn().mockResolvedValue({ accessToken: 'token-123', expiresAt: Date.now() + 3600000 }),
+    exchangeMetaCode: jest.fn().mockResolvedValue({ accessToken: 'token-123', expiresAt: Date.now() + 3600000 }),
+    exchangeMicrosoftCode: jest.fn().mockResolvedValue({ accessToken: 'token-123', expiresAt: Date.now() + 3600000 }),
+    storeToken: jest.fn(),
+    getToken: jest.fn().mockReturnValue(null),
+    isTokenExpired: jest.fn().mockReturnValue(false),
+    removeToken: jest.fn(),
+  },
+}));
 
 describe('AuthController', () => {
   let controller: AuthController;
   let mockRequest: Partial<Request>;
   let mockResponse: Partial<Response>;
+  let mockNext: jest.Mock;
 
   beforeEach(() => {
+    jest.clearAllMocks();
     controller = new AuthController();
-    mockRequest = {};
+    mockRequest = {
+      query: {},
+      body: {},
+      params: {},
+    };
     mockResponse = {
       json: jest.fn().mockReturnThis(),
       status: jest.fn().mockReturnThis(),
+      redirect: jest.fn().mockReturnThis(),
     };
+    mockNext = jest.fn();
   });
 
-  describe('initGoogleAuth', () => {
-    it('should return Google OAuth URL (placeholder)', async () => {
-      await controller.initGoogleAuth(
+  describe('authorizeGoogle', () => {
+    it('should return Google OAuth URL', async () => {
+      await controller.authorizeGoogle(
         mockRequest as Request,
         mockResponse as Response
       );
@@ -25,35 +50,33 @@ describe('AuthController', () => {
       expect(mockResponse.json).toHaveBeenCalledWith(
         expect.objectContaining({
           authUrl: 'https://accounts.google.com/o/oauth2/auth',
+          platform: 'google',
         })
       );
     });
-  });
 
-  describe('googleCallback', () => {
-    it('should handle OAuth callback (placeholder)', async () => {
-      mockRequest.query = {
-        code: 'auth-code-123',
-        state: 'state-123',
-      };
+    it('should handle errors', async () => {
+      (oauthService.generateGoogleAuthUrl as jest.Mock).mockImplementationOnce(() => {
+        throw new Error('OAuth error');
+      });
 
-      await controller.googleCallback(
+      await controller.authorizeGoogle(
         mockRequest as Request,
         mockResponse as Response
       );
 
+      expect(mockResponse.status).toHaveBeenCalledWith(500);
       expect(mockResponse.json).toHaveBeenCalledWith(
         expect.objectContaining({
-          code: 'auth-code-123',
-          state: 'state-123',
+          error: 'Failed to generate authorization URL',
         })
       );
     });
   });
 
-  describe('initMetaAuth', () => {
-    it('should return Meta OAuth URL (placeholder)', async () => {
-      await controller.initMetaAuth(
+  describe('authorizeMeta', () => {
+    it('should return Meta OAuth URL', async () => {
+      await controller.authorizeMeta(
         mockRequest as Request,
         mockResponse as Response
       );
@@ -61,35 +84,15 @@ describe('AuthController', () => {
       expect(mockResponse.json).toHaveBeenCalledWith(
         expect.objectContaining({
           authUrl: 'https://www.facebook.com/v18.0/dialog/oauth',
+          platform: 'meta',
         })
       );
     });
   });
 
-  describe('metaCallback', () => {
-    it('should handle Meta OAuth callback (placeholder)', async () => {
-      mockRequest.query = {
-        code: 'meta-code-123',
-        state: 'state-123',
-      };
-
-      await controller.metaCallback(
-        mockRequest as Request,
-        mockResponse as Response
-      );
-
-      expect(mockResponse.json).toHaveBeenCalledWith(
-        expect.objectContaining({
-          code: 'meta-code-123',
-          state: 'state-123',
-        })
-      );
-    });
-  });
-
-  describe('initMicrosoftAuth', () => {
-    it('should return Microsoft OAuth URL (placeholder)', async () => {
-      await controller.initMicrosoftAuth(
+  describe('authorizeMicrosoft', () => {
+    it('should return Microsoft OAuth URL', async () => {
+      await controller.authorizeMicrosoft(
         mockRequest as Request,
         mockResponse as Response
       );
@@ -97,52 +100,15 @@ describe('AuthController', () => {
       expect(mockResponse.json).toHaveBeenCalledWith(
         expect.objectContaining({
           authUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
+          platform: 'microsoft',
         })
       );
     });
   });
 
-  describe('microsoftCallback', () => {
-    it('should handle Microsoft OAuth callback (placeholder)', async () => {
-      mockRequest.query = {
-        code: 'microsoft-code-123',
-        state: 'state-123',
-      };
-
-      await controller.microsoftCallback(
-        mockRequest as Request,
-        mockResponse as Response
-      );
-
-      expect(mockResponse.json).toHaveBeenCalledWith(
-        expect.objectContaining({
-          code: 'microsoft-code-123',
-          state: 'state-123',
-        })
-      );
-    });
-  });
-
-  describe('getTokens', () => {
-    it('should return empty tokens array (placeholder)', async () => {
-      await controller.getTokens(
-        mockRequest as Request,
-        mockResponse as Response
-      );
-
-      expect(mockResponse.json).toHaveBeenCalledWith(
-        expect.objectContaining({
-          tokens: [],
-        })
-      );
-    });
-  });
-
-  describe('refreshToken', () => {
-    it('should return platform info (placeholder)', async () => {
-      mockRequest.body = { platform: 'google' };
-
-      await controller.refreshToken(
+  describe('getGoogleStatus', () => {
+    it('should return Google connection status', async () => {
+      await controller.getGoogleStatus(
         mockRequest as Request,
         mockResponse as Response
       );
@@ -150,23 +116,25 @@ describe('AuthController', () => {
       expect(mockResponse.json).toHaveBeenCalledWith(
         expect.objectContaining({
           platform: 'google',
+          connected: false,
+          hasToken: false,
         })
       );
     });
   });
 
-  describe('revokeToken', () => {
-    it('should return platform info (placeholder)', async () => {
-      mockRequest.params = { platform: 'google' };
-
-      await controller.revokeToken(
+  describe('disconnectGoogle', () => {
+    it('should disconnect Google Ads OAuth', async () => {
+      await controller.disconnectGoogle(
         mockRequest as Request,
         mockResponse as Response
       );
 
+      expect(oauthService.removeToken).toHaveBeenCalledWith('google');
       expect(mockResponse.json).toHaveBeenCalledWith(
         expect.objectContaining({
           platform: 'google',
+          disconnected: true,
         })
       );
     });

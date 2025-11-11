@@ -1,11 +1,45 @@
 /**
  * Marin Integration Tests
- * 
+ *
  * Integration tests for Marin Dispatcher Lambda client integration
  * Tests Lambda event handling, response format, SQS events, and error handling
- * 
+ *
  * @module marinIntegration.test
  */
+
+// Mock MarinDispatcherService before importing clients
+jest.mock('../../services/marinDispatcherService', () => ({
+  MarinDispatcherService: jest.fn().mockImplementation(() => ({
+    createCampaign: jest.fn().mockResolvedValue({
+      success: true,
+      campaignId: 'test-123',
+      details: { status: 'active' },
+    }),
+    getCampaignStatus: jest.fn().mockResolvedValue({
+      success: true,
+      details: { status: 'active' },
+    }),
+    updateCampaign: jest.fn().mockResolvedValue({
+      success: true,
+      campaignId: 'test-123',
+      details: { status: 'updated' },
+    }),
+    pauseCampaign: jest.fn().mockResolvedValue({
+      success: true,
+      campaignId: 'test-123',
+      details: { status: 'paused' },
+    }),
+    resumeCampaign: jest.fn().mockResolvedValue({
+      success: true,
+      campaignId: 'test-123',
+      details: { status: 'active' },
+    }),
+    deleteCampaign: jest.fn().mockResolvedValue({
+      success: true,
+      details: { deleted: true },
+    }),
+  })),
+}));
 
 import { MarinDispatcherClient } from '../../lib/marinDispatcherClient';
 import { MarinBatchJobClient } from '../../lib/marinBatchJobClient';
