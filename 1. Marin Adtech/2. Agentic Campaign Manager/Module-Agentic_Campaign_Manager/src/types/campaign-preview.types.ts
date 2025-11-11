@@ -3,7 +3,6 @@
  * Defines types for campaign preview and editing interface
  */
 
-import { GeneratedAdGroup } from './adgroup-generation.types';
 import { GeneratedKeyword } from './keyword-generation.types';
 import { GeneratedRSA } from './rsa-generation.types';
 

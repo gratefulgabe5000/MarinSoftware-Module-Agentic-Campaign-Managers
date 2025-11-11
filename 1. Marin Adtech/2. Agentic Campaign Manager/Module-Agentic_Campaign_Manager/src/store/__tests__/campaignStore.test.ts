@@ -1,5 +1,6 @@
 import { useCampaignStore } from '../campaignStore';
-import { CampaignPlan, Campaign, CampaignStatus } from '../../types/campaign.types';
+import { Campaign } from '../../types/campaign.types';
+import { CampaignPlan } from '../../types/ai.types';
 
 // Mock IndexedDB operations
 jest.mock('../../utils/indexedDB', () => ({

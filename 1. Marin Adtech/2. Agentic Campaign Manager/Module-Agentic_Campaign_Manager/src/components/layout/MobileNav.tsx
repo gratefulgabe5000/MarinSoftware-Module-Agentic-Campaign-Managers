@@ -127,7 +127,7 @@ const MobileNav: React.FC<MobileNavProps> = ({
                     to={item.path}
                     end={item.path === '/' || item.path === '/campaigns'}
                     onClick={onToggle}
-                    className={({ isActive }) =>
+                    className={({ isActive }: { isActive: boolean }) =>
                       `flex items-center gap-3 rounded-md px-4 py-3 text-base font-medium transition-colors
                       ${
                         isActive
@@ -137,7 +137,6 @@ const MobileNav: React.FC<MobileNavProps> = ({
                       ${item.disabled ? 'pointer-events-none opacity-50' : ''}
                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset`
                     }
-                    aria-current={({ isActive }) => (isActive ? 'page' : undefined)}
                     aria-disabled={item.disabled}
                   >
                     {/* Icon */}

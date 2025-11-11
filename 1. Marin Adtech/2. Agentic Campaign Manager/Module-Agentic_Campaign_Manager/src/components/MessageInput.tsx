@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { Spinner } from './ui/spinner';
-import { cn } from '@/lib/utils';
 
 /**
  * MessageInput Component Props

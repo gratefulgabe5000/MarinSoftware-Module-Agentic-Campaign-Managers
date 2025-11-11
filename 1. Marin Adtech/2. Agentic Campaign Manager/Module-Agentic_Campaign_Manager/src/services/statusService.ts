@@ -138,7 +138,7 @@ class StatusService {
    * Stop all monitoring
    */
   stopAllMonitoring(): void {
-    this.pollingIntervals.forEach((interval, campaignId) => {
+    this.pollingIntervals.forEach((interval, _campaignId) => {
       clearInterval(interval);
     });
     this.pollingIntervals.clear();

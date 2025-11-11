@@ -365,13 +365,11 @@ export const useCampaignPreviewStore = create<CampaignPreviewStore>((set, get) =
   // Undo (placeholder - can be implemented with edit history)
   undo: () => {
     // TODO: Implement undo functionality
-    console.log('Undo not yet implemented');
   },
 
   // Redo (placeholder - can be implemented with edit history)
   redo: () => {
     // TODO: Implement redo functionality
-    console.log('Redo not yet implemented');
   },
 }));
 

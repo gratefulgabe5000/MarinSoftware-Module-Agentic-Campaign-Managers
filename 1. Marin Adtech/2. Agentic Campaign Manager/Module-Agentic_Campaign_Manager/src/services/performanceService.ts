@@ -2,10 +2,8 @@ import axios from 'axios';
 import {
   PerformanceMetrics,
   PerformanceTimeSeries,
-  PerformanceRequest,
   PerformanceResponse,
   TimeRangeConfig,
-  TimeRange,
   PerformanceDataPoint,
 } from '../types/performance.types';
 import { cachePerformanceMetrics, getCachedPerformanceMetrics } from '../utils/indexedDB';

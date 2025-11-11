@@ -2,13 +2,10 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import {
   CampaignPatterns,
-  PatternExtractionRequest,
 } from '../types/campaign-patterns.types';
 
 const API_BASE_URL =
-  typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE_URL
-    ? import.meta.env.VITE_API_BASE_URL
-    : 'http://localhost:3001/api';
+  import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
 
 /**
  * Hook for fetching and managing campaign patterns

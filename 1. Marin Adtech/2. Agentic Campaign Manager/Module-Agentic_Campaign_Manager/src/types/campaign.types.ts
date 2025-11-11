@@ -3,7 +3,7 @@
  * Defines types for campaign management
  */
 
-import { CampaignPlan, AdGroupPlan } from './ai.types';
+import { CampaignPlan } from './ai.types';
 
 /**
  * Campaign Interface
@@ -173,6 +173,14 @@ export interface CampaignUpdateRequest {
 }
 
 /**
+ * Campaign Creation Error
+ */
+export interface CampaignCreationError {
+  platform: string;
+  error: string;
+}
+
+/**
  * Campaign Creation Response
  */
 export interface CampaignCreationResponse {
@@ -181,5 +189,6 @@ export interface CampaignCreationResponse {
   platformCampaignIds: PlatformCampaignIds;
   createdAt: Date;
   message?: string;
+  errors?: CampaignCreationError[];
 }
 

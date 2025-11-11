@@ -66,7 +66,6 @@ export interface HeaderProps {
  * - Desktop (≥1024px): Full navigation with all features
  */
 const Header: React.FC<HeaderProps> = ({
-  adeContext,
   logo,
   moduleName = 'Agentic Campaign Manager',
   navItems,

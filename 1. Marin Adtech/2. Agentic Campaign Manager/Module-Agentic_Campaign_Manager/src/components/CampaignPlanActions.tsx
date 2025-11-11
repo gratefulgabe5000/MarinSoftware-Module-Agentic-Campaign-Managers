@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCampaignStore } from '../store/campaignStore';
 import { campaignService } from '../services/campaignService';
 import { toastService } from '../utils/toastService';
+import { CampaignCreationError } from '../types/campaign.types';
 import { Button } from './ui/button';
 import { EyeIcon, CheckCircle2Icon } from 'lucide-react';
 
@@ -80,7 +81,7 @@ const CampaignPlanActions: React.FC<CampaignPlanActionsProps> = () => {
       // Show success message if there are errors
       if (response.errors && response.errors.length > 0) {
         const errorMessage = response.errors
-          .map((e: any) => `${e.platform}: ${e.error}`)
+          .map((e: CampaignCreationError) => `${e.platform}: ${e.error}`)
           .join('\n');
         toastService.warning(`Campaign created with some errors:\n${errorMessage}`);
       } else {

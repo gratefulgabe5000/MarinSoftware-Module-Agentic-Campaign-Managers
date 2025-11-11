@@ -130,6 +130,19 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
   /**
    * Check if authenticated
    * For Marin Dispatcher, this verifies we can reach the API (internal network)
+   *
+   * @returns Promise<boolean> True if API is reachable, false otherwise
+   *
+   * @example
+   * ```typescript
+   * const service = new MarinDispatcherService();
+   * const isAuth = await service.isAuthenticated();
+   * if (isAuth) {
+   *   console.log('Connected to Marin Dispatcher API');
+   * }
+   * ```
+   *
+   * @error Network connectivity errors are caught and logged, returning false
    */
   async isAuthenticated(): Promise<boolean> {
     const segment = AWSXRay.getSegment();
@@ -157,6 +170,25 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
 
   /**
    * Create a campaign on Marin Dispatcher
+   *
+   * @param campaignPlan - Campaign plan with budget and objective information
+   * @param name - Campaign name (max 255 characters)
+   * @returns Promise<PlatformAPIResponse> Response with success status, campaign ID, and details
+   *
+   * @example
+   * ```typescript
+   * const campaignPlan: CampaignPlan = {
+   *   budget: { total: 1000, daily: 50 },
+   *   objective: 'SALES'
+   * };
+   * const response = await service.createCampaign(campaignPlan, 'Summer Sale 2024');
+   * if (response.success) {
+   *   console.log('Campaign created:', response.campaignId);
+   * }
+   * ```
+   *
+   * @error Validation errors if budget is missing or name exceeds 255 chars
+   * @error Network errors from Dispatcher API are caught and returned in response
    */
   async createCampaign(
     campaignPlan: CampaignPlan,
@@ -197,6 +229,24 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
 
   /**
    * Update a campaign on Marin Dispatcher
+   *
+   * @param campaignId - Campaign ID to update (required)
+   * @param updates - Partial campaign plan with fields to update (budget, etc.)
+   * @returns Promise<PlatformAPIResponse> Response with success status and campaign details
+   *
+   * @example
+   * ```typescript
+   * const updates: Partial<CampaignPlan> = {
+   *   budget: { total: 1500, daily: 75 }
+   * };
+   * const response = await service.updateCampaign('campaign-123', updates);
+   * if (response.success) {
+   *   console.log('Campaign updated');
+   * }
+   * ```
+   *
+   * @error Returns error response if campaignId is empty or invalid
+   * @error Returns error response if no valid fields are provided for update
    */
   async updateCampaign(
     campaignId: string,
@@ -266,6 +316,22 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
 
   /**
    * Pause a campaign on Marin Dispatcher
+   *
+   * Pausing a campaign stops serving ads but preserves all campaign settings and data.
+   * The campaign can be resumed at any time.
+   *
+   * @param campaignId - Campaign ID to pause (required)
+   * @returns Promise<PlatformAPIResponse> Response with success status and updated campaign details
+   *
+   * @example
+   * ```typescript
+   * const response = await service.pauseCampaign('campaign-123');
+   * if (response.success) {
+   *   console.log('Campaign paused');
+   * }
+   * ```
+   *
+   * @error Returns error response if campaignId is empty or invalid
    */
   async pauseCampaign(campaignId: string): Promise<PlatformAPIResponse> {
     const segment = AWSXRay.getSegment();
@@ -304,6 +370,23 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
 
   /**
    * Resume a campaign on Marin Dispatcher
+   *
+   * Resumes a paused campaign, allowing ads to be served again.
+   * Only works on campaigns that are in PAUSED status.
+   *
+   * @param campaignId - Campaign ID to resume (required)
+   * @returns Promise<PlatformAPIResponse> Response with success status and updated campaign details
+   *
+   * @example
+   * ```typescript
+   * const response = await service.resumeCampaign('campaign-123');
+   * if (response.success) {
+   *   console.log('Campaign resumed and ads serving');
+   * }
+   * ```
+   *
+   * @error Returns error response if campaignId is empty or invalid
+   * @error API may return error if campaign is not in PAUSED status
    */
   async resumeCampaign(campaignId: string): Promise<PlatformAPIResponse> {
     const segment = AWSXRay.getSegment();
@@ -342,7 +425,24 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
 
   /**
    * Delete a campaign on Marin Dispatcher
-   * Note: Marin Dispatcher uses status update to REMOVED instead of DELETE endpoint
+   *
+   * Deletes a campaign by setting its status to REMOVED. Note: Marin Dispatcher uses
+   * a status update to REMOVED instead of a DELETE HTTP method. The campaign data is
+   * preserved in the system but marked as removed.
+   *
+   * @param campaignId - Campaign ID to delete (required)
+   * @returns Promise<PlatformAPIResponse> Response with success status and campaign details
+   *
+   * @example
+   * ```typescript
+   * const response = await service.deleteCampaign('campaign-123');
+   * if (response.success) {
+   *   console.log('Campaign deleted (status set to REMOVED)');
+   * }
+   * ```
+   *
+   * @error Returns error response if campaignId is empty or invalid
+   * @note Deleted campaigns (status=REMOVED) can be seen in API queries but are not active
    */
   async deleteCampaign(campaignId: string): Promise<PlatformAPIResponse> {
     const segment = AWSXRay.getSegment();
@@ -381,6 +481,24 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
 
   /**
    * Get campaign status from Marin Dispatcher
+   *
+   * Retrieves the current status and details of a campaign including budget,
+   * bidding strategy, and other campaign metadata.
+   *
+   * @param campaignId - Campaign ID to get status for (required)
+   * @returns Promise<PlatformAPIResponse> Response with success status and complete campaign details
+   *
+   * @example
+   * ```typescript
+   * const response = await service.getCampaignStatus('campaign-123');
+   * if (response.success) {
+   *   console.log('Campaign status:', response.details?.status);
+   *   console.log('Budget:', response.details?.budget);
+   * }
+   * ```
+   *
+   * @error Returns error response if campaignId is empty or invalid
+   * @error Network errors from Dispatcher API are caught and returned in response
    */
   async getCampaignStatus(campaignId: string): Promise<PlatformAPIResponse> {
     const segment = AWSXRay.getSegment();
@@ -426,8 +544,6 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
     const subsegment = segment?.addNewSubsegment('MarinDispatcher.queryCampaigns');
 
     try {
-      console.log(`[Marin Dispatcher] Querying campaigns with limit: ${limit}, offset: ${offset}`);
-
       // Build query parameters
       const params: MarinCampaignListRequest = {
         accountId: this.accountId,
@@ -448,8 +564,6 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
       );
 
       subsegment?.close();
-
-      console.log(`[Marin Dispatcher] Successfully retrieved ${response.data.campaigns.length} campaigns (total: ${response.data.total})`);
 
       return response.data;
     } catch (error: any) {
@@ -481,9 +595,6 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
     adGroupData: Omit<MarinAdGroupRequest, 'accountId' | 'campaignId'>
   ): Promise<PlatformAPIResponse> {
     try {
-      console.log(`[Marin Dispatcher] Creating ad group in campaign: ${campaignId}`);
-      console.log(`[Marin Dispatcher] Ad group data:`, adGroupData);
-
       const request: MarinAdGroupRequest = {
         accountId: this.accountId,
         campaignId,
@@ -510,8 +621,6 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
 
       subsegment?.close();
 
-      console.log(`[Marin Dispatcher] Ad group created successfully: ${response.data.id}`);
-
       return {
         success: true,
         adGroupId: response.data.id,
@@ -534,9 +643,6 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
     updates: MarinAdGroupUpdateRequest
   ): Promise<PlatformAPIResponse> {
     try {
-      console.log(`[Marin Dispatcher] Updating ad group: ${adGroupId}`);
-      console.log(`[Marin Dispatcher] Updates:`, updates);
-
       const request: MarinAdGroupUpdateRequest = { ...updates };
 
       // Remove undefined fields
@@ -553,8 +659,6 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
       );
 
       subsegment?.close();
-
-      console.log(`[Marin Dispatcher] Ad group updated successfully: ${response.data.id}`);
 
       return {
         success: true,
@@ -582,9 +686,6 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
     adData: Omit<MarinAdRequest, 'accountId' | 'adGroupId'>
   ): Promise<PlatformAPIResponse> {
     try {
-      console.log(`[Marin Dispatcher] Creating ad in ad group: ${adGroupId}`);
-      console.log(`[Marin Dispatcher] Ad data:`, adData);
-
       // Build complete request with accountId and adGroupId
       const request: MarinAdRequest = {
         accountId: this.accountId,
@@ -614,8 +715,6 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
 
       subsegment?.close();
 
-      console.log(`[Marin Dispatcher] Ad created successfully: ${response.data.id}`);
-
       return {
         success: true,
         adId: response.data.id,
@@ -638,9 +737,6 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
     updates: MarinAdUpdateRequest
   ): Promise<PlatformAPIResponse> {
     try {
-      console.log(`[Marin Dispatcher] Updating ad: ${adId}`);
-      console.log(`[Marin Dispatcher] Updates:`, updates);
-
       const request: MarinAdUpdateRequest = { ...updates };
 
       // Remove undefined fields
@@ -668,8 +764,6 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
 
       subsegment?.close();
 
-      console.log(`[Marin Dispatcher] Ad updated successfully: ${response.data.id}`);
-
       return {
         success: true,
         adId: response.data.id,
@@ -696,9 +790,6 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
     keywords: Omit<MarinKeywordRequest, 'accountId' | 'adGroupId'>[]
   ): Promise<PlatformAPIResponse> {
     try {
-      console.log(`[Marin Dispatcher] Creating ${keywords.length} keywords in ad group: ${adGroupId}`);
-      console.log(`[Marin Dispatcher] Keywords:`, keywords);
-
       // Build complete request with accountId and adGroupId for each keyword
       const request: MarinBulkKeywordRequest = {
         accountId: this.accountId,
@@ -738,8 +829,6 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
 
       subsegment?.close();
 
-      console.log(`[Marin Dispatcher] ${response.data.keywords.length} keywords created successfully`);
-
       return {
         success: true,
         keywords: response.data.keywords,
@@ -762,9 +851,6 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
     updates: MarinKeywordUpdateRequest
   ): Promise<PlatformAPIResponse> {
     try {
-      console.log(`[Marin Dispatcher] Updating keyword: ${keywordId}`);
-      console.log(`[Marin Dispatcher] Updates:`, updates);
-
       const request: MarinKeywordUpdateRequest = { ...updates };
 
       // Remove undefined fields
@@ -791,8 +877,6 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
       );
 
       subsegment?.close();
-
-      console.log(`[Marin Dispatcher] Keyword updated successfully: ${response.data.id}`);
 
       return {
         success: true,

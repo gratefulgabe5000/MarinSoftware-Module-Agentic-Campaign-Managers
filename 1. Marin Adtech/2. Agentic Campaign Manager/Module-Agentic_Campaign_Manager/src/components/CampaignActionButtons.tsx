@@ -104,7 +104,7 @@ const CampaignActionButtons: React.FC<CampaignActionButtonsProps> = ({
       } else {
         // Success - navigation will handle showing the campaign
       }
-    } catch (error) {
+    } catch (error: unknown) {
       setError(error instanceof Error ? error.message : 'Failed to approve campaign');
       alert(`Failed to create campaign: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
@@ -155,7 +155,6 @@ const CampaignActionButtons: React.FC<CampaignActionButtonsProps> = ({
   const handleRequestChanges = () => {
     // TODO: Navigate back to conversational interface with context
     // For MVP, this is a placeholder
-    console.log('Request changes for campaign plan:', campaignPlan);
     alert('Changes request functionality will be implemented in Phase 4.');
   };
 

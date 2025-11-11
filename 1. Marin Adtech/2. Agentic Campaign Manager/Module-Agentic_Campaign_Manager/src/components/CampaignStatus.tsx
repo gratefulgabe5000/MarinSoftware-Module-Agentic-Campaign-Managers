@@ -34,18 +34,12 @@ const CampaignStatus: React.FC<CampaignStatusProps> = ({
   enableNotifications = true,
   campaignName = 'Campaign',
 }) => {
-  console.log('=== CampaignStatus: Component Render ===');
-  console.log('Campaign ID:', campaignId);
-  console.log('Initial Status (prop):', initialStatus);
-
   const [status, setStatus] = useState<StatusEnum | null>(initialStatus || null);
   const [statusUpdate, setStatusUpdate] = useState<StatusUpdate | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [statusHistory, setStatusHistory] = useState<StatusUpdate[]>([]);
   const updateCampaign = useCampaignStore((state) => state.updateCampaign);
-
-  console.log('Current status (state):', status);
 
   /**
    * Map StatusEnum to CampaignStatusType
@@ -69,18 +63,8 @@ const CampaignStatus: React.FC<CampaignStatusProps> = ({
    * Sync status with initialStatus prop changes
    */
   useEffect(() => {
-    console.log('=== CampaignStatus: useEffect [initialStatus] triggered ===');
-    console.log('initialStatus prop:', initialStatus);
-    console.log('Current status state:', status);
-    console.log('Are they different?', initialStatus !== status);
-
     if (initialStatus && initialStatus !== status) {
-      console.log('>>> Updating status from', status, 'to', initialStatus);
       setStatus(initialStatus);
-    } else if (!initialStatus) {
-      console.log('>>> initialStatus is null/undefined, not updating');
-    } else {
-      console.log('>>> Status already matches, no update needed');
     }
   }, [initialStatus, status]);
 
@@ -91,16 +75,11 @@ const CampaignStatus: React.FC<CampaignStatusProps> = ({
     const loadStatus = async () => {
       if (!campaignId) return;
 
-      console.log('=== CampaignStatus: Loading status ===');
-      console.log('Campaign ID:', campaignId);
-
       setIsLoading(true);
       setError(null);
 
       try {
         const update = await statusService.getCampaignStatus(campaignId);
-        console.log('Status update from API:', update);
-        console.log('Status:', update.status);
 
         setStatus(update.status);
         setStatusUpdate(update);
@@ -108,9 +87,6 @@ const CampaignStatus: React.FC<CampaignStatusProps> = ({
 
         // Update campaign status in store on initial load
         const campaignStatus = mapStatusToCampaignStatus(update.status);
-        console.log('Mapped campaign status:', campaignStatus);
-        console.log('Updating campaign in store with status:', campaignStatus);
-
         updateCampaign(campaignId, { status: campaignStatus });
       } catch (err) {
         console.error('Error loading campaign status:', err);

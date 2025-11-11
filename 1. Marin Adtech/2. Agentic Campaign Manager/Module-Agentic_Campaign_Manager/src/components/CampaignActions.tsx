@@ -45,9 +45,6 @@ const CampaignActions: React.FC<CampaignActionsProps> = ({
    * Handle pause action
    */
   const handlePause = () => {
-    console.log('=== CampaignActions: handlePause clicked ===');
-    console.log('Campaign:', campaign);
-    console.log('Current status:', campaign.status);
     setActionType('pause');
     setShowConfirmDialog(true);
   };
@@ -56,9 +53,6 @@ const CampaignActions: React.FC<CampaignActionsProps> = ({
    * Handle resume action
    */
   const handleResume = () => {
-    console.log('=== CampaignActions: handleResume clicked ===');
-    console.log('Campaign:', campaign);
-    console.log('Current status:', campaign.status);
     setActionType('resume');
     setShowConfirmDialog(true);
   };
@@ -77,36 +71,25 @@ const CampaignActions: React.FC<CampaignActionsProps> = ({
   const confirmAction = async () => {
     if (!actionType) return;
 
-    console.log('=== CampaignActions: confirmAction called ===');
-    console.log('Action Type:', actionType);
-    console.log('Campaign ID:', campaign.id);
-    console.log('Current Campaign Status:', campaign.status);
-
     setIsLoading(true);
     setError(null);
     setShowConfirmDialog(false);
 
     try {
       if (actionType === 'activate') {
-        console.log('Activating campaign...');
         // Activate campaign (update status to active)
         const updatedCampaign = await campaignService.updateCampaign(campaign.id, {
           status: 'active',
         });
-
-        console.log('Campaign activated:', updatedCampaign);
-        console.log('New status:', updatedCampaign.status);
 
         // Update campaign in store
         updateCampaign(campaign.id, updatedCampaign);
         setCampaign(updatedCampaign);
 
         if (onUpdate) {
-          console.log('Calling onUpdate callback with:', updatedCampaign);
           onUpdate(updatedCampaign);
         }
       } else if (actionType === 'pause') {
-        console.log('Pausing campaign...');
         // Pause campaign
         await campaignService.pauseCampaign(campaign.id);
 
@@ -116,18 +99,14 @@ const CampaignActions: React.FC<CampaignActionsProps> = ({
           status: 'paused' as CampaignStatus,
           updatedAt: new Date(),
         };
-        console.log('Campaign paused. Updated campaign:', updatedCampaign);
-        console.log('New status:', updatedCampaign.status);
 
         updateCampaign(campaign.id, updatedCampaign);
         setCampaign(updatedCampaign);
 
         if (onUpdate) {
-          console.log('Calling onUpdate callback with:', updatedCampaign);
           onUpdate(updatedCampaign);
         }
       } else if (actionType === 'resume') {
-        console.log('Resuming campaign...');
         // Resume campaign
         await campaignService.resumeCampaign(campaign.id);
 
@@ -137,29 +116,22 @@ const CampaignActions: React.FC<CampaignActionsProps> = ({
           status: 'active' as CampaignStatus,
           updatedAt: new Date(),
         };
-        console.log('Campaign resumed. Updated campaign:', updatedCampaign);
-        console.log('New status:', updatedCampaign.status);
 
         updateCampaign(campaign.id, updatedCampaign);
         setCampaign(updatedCampaign);
 
         if (onUpdate) {
-          console.log('Calling onUpdate callback with:', updatedCampaign);
           onUpdate(updatedCampaign);
         }
       } else if (actionType === 'delete') {
-        console.log('Deleting campaign...');
         // Delete campaign
         await campaignService.deleteCampaign(campaign.id);
 
-        console.log('Campaign deleted. Navigating to /campaigns');
         // Navigate to dashboard
         navigate('/campaigns');
       }
-      console.log('=== Action completed successfully ===');
     } catch (error) {
-      console.error('=== Action failed ===');
-      console.error('Error:', error);
+      console.error('Error performing campaign action:', error);
       setError(error instanceof Error ? error.message : 'Failed to perform action');
       alert(`Failed to ${actionType} campaign: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
