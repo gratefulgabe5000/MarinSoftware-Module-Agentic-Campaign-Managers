@@ -63,6 +63,23 @@ export class CampaignCreationController {
         return;
       }
 
+      // Validate budget values
+      if (campaignPlan.budget.total !== undefined && campaignPlan.budget.total < 0) {
+        res.status(400).json({
+          error: 'Invalid campaign plan',
+          message: 'Budget total cannot be negative',
+        });
+        return;
+      }
+
+      if (campaignPlan.budget.daily !== undefined && campaignPlan.budget.daily < 0) {
+        res.status(400).json({
+          error: 'Invalid campaign plan',
+          message: 'Budget daily cannot be negative',
+        });
+        return;
+      }
+
       const request: CampaignCreationRequest = {
         campaignPlan,
         name,
