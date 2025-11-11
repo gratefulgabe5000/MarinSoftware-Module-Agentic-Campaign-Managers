@@ -44,7 +44,7 @@ export interface PlatformCampaignIds {
   googleAds?: string;
   meta?: string;
   microsoft?: string;
-  marin?: string;
+  zilkr?: string;
   [platform: string]: string | undefined;
 }
 

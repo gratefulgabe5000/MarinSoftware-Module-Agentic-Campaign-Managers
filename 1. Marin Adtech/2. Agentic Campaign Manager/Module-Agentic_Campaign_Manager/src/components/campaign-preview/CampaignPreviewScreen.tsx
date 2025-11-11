@@ -304,7 +304,10 @@ const CampaignPreviewScreen: React.FC = () => {
         )}
 
         {campaigns.length > 0 && (
-          <CampaignPreviewTable previewData={transformCampaignToPreview(campaigns[parseInt(activeCampaignTab, 10)])} />
+          <CampaignPreviewTable 
+            previewData={transformCampaignToPreview(campaigns[parseInt(activeCampaignTab, 10)])}
+            campaign={campaigns[parseInt(activeCampaignTab, 10)]}
+          />
         )}
       </div>
     </div>

@@ -240,6 +240,49 @@ class CampaignService {
       throw new Error('Failed to resume campaign');
     }
   }
+
+  /**
+   * Sync campaigns from Zilkr Dispatcher
+   * Fetches all campaigns from Zilkr Dispatcher API and returns them
+   */
+  async syncCampaigns(accountId?: string, publisher?: string): Promise<Campaign[]> {
+    try {
+      const params: Record<string, string> = {};
+      if (accountId) {
+        params.accountId = accountId;
+      }
+      if (publisher) {
+        params.publisher = publisher;
+      }
+
+      const response = await axios.post<{ campaigns: Campaign[]; total: number; syncedAt: string }>(
+        `${this.baseURL}/campaigns/sync`,
+        {},
+        {
+          params,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          timeout: 60000, // Longer timeout for sync operation
+        }
+      );
+
+      return response.data.campaigns;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response) {
+          throw new Error(
+            error.response.data?.error?.message ||
+              error.response.data?.message ||
+              `Server error: ${error.response.status}`
+          );
+        } else if (error.request) {
+          throw new Error('Network error: Could not connect to server');
+        }
+      }
+      throw new Error('Failed to sync campaigns from Zilkr Dispatcher');
+    }
+  }
 }
 
 // Export singleton instance

@@ -1,6 +1,6 @@
 # Bulk Worker Lambda Function
 
-Lambda function for bulk campaign creation using Marin Dispatcher Batch Job API.
+Lambda function for bulk campaign creation using Zilkr Dispatcher Batch Job API.
 
 ## Structure
 
@@ -9,14 +9,14 @@ bulk-worker/
 ├── index.js              # Main handler (processes SQS events)
 ├── package.json          # Dependencies
 └── lib/                  # Shared modules
-    └── batchJob.js       # MarinBatchJobClient instance
+    └── batchJob.js       # ZilkrBatchJobClient instance
 ```
 
 ## Environment Variables
 
 The following environment variables are required (set by CloudFormation):
 
-- `DISPATCHER_URL`: Marin Dispatcher API URL (set by CloudFormation)
+- `DISPATCHER_URL`: Zilkr Dispatcher API URL (set by CloudFormation)
 - `DYNAMODB_JOB_STATUS`: DynamoDB table name for job status tracking
 
 ## Event Format

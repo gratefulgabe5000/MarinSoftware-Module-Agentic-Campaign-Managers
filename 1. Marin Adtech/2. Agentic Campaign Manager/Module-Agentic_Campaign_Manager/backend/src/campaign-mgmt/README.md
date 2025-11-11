@@ -1,6 +1,6 @@
 # Campaign Management Lambda Function
 
-Lambda function for campaign management operations using Marin Dispatcher API.
+Lambda function for campaign management operations using Zilkr Dispatcher API.
 
 ## Structure
 
@@ -15,14 +15,14 @@ campaign-mgmt/
 │   └── delete.js        # Delete campaign handler
 └── lib/                  # Shared modules
     ├── db.js            # PostgreSQL connection pool
-    └── dispatcher.js    # MarinDispatcherClient instance
+    └── dispatcher.js    # ZilkrDispatcherClient instance
 ```
 
 ## Environment Variables
 
 The following environment variables are required (set by CloudFormation):
 
-- `DISPATCHER_URL`: Marin Dispatcher API URL (set by CloudFormation)
+- `DISPATCHER_URL`: Zilkr Dispatcher API URL (set by CloudFormation)
 - `POSTGRES_HOST`: PostgreSQL host
 - `POSTGRES_DB`: PostgreSQL database name
 - `POSTGRES_USER`: PostgreSQL user
@@ -30,17 +30,17 @@ The following environment variables are required (set by CloudFormation):
 
 ## Supported Actions
 
-- `create_campaign`: Creates campaign in PostgreSQL and Marin Dispatcher
-- `update_campaign`: Updates campaign in Marin Dispatcher
-- `pause_campaign`: Pauses campaign in Marin Dispatcher
-- `resume_campaign`: Resumes campaign in Marin Dispatcher
-- `delete_campaign`: Deletes campaign in Marin Dispatcher
-- `get_campaign_status`: Gets campaign status from Marin Dispatcher
+- `create_campaign`: Creates campaign in PostgreSQL and Zilkr Dispatcher
+- `update_campaign`: Updates campaign in Zilkr Dispatcher
+- `pause_campaign`: Pauses campaign in Zilkr Dispatcher
+- `resume_campaign`: Resumes campaign in Zilkr Dispatcher
+- `delete_campaign`: Deletes campaign in Zilkr Dispatcher
+- `get_campaign_status`: Gets campaign status from Zilkr Dispatcher
 
 ## Dependencies
 
 - `pg`: PostgreSQL client
-- `axios`: HTTP client (used by MarinDispatcherClient)
+- `axios`: HTTP client (used by ZilkrDispatcherClient)
 - `aws-xray-sdk-core`: AWS X-Ray tracing
 
 ## Deployment

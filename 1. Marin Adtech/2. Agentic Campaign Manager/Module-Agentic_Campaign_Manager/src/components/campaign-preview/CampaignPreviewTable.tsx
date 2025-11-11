@@ -1,9 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import { CampaignPreviewData } from '../../types/campaign-preview.types';
+import { Campaign } from '../../types/campaign.types';
 import { useCampaignPreviewStore } from '../../store/campaignPreviewStore';
 import AdGroupRow from './AdGroupRow';
 import ExportButton from './ExportButton';
 import ExportInstructions from './ExportInstructions';
+import CreateDraftCampaignButton from './CreateDraftCampaignButton';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
@@ -18,9 +20,10 @@ import { ArrowUpIcon, ArrowDownIcon, FolderIcon, KeyIcon, FileTextIcon } from 'l
  */
 interface CampaignPreviewTableProps {
   previewData: CampaignPreviewData;
+  campaign?: Campaign; // Optional campaign object for draft creation
 }
 
-const CampaignPreviewTable: React.FC<CampaignPreviewTableProps> = ({ previewData }) => {
+const CampaignPreviewTable: React.FC<CampaignPreviewTableProps> = ({ previewData, campaign }) => {
   const [expandedAdGroups, setExpandedAdGroups] = useState<Set<string>>(new Set());
   const [filterText, setFilterText] = useState('');
   const [sortBy, setSortBy] = useState<'name' | 'keywords' | 'ads'>('name');
@@ -198,6 +201,11 @@ const CampaignPreviewTable: React.FC<CampaignPreviewTableProps> = ({ previewData
           </div>
         </CardContent>
       </Card>
+
+      {/* Create Draft Campaign Section */}
+      {campaign && (
+        <CreateDraftCampaignButton previewData={displayData} campaign={campaign} />
+      )}
 
       {/* Export Section */}
       <Card>

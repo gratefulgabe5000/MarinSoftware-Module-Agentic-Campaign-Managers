@@ -1,9 +1,10 @@
 # Task List: Marin Dispatcher Integration Implementation
 
-**Document Version**: 3.0
+**Document Version**: 3.1
 **Created**: 2025-11-09
 **Last Updated**: 2025-11-11
-**Updated**: Phase 4 progress - Task 4.4.2: Batch Job Operations complete (55 tasks total, 309+ tests passing)  
+**Updated**: Phase 4 progress - Task 4.4.2: Batch Job Operations complete (55 tasks total, 309+ tests passing)
+**Rebranding**: 2025-11-11 - Complete rebranding from Marin to Zilkr across entire codebase  
 **Project Timeline**: 2-3 days for full implementation  
 **Target**: Complete Marin Dispatcher API integration into Agentic Campaign Manager  
 **Framework**: TypeScript + Node.js + Express  
@@ -72,6 +73,26 @@
 - ✅ **Task 4.2.2**: Test Campaign Query Operations (GABE) - All tests passing (15 query tests)
 - ✅ **Task 4.4.1**: Test Batch Job Creation (GABE) - All tests passing (18 creation tests)
 - ✅ **Task 4.4.2**: Test Batch Job Operations (GABE) - All tests passing (24 operation tests)
+- ✅ **Task 6.1.1**: Rebranding - Marin to Zilkr (GABE) - Complete (2025-11-11)
+  - ✅ Backend services, types, controllers, routes
+  - ✅ Frontend components and services
+  - ✅ Lambda/example files
+  - ✅ Environment variables
+  - ✅ Configuration files
+- ✅ **Task 6.1.2**: API Tuning - Budget Endpoint Implementation (GABE) - Complete (2025-11-11)
+  - ✅ Budget resource creation method implemented
+  - ✅ Campaign creation updated to use budget references
+  - ✅ Error handling improvements
+  - ✅ Change Request document created (ZILKR_DISPATCHER_CR.md)
+  - ⏳ Waiting for Zilkr Dispatcher endpoint: `POST /api/v2/dispatcher/google/campaign-budgets`
+- ✅ **Task 6.1.3**: Campaign Dashboard Enhancements (GABE) - Complete (2025-11-11)
+  - ✅ BUG-007: Tag management and filtering
+  - ✅ BUG-008: Category filtering with batch actions
+  - ✅ Sync functionality from Zilkr Dispatcher
+- ✅ **Task 6.1.4**: Draft Campaign Creation (GABE) - Complete (2025-11-11)
+  - ✅ Create draft campaigns (PAUSED status) from preview screen
+  - ✅ Campaign appears in Campaign Dashboard
+  - ⏳ Waiting for budget endpoint to enable full workflow
 
 ### Current Status
 - **Phase 0 - Subphase 0.1**: ✅ **COMPLETE** (Environment Configuration)
@@ -1803,18 +1824,18 @@ This document provides a granular, step-by-step task list for implementing the M
 **Dependencies**: Task 2D.1.1, Subphase 2.2 complete
 **Status**: ✅ Completed - All tests passing
 
-- [x] Create `backend/src/lib/marinDispatcherClient.ts` file
+- [x] Create `backend/src/lib/zilkrDispatcherClient.ts` file
 - [x] Create client wrapper for Lambda functions:
   ```typescript
-  import { MarinDispatcherService } from '../services/marinDispatcherService';
+  import { ZilkrDispatcherService } from '../services/zilkrDispatcherService';
   import { LambdaEvent, LambdaResponse } from '../types/lambda.types';
   import AWSXRay from 'aws-xray-sdk-core';
 
-  export class MarinDispatcherClient {
-    private service: MarinDispatcherService;
+  export class ZilkrDispatcherClient {
+    private service: ZilkrDispatcherService;
     
     constructor(accountId?: string, publisher: string = 'google') {
-      this.service = new MarinDispatcherService(accountId, publisher);
+      this.service = new ZilkrDispatcherService(accountId, publisher);
     }
     
     /**
@@ -1823,7 +1844,7 @@ This document provides a granular, step-by-step task list for implementing the M
      */
     async handleLambdaEvent(event: LambdaEvent): Promise<LambdaResponse> {
       const segment = AWSXRay.getSegment();
-      const subsegment = segment?.addNewSubsegment('MarinDispatcherClient.handleLambdaEvent');
+      const subsegment = segment?.addNewSubsegment('ZilkrDispatcherClient.handleLambdaEvent');
       
       try {
         const { action, data, user } = event;
@@ -1945,7 +1966,7 @@ This document provides a granular, step-by-step task list for implementing the M
 - [x] Create `backend/src/examples/campaign-mgmt-handler.js` file
 - [x] Show how CampaignMgmtFunction uses service:
   ```javascript
-  const { MarinDispatcherClient } = require('./lib/marinDispatcherClient');
+  const { ZilkrDispatcherClient } = require('./lib/zilkrDispatcherClient');
   const AWSXRay = require('aws-xray-sdk-core');
   const { Pool } = require('pg');
 
@@ -1962,7 +1983,7 @@ This document provides a granular, step-by-step task list for implementing the M
   // Wrap pool with X-Ray
   AWSXRay.capturePostgres(pool);
 
-  const dispatcherClient = new MarinDispatcherClient();
+  const dispatcherClient = new ZilkrDispatcherClient();
 
   exports.handler = async (event) => {
     const segment = AWSXRay.getSegment();
@@ -2133,7 +2154,7 @@ This document provides a granular, step-by-step task list for implementing the M
   ```
   src/
   ├── campaign-mgmt/
-  │   ├── index.js              # Handler (uses MarinDispatcherClient)
+  │   ├── index.js              # Handler (uses ZilkrDispatcherClient)
   │   ├── package.json
   │   ├── handlers/
   │   │   ├── create.js         # Uses dispatcher client
@@ -2142,31 +2163,31 @@ This document provides a granular, step-by-step task list for implementing the M
   │   │   └── delete.js
   │   └── lib/
   │       ├── db.js             # Database connection
-  │       └── dispatcher.js     # Import MarinDispatcherClient
+  │       └── dispatcher.js     # Import ZilkrDispatcherClient
   ├── bulk-worker/
-  │   ├── index.js              # Handler (uses MarinBatchJobClient)
+  │   ├── index.js              # Handler (uses ZilkrBatchJobClient)
   │   ├── package.json
   │   └── lib/
-  │       └── batchJob.js       # Import MarinBatchJobClient
+  │       └── batchJob.js       # Import ZilkrBatchJobClient
   └── shared/                    # Shared Lambda Layer
       └── nodejs/
           └── node_modules/
               └── @meridian/
-                  └── dispatcher/  # MarinDispatcherClient library
+                  └── dispatcher/  # ZilkrDispatcherClient library
   ```
 - [x] Create `src/campaign-mgmt/lib/dispatcher.js`:
   ```javascript
-  const { MarinDispatcherClient } = require('../../lib/marinDispatcherClient');
+  const { ZilkrDispatcherClient } = require('../../lib/zilkrDispatcherClient');
   
   // Export client instance
-  module.exports = new MarinDispatcherClient();
+  module.exports = new ZilkrDispatcherClient();
   ```
 - [x] Create `src/bulk-worker/lib/batchJob.js`:
   ```javascript
-  const { MarinBatchJobClient } = require('../../lib/marinBatchJobClient');
+  const { ZilkrBatchJobClient } = require('../../lib/zilkrBatchJobClient');
   
   // Export client instance
-  module.exports = new MarinBatchJobClient();
+  module.exports = new ZilkrBatchJobClient();
   ```
 - [x] Create `src/campaign-mgmt/index.js` handler
 - [x] Create `src/campaign-mgmt/handlers/` directory with create, read, update, delete handlers
@@ -2255,14 +2276,14 @@ This document provides a granular, step-by-step task list for implementing the M
 **Status**: ✅ Completed - All tests passing (5 verification tests)
 
 - [x] **Note:** This task is optional - service is primarily used by Lambda functions
-- [x] **If orchestrator needs Marin support:** Navigate to `backend/src/services/` directory
-- [x] **If orchestrator needs Marin support:** Open `campaignCreationService.ts` file
-- [x] **If orchestrator needs Marin support:** Import MarinDispatcherService in `campaignCreationController.ts`
-- [x] **If orchestrator needs Marin support:** Register Marin service in `initializePlatformServices()` method
-- [x] **If orchestrator needs Marin support:** Update `getPlatformKey()` to handle 'marin' platform
-- [x] **If orchestrator needs Marin support:** Verify service is registered correctly
-- [x] **If orchestrator needs Marin support:** Test service registration with verification tests (5 tests passing)
-- [x] **Primary Usage:** Service is used by Lambda functions (CampaignMgmtFunction, BulkWorkerFunction) via MarinDispatcherClient
+- [x] **If orchestrator needs Zilkr support:** Navigate to `backend/src/services/` directory
+- [x] **If orchestrator needs Zilkr support:** Open `campaignCreationService.ts` file
+- [x] **If orchestrator needs Zilkr support:** Import ZilkrDispatcherService in `campaignCreationController.ts`
+- [x] **If orchestrator needs Zilkr support:** Register Zilkr service in `initializePlatformServices()` method
+- [x] **If orchestrator needs Zilkr support:** Update `getPlatformKey()` to handle 'zilkr' platform
+- [x] **If orchestrator needs Zilkr support:** Verify service is registered correctly
+- [x] **If orchestrator needs Zilkr support:** Test service registration with verification tests (5 tests passing)
+- [x] **Primary Usage:** Service is used by Lambda functions (CampaignMgmtFunction, BulkWorkerFunction) via ZilkrDispatcherClient
 - [x] Verify TypeScript compilation
 
 #### Task 3.1.2: Verify Lambda Integration ✅ COMPLETED
@@ -2270,7 +2291,7 @@ This document provides a granular, step-by-step task list for implementing the M
 **Dependencies**: Subphase 2D.2 complete
 **Status**: ✅ Completed - All tests passing (8 verification tests)
 
-- [x] Verify MarinDispatcherClient can be imported in Lambda functions
+- [x] Verify ZilkrDispatcherClient can be imported in Lambda functions
 - [x] Test that client uses DISPATCHER_URL from environment
 - [x] Test that client handles Lambda event format correctly
 - [x] Test that client returns Lambda response format correctly
@@ -2285,10 +2306,10 @@ This document provides a granular, step-by-step task list for implementing the M
 **Dependencies**: Subphase 2D.2 complete
 **Status**: ✅ Completed - All tests passing (10 verification tests)
 
-- [x] Create `backend/src/__tests__/integration/marinIntegration.test.ts` file
+- [x] Create `backend/src/__tests__/integration/zilkrIntegration.test.ts` file
 - [x] Test Lambda client integration:
-  - Test MarinDispatcherClient with Lambda event format
-  - Test MarinBatchJobClient with SQS event format
+  - Test ZilkrDispatcherClient with Lambda event format
+  - Test ZilkrBatchJobClient with SQS event format
   - Test response format matches Lambda contract
 - [x] Test Dispatcher URL usage from environment
 - [x] Test X-Ray tracing in integration context
@@ -2817,21 +2838,23 @@ This document provides a granular, step-by-step task list for implementing the M
 - [ ] Proper timeout handling
 
 ### Integration
-- [ ] MarinDispatcherClient works in Lambda functions (CampaignMgmtFunction, BulkWorkerFunction)
+- [ ] ZilkrDispatcherClient works in Lambda functions (CampaignMgmtFunction, BulkWorkerFunction)
 - [ ] Lambda functions use DISPATCHER_URL from environment (InfraDocs pattern)
 - [ ] Lambda event format handled correctly
 - [ ] Lambda response format matches contract
 - [ ] X-Ray tracing works in Lambda context
-- [ ] **Optional:** Marin service registered in CampaignCreationService (if orchestrator uses it)
-- [ ] **Optional:** Multi-platform campaigns work (Marin + others) via orchestrator
-- [ ] REST API endpoints work with Marin platform (if orchestrator uses it)
+- [ ] **Optional:** Zilkr service registered in CampaignCreationService (if orchestrator uses it)
+- [ ] **Optional:** Multi-platform campaigns work (Zilkr + others) via orchestrator
+- [ ] REST API endpoints work with Zilkr platform (if orchestrator uses it)
 - [ ] No breaking changes to existing functionality
 
 ---
 
 ## Notes
 
-- **Budget Handling**: ⚠️ **CRITICAL** - Marin uses `budget.amount` in dollars, NOT micros. No conversion needed.
+- **Rebranding**: ✅ **COMPLETE** (2025-11-11) - All references updated from Marin to Zilkr across entire codebase
+- **Budget Handling**: ⚠️ **CRITICAL** - Zilkr uses `budget.amount` in dollars, NOT micros. No conversion needed.
+- **Budget Endpoint**: ⏳ **PENDING** - Zilkr Dispatcher team needs to implement `POST /api/v2/dispatcher/google/campaign-budgets` endpoint (see ZILKR_DISPATCHER_CR.md)
 - **Field Names**: Use camelCase (deliveryMethod, biddingStrategy) not snake_case
 - **Batch Job Status**: Check `status === "DONE"` NOT `done` field
 - **Batch Operations**: Max 1000 operations per `addOperations` request, use sequenceToken for more
@@ -2839,7 +2862,7 @@ This document provides a granular, step-by-step task list for implementing the M
 - **Testing**: Use mock data if live API unavailable, but test with real API before production
 - **Dispatcher URL**: ⚠️ **CRITICAL** - Use `DISPATCHER_URL` from environment (InfraDocs pattern - set by CloudFormation)
 - **API Path Format**: ⚠️ **CRITICAL** - Use `/dispatcher/${publisher}/campaigns` format (InfraDocs pattern, verify actual API path)
-- **Lambda Integration**: Service is used BY Lambda functions via MarinDispatcherClient, not just orchestrator
+- **Lambda Integration**: Service is used BY Lambda functions via ZilkrDispatcherClient, not just orchestrator
 - **X-Ray Tracing**: All HTTP calls must be wrapped with X-Ray segments (InfraDocs requirement)
 - **Lambda Event Format**: Service must handle Lambda event format `{ action, data, user, mode }` and return `{ success, result/error }`
 
@@ -2894,11 +2917,13 @@ This document provides a granular, step-by-step task list for implementing the M
 
 ---
 
-**Document Version**: 3.0
+**Document Version**: 3.1
 **Created**: 2025-11-09
 **Last Updated**: 2025-11-11
-**Project**: Marin Dispatcher Integration
+**Project**: Zilkr Dispatcher Integration (formerly Marin Dispatcher)
 **Integration**: Agentic Campaign Manager Module
 **Architecture Alignment**: InfraDocs (source of truth) - Lambda integration, X-Ray tracing, DISPATCHER_URL pattern
 **Status**: Phase 5.1.2 Complete - API Documentation (60/100+ tasks, ~60% complete)
+**Rebranding**: Complete - All references updated from Marin to Zilkr (2025-11-11)
+**Pending**: Zilkr Dispatcher endpoint implementation (`POST /api/v2/dispatcher/google/campaign-budgets`)
 

@@ -4,7 +4,7 @@ import { campaignCreationService } from '../services/campaignCreationService';
 import { GoogleAdsService } from '../services/googleAdsService';
 import { MetaAdsService } from '../services/metaAdsService';
 import { MicrosoftAdsService } from '../services/microsoftAdsService';
-import { MarinDispatcherService } from '../services/marinDispatcherService';
+import { ZilkrDispatcherService } from '../services/zilkrDispatcherService';
 
 /**
  * Campaign Creation Controller
@@ -25,10 +25,15 @@ export class CampaignCreationController {
     // For MVP, register services without tokens (will fail authentication check)
     // In production, tokens would be loaded from user's stored OAuth tokens
     campaignCreationService.registerPlatform('Google Ads', new GoogleAdsService());
+    campaignCreationService.registerPlatform('google', new GoogleAdsService()); // Also register lowercase
+    campaignCreationService.registerPlatform('googleAds', new GoogleAdsService()); // Also register camelCase
     campaignCreationService.registerPlatform('Meta', new MetaAdsService());
     campaignCreationService.registerPlatform('Microsoft Ads', new MicrosoftAdsService());
-    // Register Marin Dispatcher service (optional - primarily used by Lambda functions)
-    campaignCreationService.registerPlatform('Marin', new MarinDispatcherService());
+    // Register Zilkr Dispatcher service for Google Ads campaigns (used for draft creation)
+    const marinService = new ZilkrDispatcherService();
+    campaignCreationService.registerPlatform('Zilkr', marinService);
+    // Also register Zilkr for 'google' platform to use for draft creation
+    // Note: This will use Zilkr Dispatcher instead of direct Google Ads API
   }
 
   /**
@@ -80,12 +85,16 @@ export class CampaignCreationController {
         return;
       }
 
+      // Get status from request body (for draft creation)
+      const status = req.body.status; // 'paused' for drafts, undefined for active campaigns
+      
       const request: CampaignCreationRequest = {
         campaignPlan,
         name,
         description,
         metadata,
-      };
+        ...(status && { status }), // Include status if provided
+      } as any; // Type assertion needed since status is not in CampaignCreationRequest interface
 
       // Create campaign
       const response = await campaignCreationService.createCampaign(request);

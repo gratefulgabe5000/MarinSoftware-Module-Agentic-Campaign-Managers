@@ -13,8 +13,11 @@ import { PlatformAPIResponse } from '../types/campaign.types';
 export interface IPlatformAPI {
   /**
    * Create a campaign on the platform
+   * @param campaignPlan - Campaign plan with budget and objective information
+   * @param name - Campaign name
+   * @param status - Optional campaign status (ENABLED, PAUSED, REMOVED) - defaults to ENABLED
    */
-  createCampaign(campaignPlan: CampaignPlan, name: string): Promise<PlatformAPIResponse>;
+  createCampaign(campaignPlan: CampaignPlan, name: string, status?: 'ENABLED' | 'PAUSED' | 'REMOVED'): Promise<PlatformAPIResponse>;
 
   /**
    * Update a campaign on the platform
@@ -62,10 +65,14 @@ export abstract class BasePlatformAPI implements IPlatformAPI {
 
   /**
    * Create a campaign on the platform
+   * @param campaignPlan - Campaign plan with budget and objective information
+   * @param name - Campaign name
+   * @param status - Optional campaign status (ENABLED, PAUSED, REMOVED) - defaults to ENABLED
    */
   abstract createCampaign(
     campaignPlan: CampaignPlan,
-    name: string
+    name: string,
+    status?: 'ENABLED' | 'PAUSED' | 'REMOVED'
   ): Promise<PlatformAPIResponse>;
 
   /**

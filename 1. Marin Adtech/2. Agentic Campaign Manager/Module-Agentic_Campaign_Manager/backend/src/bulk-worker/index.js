@@ -4,7 +4,7 @@
  * Main Lambda handler function for bulk campaign creation
  * Processes SQS events for batch job operations
  * 
- * Uses MarinBatchJobClient and DynamoDB for batch job operations
+ * Uses ZilkrBatchJobClient and DynamoDB for batch job operations
  * 
  * @module bulk-worker-handler
  */
@@ -26,7 +26,7 @@ AWSXRay.captureAWSClient(dynamodb.service);
  * Processes SQS events containing batch job requests:
  * - Parses SQS message body containing jobId and campaigns array
  * - Updates job status in DynamoDB
- * - Calls MarinBatchJobClient to process batch job
+ * - Calls ZilkrBatchJobClient to process batch job
  * - Updates job status with results
  * 
  * @param {Object} event - SQS event containing Records array
@@ -128,7 +128,7 @@ exports.handler = async (event, context) => {
           continue;
         }
 
-        // Call Marin Dispatcher via batch job client (uses DISPATCHER_URL from environment)
+        // Call Zilkr Dispatcher via batch job client (uses DISPATCHER_URL from environment)
         const result = await batchJobClient.handleSqsEvent({ Records: [record] });
 
         // Update job status with results in DynamoDB

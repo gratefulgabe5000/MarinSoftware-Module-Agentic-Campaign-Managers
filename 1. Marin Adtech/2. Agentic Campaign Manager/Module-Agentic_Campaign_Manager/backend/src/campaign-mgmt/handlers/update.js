@@ -2,7 +2,7 @@
  * Update Campaign Handler
  * 
  * Handles update_campaign, pause_campaign, and resume_campaign actions
- * Updates campaign in Marin Dispatcher
+ * Updates campaign in Zilkr Dispatcher
  * 
  * @module update-handler
  */
@@ -12,7 +12,7 @@
  * 
  * @param {Object} event - Lambda event
  * @param {Object} context - Lambda context
- * @param {Object} dispatcherClient - MarinDispatcherClient instance
+ * @param {Object} dispatcherClient - ZilkrDispatcherClient instance
  * @param {Object} pool - PostgreSQL connection pool
  * @returns {Promise<Object>} Lambda response
  */

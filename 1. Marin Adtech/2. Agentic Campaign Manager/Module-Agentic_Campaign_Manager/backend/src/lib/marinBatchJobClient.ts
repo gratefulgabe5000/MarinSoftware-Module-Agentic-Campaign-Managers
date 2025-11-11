@@ -1,34 +1,34 @@
 /**
- * Marin Batch Job Lambda Client
+ * Zilkr Batch Job Lambda Client
  * 
- * Wraps MarinBatchJobService for use in AWS Lambda functions triggered by SQS
+ * Wraps ZilkrBatchJobService for use in AWS Lambda functions triggered by SQS
  * Processes SQS events for bulk campaign creation
  * 
  * @module marinBatchJobClient
  */
 
-import { MarinBatchJobService } from '../services/marinBatchJobService';
+import { ZilkrBatchJobService } from '../services/zilkrBatchJobService';
 import { LambdaEvent, LambdaResponse, SqsEvent, BatchJobSqsMessage } from '../types/lambda.types';
-import { BatchJobResultsResponse } from '../types/marinDispatcher.types';
+import { BatchJobResultsResponse } from '../types/zilkrDispatcher.types';
 import * as AWSXRay from 'aws-xray-sdk-core';
 
 /**
- * Marin Batch Job Lambda Client
+ * Zilkr Batch Job Lambda Client
  * 
- * Wraps MarinBatchJobService to handle SQS events and format responses
+ * Wraps ZilkrBatchJobService to handle SQS events and format responses
  * Provides a clean interface for Lambda functions to process batch job operations
  */
-export class MarinBatchJobClient {
-  private service: MarinBatchJobService;
+export class ZilkrBatchJobClient {
+  private service: ZilkrBatchJobService;
 
   /**
-   * Create a new Marin Batch Job Lambda Client
+   * Create a new Zilkr Batch Job Lambda Client
    * 
-   * @param accountId - Marin Dispatcher account ID (optional, uses config default)
+   * @param accountId - Zilkr Dispatcher account ID (optional, uses config default)
    * @param publisher - Publisher platform (default: 'google')
    */
   constructor(accountId?: string, publisher: string = 'google') {
-    this.service = new MarinBatchJobService(accountId, publisher);
+    this.service = new ZilkrBatchJobService(accountId, publisher);
   }
 
   /**
@@ -42,7 +42,7 @@ export class MarinBatchJobClient {
    * 
    * @example
    * ```typescript
-   * const client = new MarinBatchJobClient();
+   * const client = new ZilkrBatchJobClient();
    * const sqsEvent = {
    *   Records: [{
    *     messageId: 'msg-123',
@@ -57,7 +57,7 @@ export class MarinBatchJobClient {
    */
   async handleSqsEvent(event: SqsEvent): Promise<LambdaResponse> {
     const segment = AWSXRay.getSegment();
-    const subsegment = segment?.addNewSubsegment('MarinBatchJobClient.handleSqsEvent');
+    const subsegment = segment?.addNewSubsegment('ZilkrBatchJobClient.handleSqsEvent');
 
     try {
       // Validate event structure
@@ -84,7 +84,7 @@ export class MarinBatchJobClient {
       const errors: Array<{ jobId?: string; error: string; record: any }> = [];
 
       for (const record of event.Records) {
-        const recordSubsegment = segment?.addNewSubsegment('MarinBatchJobClient.processRecord');
+        const recordSubsegment = segment?.addNewSubsegment('ZilkrBatchJobClient.processRecord');
         
         try {
           // Validate record structure
@@ -223,7 +223,7 @@ export class MarinBatchJobClient {
    * 
    * @example
    * ```typescript
-   * const client = new MarinBatchJobClient();
+   * const client = new ZilkrBatchJobClient();
    * const event = {
    *   action: 'bulk_create_campaigns',
    *   data: { campaigns: [{ name: 'Campaign 1', ... }] },
@@ -234,7 +234,7 @@ export class MarinBatchJobClient {
    */
   async handleLambdaEvent(event: LambdaEvent): Promise<LambdaResponse> {
     const segment = AWSXRay.getSegment();
-    const subsegment = segment?.addNewSubsegment('MarinBatchJobClient.handleLambdaEvent');
+    const subsegment = segment?.addNewSubsegment('ZilkrBatchJobClient.handleLambdaEvent');
 
     try {
       const { action, data, user } = event;
@@ -390,9 +390,9 @@ export class MarinBatchJobClient {
    * 
    * Useful for direct service access if needed
    * 
-   * @returns The MarinBatchJobService instance
+   * @returns The ZilkrBatchJobService instance
    */
-  getService(): MarinBatchJobService {
+  getService(): ZilkrBatchJobService {
     return this.service;
   }
 }

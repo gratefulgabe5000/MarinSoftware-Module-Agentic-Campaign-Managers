@@ -2,7 +2,7 @@
  * Create Campaign Handler
  * 
  * Handles create_campaign action
- * Creates campaign in PostgreSQL first, then in Marin Dispatcher
+ * Creates campaign in PostgreSQL first, then in Zilkr Dispatcher
  * 
  * @module create-handler
  */
@@ -12,7 +12,7 @@
  * 
  * @param {Object} event - Lambda event
  * @param {Object} context - Lambda context
- * @param {Object} dispatcherClient - MarinDispatcherClient instance
+ * @param {Object} dispatcherClient - ZilkrDispatcherClient instance
  * @param {Object} pool - PostgreSQL connection pool
  * @returns {Promise<Object>} Lambda response
  */
@@ -37,7 +37,7 @@ module.exports = async (event, context, dispatcherClient, pool) => {
 
     const campaign = insertResult.rows[0];
 
-    // Call Marin Dispatcher via client (uses DISPATCHER_URL from environment)
+    // Call Zilkr Dispatcher via client (uses DISPATCHER_URL from environment)
     const dispatcherResult = await dispatcherClient.handleLambdaEvent({
       action: 'create_campaign',
       data: {
@@ -48,18 +48,18 @@ module.exports = async (event, context, dispatcherClient, pool) => {
     });
 
     if (dispatcherResult.success) {
-      // Update campaign with Marin Dispatcher ID
+      // Update campaign with Zilkr Dispatcher ID
       await client.query(
-        'UPDATE campaigns SET marin_id = $1, updated_at = NOW() WHERE id = $2',
+        'UPDATE campaigns SET zilkr_id = $1, updated_at = NOW() WHERE id = $2',
         [dispatcherResult.result?.campaignId || dispatcherResult.details?.campaignId, campaign.id]
       );
-      campaign.marin_id = dispatcherResult.result?.campaignId || dispatcherResult.details?.campaignId;
+      campaign.zilkr_id = dispatcherResult.result?.campaignId || dispatcherResult.details?.campaignId;
     } else {
       // If Dispatcher call failed, rollback PostgreSQL transaction
       await client.query('ROLLBACK');
       return {
         success: false,
-        error: `Failed to create campaign in Marin Dispatcher: ${dispatcherResult.error}`,
+        error: `Failed to create campaign in Zilkr Dispatcher: ${dispatcherResult.error}`,
         details: { campaign, dispatcherResult },
       };
     }
