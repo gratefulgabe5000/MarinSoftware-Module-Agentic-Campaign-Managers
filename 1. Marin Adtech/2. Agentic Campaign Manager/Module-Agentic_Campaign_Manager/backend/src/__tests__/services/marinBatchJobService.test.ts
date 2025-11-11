@@ -493,14 +493,14 @@ describe('MarinBatchJobService - Task 4.4.1: Test Batch Job Creation', () => {
           status: 'SUCCESS',
         };
 
-        mockHttpClient.post.mockResolvedValue({ data: mockResponse });
+        mockHttpClient.put.mockResolvedValue({ data: mockResponse });
 
         // Act
         const result = await service.addOperationsToBatch(batchJobId, operations);
 
         // Assert
-        expect(mockHttpClient.post).toHaveBeenCalledTimes(1);
-        expect(mockHttpClient.post).toHaveBeenCalledWith(
+        expect(mockHttpClient.put).toHaveBeenCalledTimes(1);
+        expect(mockHttpClient.put).toHaveBeenCalledWith(
           '/dispatcher/google/batch-jobs/batch-job-12345/operations',
           { operations }
         );
@@ -528,13 +528,13 @@ describe('MarinBatchJobService - Task 4.4.1: Test Batch Job Creation', () => {
           status: 'SUCCESS',
         };
 
-        mockHttpClient.post.mockResolvedValue({ data: mockResponse });
+        mockHttpClient.put.mockResolvedValue({ data: mockResponse });
 
         // Act
         const result = await service.addOperationsToBatch(batchJobId, operations);
 
         // Assert
-        expect(mockHttpClient.post).toHaveBeenCalledTimes(1);
+        expect(mockHttpClient.put).toHaveBeenCalledTimes(1);
         expect(result.totalOperationsAdded).toBe(1000);
         expect(result.sequenceToken).toBe('seq-token-1000');
       });
@@ -599,7 +599,7 @@ describe('MarinBatchJobService - Task 4.4.1: Test Batch Job Creation', () => {
           status: 'SUCCESS',
         };
 
-        mockHttpClient.post
+        mockHttpClient.put
           .mockResolvedValueOnce({ data: firstResponse })
           .mockResolvedValueOnce({ data: secondResponse });
 
@@ -625,13 +625,13 @@ describe('MarinBatchJobService - Task 4.4.1: Test Batch Job Creation', () => {
         expect(result2.sequenceToken).toBe('seq-token-second');
 
         // Verify API calls
-        expect(mockHttpClient.post).toHaveBeenCalledTimes(2);
-        expect(mockHttpClient.post).toHaveBeenNthCalledWith(
+        expect(mockHttpClient.put).toHaveBeenCalledTimes(2);
+        expect(mockHttpClient.put).toHaveBeenNthCalledWith(
           1,
           '/dispatcher/google/batch-jobs/batch-job-seq/operations',
           { operations: firstBatch }
         );
-        expect(mockHttpClient.post).toHaveBeenNthCalledWith(
+        expect(mockHttpClient.put).toHaveBeenNthCalledWith(
           2,
           '/dispatcher/google/batch-jobs/batch-job-seq/operations',
           {
@@ -664,13 +664,13 @@ describe('MarinBatchJobService - Task 4.4.1: Test Batch Job Creation', () => {
           status: 'SUCCESS',
         };
 
-        mockHttpClient.post.mockResolvedValue({ data: mockResponse });
+        mockHttpClient.put.mockResolvedValue({ data: mockResponse });
 
         // Act
         await service.addOperationsToBatch(batchJobId, operations);
 
         // Assert - Verify structure
-        expect(mockHttpClient.post).toHaveBeenCalledWith(
+        expect(mockHttpClient.put).toHaveBeenCalledWith(
           '/dispatcher/google/batch-jobs/batch-job-verify/operations',
           {
             operations: expect.arrayContaining([
@@ -1283,6 +1283,1399 @@ describe('MarinBatchJobService - Task 4.4.1: Test Batch Job Creation', () => {
           'MarinBatchJobService.getBatchJobResults'
         );
         expect(mockSubsegment.close).toHaveBeenCalledTimes(1);
+      });
+    });
+  });
+
+  // ========================================================================
+  // Task 4.4.3: Test Bulk Campaign Creation - bulkCreateCampaigns() Tests
+  // ========================================================================
+
+  describe('bulkCreateCampaigns', () => {
+    /**
+     * Helper function to create sample campaign requests
+     */
+    const createCampaigns = (count: number): MarinCampaignRequest[] => {
+      const campaigns: MarinCampaignRequest[] = [];
+      for (let i = 0; i < count; i++) {
+        campaigns.push({
+          accountId: 'test-account-123',
+          name: `Campaign ${i + 1}`,
+          status: 'ENABLED',
+          budget: {
+            amount: 1000 + i * 100,
+            deliveryMethod: 'STANDARD',
+          },
+          biddingStrategy: 'MAXIMIZE_CLICKS',
+        });
+      }
+      return campaigns;
+    };
+
+    /**
+     * Test 4.4.3.1: Test bulkCreateCampaigns() with 10 campaigns
+     */
+    describe('with 10 campaigns', () => {
+      it('should successfully create batch job with 10 campaigns and return summary with correct counts', async () => {
+        // Arrange
+        const campaigns = createCampaigns(10);
+        const batchJobId = 'batch-job-10-campaigns';
+
+        // Mock createBatchJob response
+        mockHttpClient.post.mockResolvedValueOnce({
+          data: {
+            id: batchJobId,
+            accountId: 'test-account-123',
+            publisher: 'google',
+            jobStatus: 'PENDING',
+            totalOperations: 0,
+            processedOperations: 0,
+            createdAt: '2025-11-11T12:00:00Z',
+            sequenceToken: 'seq-token-123',
+            status: 'SUCCESS',
+          },
+        });
+
+        // Mock addOperationsToBatch response
+        mockHttpClient.put.mockResolvedValueOnce({
+          data: {
+            sequenceToken: 'seq-token-456',
+            operationsAdded: 10,
+            status: 'SUCCESS',
+          },
+        });
+
+        // Mock runBatchJob response
+        mockHttpClient.put.mockResolvedValueOnce({
+          data: {
+            jobStatus: 'RUNNING',
+            status: 'SUCCESS',
+          },
+        });
+
+        // Mock pollBatchJobStatus response
+        mockHttpClient.get.mockResolvedValueOnce({
+          data: {
+            jobId: batchJobId,
+            jobStatus: 'DONE',
+            totalOperations: 10,
+            processedOperations: 10,
+            status: 'SUCCESS',
+          },
+        });
+
+        // Mock getBatchJobResults response
+        mockHttpClient.get.mockResolvedValueOnce({
+          data: {
+            jobId: batchJobId,
+            jobStatus: 'DONE',
+            summary: {
+              total: 10,
+              successful: 10,
+              failed: 0,
+            },
+            results: Array(10).fill({
+              operationId: 'op-1',
+              operationType: 'CREATE',
+              resourceType: 'CAMPAIGN',
+              success: true,
+              resourceId: 'campaign-123',
+            }),
+          },
+        });
+
+        // Act
+        const result = await service.bulkCreateCampaigns(campaigns);
+
+        // Assert - Verify all campaigns are created
+        expect(result.jobStatus).toBe('DONE');
+        expect(result.summary.total).toBe(10);
+        expect(result.summary.successful).toBe(10);
+        expect(result.summary.failed).toBe(0);
+        expect(result.results.length).toBe(10);
+      });
+
+      it('should complete in reasonable time for 10 campaigns', async () => {
+        // Arrange
+        const campaigns = createCampaigns(10);
+        const batchJobId = 'batch-job-10-time-test';
+        const startTime = Date.now();
+
+        // Mock all responses
+        mockHttpClient.post.mockResolvedValueOnce({
+          data: {
+            id: batchJobId,
+            accountId: 'test-account-123',
+            publisher: 'google',
+            jobStatus: 'PENDING',
+            totalOperations: 0,
+            processedOperations: 0,
+            createdAt: '2025-11-11T12:00:00Z',
+            sequenceToken: 'seq-token-123',
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.put.mockResolvedValueOnce({
+          data: {
+            sequenceToken: 'seq-token-456',
+            operationsAdded: 10,
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.put.mockResolvedValueOnce({
+          data: {
+            jobStatus: 'RUNNING',
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.get.mockResolvedValueOnce({
+          data: {
+            jobId: batchJobId,
+            jobStatus: 'DONE',
+            totalOperations: 10,
+            processedOperations: 10,
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.get.mockResolvedValueOnce({
+          data: {
+            jobId: batchJobId,
+            jobStatus: 'DONE',
+            summary: {
+              total: 10,
+              successful: 10,
+              failed: 0,
+            },
+            results: Array(10).fill({
+              operationId: 'op-1',
+              operationType: 'CREATE',
+              resourceType: 'CAMPAIGN',
+              success: true,
+              resourceId: 'campaign-123',
+            }),
+          },
+        });
+
+        // Act
+        await service.bulkCreateCampaigns(campaigns);
+        const completionTime = Date.now() - startTime;
+
+        // Assert - Completion time should be reasonable (< 5 seconds)
+        expect(completionTime).toBeLessThan(5000);
+      });
+    });
+
+    /**
+     * Test 4.4.3.2: Test bulkCreateCampaigns() with 100 campaigns
+     */
+    describe('with 100 campaigns', () => {
+      it('should successfully create batch job with 100 campaigns', async () => {
+        // Arrange
+        const campaigns = createCampaigns(100);
+        const batchJobId = 'batch-job-100-campaigns';
+
+        // Mock createBatchJob response
+        mockHttpClient.post.mockResolvedValueOnce({
+          data: {
+            id: batchJobId,
+            accountId: 'test-account-123',
+            publisher: 'google',
+            jobStatus: 'PENDING',
+            totalOperations: 0,
+            processedOperations: 0,
+            createdAt: '2025-11-11T12:00:00Z',
+            sequenceToken: 'seq-token-123',
+            status: 'SUCCESS',
+          },
+        });
+
+        // Mock addOperationsToBatch response (single chunk for 100 < 1000)
+        mockHttpClient.put.mockResolvedValueOnce({
+          data: {
+            sequenceToken: 'seq-token-456',
+            operationsAdded: 100,
+            status: 'SUCCESS',
+          },
+        });
+
+        // Mock runBatchJob response
+        mockHttpClient.put.mockResolvedValueOnce({
+          data: {
+            jobStatus: 'RUNNING',
+            status: 'SUCCESS',
+          },
+        });
+
+        // Mock pollBatchJobStatus response
+        mockHttpClient.get.mockResolvedValueOnce({
+          data: {
+            jobId: batchJobId,
+            jobStatus: 'DONE',
+            totalOperations: 100,
+            processedOperations: 100,
+            status: 'SUCCESS',
+          },
+        });
+
+        // Mock getBatchJobResults response
+        mockHttpClient.get.mockResolvedValueOnce({
+          data: {
+            jobId: batchJobId,
+            jobStatus: 'DONE',
+            summary: {
+              total: 100,
+              successful: 100,
+              failed: 0,
+            },
+            results: Array(100).fill({
+              operationId: 'op-1',
+              operationType: 'CREATE',
+              resourceType: 'CAMPAIGN',
+              success: true,
+              resourceId: 'campaign-123',
+            }),
+          },
+        });
+
+        // Act
+        const result = await service.bulkCreateCampaigns(campaigns);
+
+        // Assert
+        expect(result.summary.total).toBe(100);
+        expect(result.summary.successful).toBe(100);
+        expect(result.summary.failed).toBe(0);
+        expect(result.results.length).toBe(100);
+      });
+
+      it('should use chunking correctly (verifying operations are sent in one batch for <1000)', async () => {
+        // Arrange
+        const campaigns = createCampaigns(100);
+        const batchJobId = 'batch-job-100-chunking';
+
+        mockHttpClient.post.mockResolvedValueOnce({
+          data: {
+            id: batchJobId,
+            accountId: 'test-account-123',
+            publisher: 'google',
+            jobStatus: 'PENDING',
+            totalOperations: 0,
+            processedOperations: 0,
+            createdAt: '2025-11-11T12:00:00Z',
+            sequenceToken: 'seq-token-123',
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.put.mockResolvedValueOnce({
+          data: {
+            sequenceToken: 'seq-token-456',
+            operationsAdded: 100,
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.put.mockResolvedValueOnce({
+          data: {
+            jobStatus: 'RUNNING',
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.get.mockResolvedValueOnce({
+          data: {
+            jobId: batchJobId,
+            jobStatus: 'DONE',
+            totalOperations: 100,
+            processedOperations: 100,
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.get.mockResolvedValueOnce({
+          data: {
+            jobId: batchJobId,
+            jobStatus: 'DONE',
+            summary: {
+              total: 100,
+              successful: 100,
+              failed: 0,
+            },
+            results: Array(100).fill({
+              operationId: 'op-1',
+              operationType: 'CREATE',
+              resourceType: 'CAMPAIGN',
+              success: true,
+              resourceId: 'campaign-123',
+            }),
+          },
+        });
+
+        // Act
+        const result = await service.bulkCreateCampaigns(campaigns);
+
+        // Assert - Verify all 100 campaigns were successfully created
+        expect(result.summary.successful).toBe(100);
+      });
+
+      it('should handle sequenceToken correctly for 100 campaigns', async () => {
+        // Arrange
+        const campaigns = createCampaigns(100);
+        const batchJobId = 'batch-job-100-sequence';
+        const expectedSequenceToken = 'seq-token-456';
+
+        mockHttpClient.post.mockResolvedValueOnce({
+          data: {
+            id: batchJobId,
+            accountId: 'test-account-123',
+            publisher: 'google',
+            jobStatus: 'PENDING',
+            totalOperations: 0,
+            processedOperations: 0,
+            createdAt: '2025-11-11T12:00:00Z',
+            sequenceToken: 'seq-token-123',
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.put.mockResolvedValueOnce({
+          data: {
+            sequenceToken: expectedSequenceToken,
+            totalOperations: 100,
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.put.mockResolvedValueOnce({
+          data: {
+            jobStatus: 'RUNNING',
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.get.mockResolvedValueOnce({
+          data: {
+            jobId: batchJobId,
+            jobStatus: 'DONE',
+            totalOperations: 100,
+            processedOperations: 100,
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.get.mockResolvedValueOnce({
+          data: {
+            jobId: batchJobId,
+            jobStatus: 'DONE',
+            summary: {
+              total: 100,
+              successful: 100,
+              failed: 0,
+            },
+            results: Array(100).fill({
+              operationId: 'op-1',
+              operationType: 'CREATE',
+              resourceType: 'CAMPAIGN',
+              success: true,
+              resourceId: 'campaign-123',
+            }),
+          },
+        });
+
+        // Act
+        const result = await service.bulkCreateCampaigns(campaigns);
+
+        // Assert
+        expect(result.jobId).toBe(batchJobId);
+        expect(result.summary.successful).toBe(100);
+      });
+    });
+
+    /**
+     * Test 4.4.3.3: Test bulkCreateCampaigns() with >1000 campaigns
+     */
+    describe('with >1000 campaigns', () => {
+      it('should successfully create batch job with 1500 campaigns using multiple chunks', async () => {
+        // Arrange
+        const campaigns = createCampaigns(1500);
+        const batchJobId = 'batch-job-1500-campaigns';
+
+        mockHttpClient.post.mockResolvedValueOnce({
+          data: {
+            id: batchJobId,
+            accountId: 'test-account-123',
+            publisher: 'google',
+            jobStatus: 'PENDING',
+            totalOperations: 0,
+            processedOperations: 0,
+            createdAt: '2025-11-11T12:00:00Z',
+            sequenceToken: 'seq-token-123',
+            status: 'SUCCESS',
+          },
+        });
+
+        // Mock addOperationsToBatch responses for chunks
+        // First chunk (1000 campaigns)
+        mockHttpClient.put.mockResolvedValueOnce({
+          data: {
+            sequenceToken: 'seq-token-chunk-1',
+            operationsAdded: 1000,
+            status: 'SUCCESS',
+          },
+        });
+
+        // Second chunk (500 campaigns)
+        mockHttpClient.put.mockResolvedValueOnce({
+          data: {
+            sequenceToken: 'seq-token-chunk-2',
+            operationsAdded: 1500,
+            status: 'SUCCESS',
+          },
+        });
+
+        // Mock runBatchJob response
+        mockHttpClient.put.mockResolvedValueOnce({
+          data: {
+            jobStatus: 'RUNNING',
+            status: 'SUCCESS',
+          },
+        });
+
+        // Mock pollBatchJobStatus response
+        mockHttpClient.get.mockResolvedValueOnce({
+          data: {
+            jobId: batchJobId,
+            jobStatus: 'DONE',
+            totalOperations: 1500,
+            processedOperations: 1500,
+            status: 'SUCCESS',
+          },
+        });
+
+        // Mock getBatchJobResults response
+        mockHttpClient.get.mockResolvedValueOnce({
+          data: {
+            jobId: batchJobId,
+            jobStatus: 'DONE',
+            summary: {
+              total: 1500,
+              successful: 1500,
+              failed: 0,
+            },
+            results: Array(1500).fill({
+              operationId: 'op-1',
+              operationType: 'CREATE',
+              resourceType: 'CAMPAIGN',
+              success: true,
+              resourceId: 'campaign-123',
+            }),
+          },
+        });
+
+        // Act
+        const result = await service.bulkCreateCampaigns(campaigns);
+
+        // Assert - Verify all campaigns are created
+        expect(result.summary.total).toBe(1500);
+        expect(result.summary.successful).toBe(1500);
+        expect(result.summary.failed).toBe(0);
+        expect(result.results.length).toBe(1500);
+      });
+
+      it('should create multiple chunks correctly for 1500 campaigns', async () => {
+        // Arrange
+        const campaigns = createCampaigns(1500);
+        const batchJobId = 'batch-job-1500-chunking';
+
+        mockHttpClient.post.mockResolvedValueOnce({
+          data: {
+            id: batchJobId,
+            accountId: 'test-account-123',
+            publisher: 'google',
+            jobStatus: 'PENDING',
+            totalOperations: 0,
+            processedOperations: 0,
+            createdAt: '2025-11-11T12:00:00Z',
+            sequenceToken: 'seq-token-123',
+            status: 'SUCCESS',
+          },
+        });
+
+        // Mock 2 addOperationsToBatch calls
+        mockHttpClient.put.mockResolvedValueOnce({
+          data: {
+            sequenceToken: 'seq-token-chunk-1',
+            operationsAdded: 1000,
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.put.mockResolvedValueOnce({
+          data: {
+            sequenceToken: 'seq-token-chunk-2',
+            operationsAdded: 1500,
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.put.mockResolvedValueOnce({
+          data: {
+            jobStatus: 'RUNNING',
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.get.mockResolvedValueOnce({
+          data: {
+            jobId: batchJobId,
+            jobStatus: 'DONE',
+            totalOperations: 1500,
+            processedOperations: 1500,
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.get.mockResolvedValueOnce({
+          data: {
+            jobId: batchJobId,
+            jobStatus: 'DONE',
+            summary: {
+              total: 1500,
+              successful: 1500,
+              failed: 0,
+            },
+            results: Array(1500).fill({
+              operationId: 'op-1',
+              operationType: 'CREATE',
+              resourceType: 'CAMPAIGN',
+              success: true,
+              resourceId: 'campaign-123',
+            }),
+          },
+        });
+
+        // Act
+        const result = await service.bulkCreateCampaigns(campaigns);
+
+        // Assert - Verify all 1500 campaigns were successfully created
+        expect(result.summary.successful).toBe(1500);
+        expect(result.summary.total).toBe(1500);
+      });
+
+      it('should handle sequenceToken correctly across multiple chunks for 1500 campaigns', async () => {
+        // Arrange
+        const campaigns = createCampaigns(1500);
+        const batchJobId = 'batch-job-1500-sequence';
+
+        mockHttpClient.post.mockResolvedValueOnce({
+          data: {
+            id: batchJobId,
+            accountId: 'test-account-123',
+            publisher: 'google',
+            jobStatus: 'PENDING',
+            totalOperations: 0,
+            processedOperations: 0,
+            createdAt: '2025-11-11T12:00:00Z',
+            sequenceToken: 'seq-token-123',
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.put.mockResolvedValueOnce({
+          data: {
+            sequenceToken: 'seq-token-chunk-1',
+            operationsAdded: 1000,
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.put.mockResolvedValueOnce({
+          data: {
+            sequenceToken: 'seq-token-chunk-2',
+            operationsAdded: 1500,
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.put.mockResolvedValueOnce({
+          data: {
+            jobStatus: 'RUNNING',
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.get.mockResolvedValueOnce({
+          data: {
+            jobId: batchJobId,
+            jobStatus: 'DONE',
+            totalOperations: 1500,
+            processedOperations: 1500,
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.get.mockResolvedValueOnce({
+          data: {
+            jobId: batchJobId,
+            jobStatus: 'DONE',
+            summary: {
+              total: 1500,
+              successful: 1500,
+              failed: 0,
+            },
+            results: Array(1500).fill({
+              operationId: 'op-1',
+              operationType: 'CREATE',
+              resourceType: 'CAMPAIGN',
+              success: true,
+              resourceId: 'campaign-123',
+            }),
+          },
+        });
+
+        // Act
+        const result = await service.bulkCreateCampaigns(campaigns);
+
+        // Assert - Verify all campaigns processed successfully with chunking
+        expect(result.summary.total).toBe(1500);
+        expect(result.jobStatus).toBe('DONE');
+      });
+    });
+
+    /**
+     * Test 4.4.3.4: Test partial failure scenario
+     */
+    describe('partial failure scenario', () => {
+      it('should handle batch with 5 valid and 5 invalid campaigns', async () => {
+        // Arrange
+        const validCampaigns = createCampaigns(5);
+        const invalidCampaigns = Array(5).fill({
+          accountId: '',
+          name: '',
+          status: 'INVALID' as any,
+          budget: { amount: -1000, deliveryMethod: 'INVALID' as any },
+          biddingStrategy: '',
+        });
+        const campaigns = [...validCampaigns, ...invalidCampaigns];
+        const batchJobId = 'batch-job-partial-fail';
+
+        mockHttpClient.post.mockResolvedValueOnce({
+          data: {
+            id: batchJobId,
+            accountId: 'test-account-123',
+            publisher: 'google',
+            jobStatus: 'PENDING',
+            totalOperations: 0,
+            processedOperations: 0,
+            createdAt: '2025-11-11T12:00:00Z',
+            sequenceToken: 'seq-token-123',
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.put.mockResolvedValueOnce({
+          data: {
+            sequenceToken: 'seq-token-456',
+            operationsAdded: 10,
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.put.mockResolvedValueOnce({
+          data: {
+            jobStatus: 'RUNNING',
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.get.mockResolvedValueOnce({
+          data: {
+            jobId: batchJobId,
+            jobStatus: 'DONE',
+            totalOperations: 10,
+            processedOperations: 10,
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.get.mockResolvedValueOnce({
+          data: {
+            jobId: batchJobId,
+            jobStatus: 'DONE',
+            summary: {
+              total: 10,
+              successful: 5,
+              failed: 5,
+            },
+            results: [
+              ...Array(5).fill({
+                operationId: 'op-1',
+                operationType: 'CREATE',
+                resourceType: 'CAMPAIGN',
+                success: true,
+                resourceId: 'campaign-valid-1',
+              }),
+              ...Array(5).fill({
+                operationId: 'op-2',
+                operationType: 'CREATE',
+                resourceType: 'CAMPAIGN',
+                success: false,
+                error: 'Invalid campaign data',
+              }),
+            ],
+          },
+        });
+
+        // Act
+        const result = await service.bulkCreateCampaigns(campaigns);
+
+        // Assert
+        expect(result.summary.total).toBe(10);
+        expect(result.summary.successful).toBe(5);
+        expect(result.summary.failed).toBe(5);
+        expect(result.results.length).toBe(10);
+
+        // Verify error messages are included in results
+        const failedResults = result.results.filter((r: any) => !r.success);
+        expect(failedResults.length).toBe(5);
+        expect(failedResults[0].error).toBeDefined();
+      });
+
+      it('should verify summary shows correct succeeded/failed counts for partial failure', async () => {
+        // Arrange
+        const validCampaigns = createCampaigns(5);
+        const invalidCampaigns = Array(5).fill({
+          accountId: '',
+          name: '',
+          status: 'INVALID' as any,
+          budget: { amount: -1000, deliveryMethod: 'INVALID' as any },
+          biddingStrategy: '',
+        });
+        const campaigns = [...validCampaigns, ...invalidCampaigns];
+        const batchJobId = 'batch-job-partial-counts';
+
+        mockHttpClient.post.mockResolvedValueOnce({
+          data: {
+            id: batchJobId,
+            accountId: 'test-account-123',
+            publisher: 'google',
+            jobStatus: 'PENDING',
+            totalOperations: 0,
+            processedOperations: 0,
+            createdAt: '2025-11-11T12:00:00Z',
+            sequenceToken: 'seq-token-123',
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.put.mockResolvedValueOnce({
+          data: {
+            sequenceToken: 'seq-token-456',
+            operationsAdded: 10,
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.put.mockResolvedValueOnce({
+          data: {
+            jobStatus: 'RUNNING',
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.get.mockResolvedValueOnce({
+          data: {
+            jobId: batchJobId,
+            jobStatus: 'DONE',
+            totalOperations: 10,
+            processedOperations: 10,
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.get.mockResolvedValueOnce({
+          data: {
+            jobId: batchJobId,
+            jobStatus: 'DONE',
+            summary: {
+              total: 10,
+              successful: 5,
+              failed: 5,
+            },
+            results: [
+              ...Array(5).fill({
+                operationId: 'op-1',
+                operationType: 'CREATE',
+                resourceType: 'CAMPAIGN',
+                success: true,
+                resourceId: 'campaign-valid-1',
+              }),
+              ...Array(5).fill({
+                operationId: 'op-2',
+                operationType: 'CREATE',
+                resourceType: 'CAMPAIGN',
+                success: false,
+                error: 'Invalid campaign data',
+              }),
+            ],
+          },
+        });
+
+        // Act
+        const result = await service.bulkCreateCampaigns(campaigns);
+
+        // Assert - Count verification
+        expect(result.summary.successful + result.summary.failed).toBe(
+          result.summary.total
+        );
+        expect(result.summary.successful).toBe(5);
+        expect(result.summary.failed).toBe(5);
+      });
+
+      it('should include error messages in results for partial failure', async () => {
+        // Arrange
+        const validCampaigns = createCampaigns(3);
+        const invalidCampaigns = Array(2).fill({
+          accountId: '',
+          name: '',
+          status: 'INVALID' as any,
+          budget: { amount: -1000, deliveryMethod: 'INVALID' as any },
+          biddingStrategy: '',
+        });
+        const campaigns = [...validCampaigns, ...invalidCampaigns];
+        const batchJobId = 'batch-job-partial-errors';
+
+        mockHttpClient.post.mockResolvedValueOnce({
+          data: {
+            id: batchJobId,
+            accountId: 'test-account-123',
+            publisher: 'google',
+            jobStatus: 'PENDING',
+            totalOperations: 0,
+            processedOperations: 0,
+            createdAt: '2025-11-11T12:00:00Z',
+            sequenceToken: 'seq-token-123',
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.put.mockResolvedValueOnce({
+          data: {
+            sequenceToken: 'seq-token-456',
+            operationsAdded: 5,
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.put.mockResolvedValueOnce({
+          data: {
+            jobStatus: 'RUNNING',
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.get.mockResolvedValueOnce({
+          data: {
+            jobId: batchJobId,
+            jobStatus: 'DONE',
+            totalOperations: 5,
+            processedOperations: 5,
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.get.mockResolvedValueOnce({
+          data: {
+            jobId: batchJobId,
+            jobStatus: 'DONE',
+            summary: {
+              total: 5,
+              successful: 3,
+              failed: 2,
+            },
+            results: [
+              ...Array(3).fill({
+                operationId: 'op-1',
+                operationType: 'CREATE',
+                resourceType: 'CAMPAIGN',
+                success: true,
+                resourceId: 'campaign-123',
+              }),
+              {
+                operationId: 'op-2',
+                operationType: 'CREATE',
+                resourceType: 'CAMPAIGN',
+                success: false,
+                error: 'Invalid status field: INVALID',
+              },
+              {
+                operationId: 'op-3',
+                operationType: 'CREATE',
+                resourceType: 'CAMPAIGN',
+                success: false,
+                error: 'Invalid budget amount: -1000',
+              },
+            ],
+          },
+        });
+
+        // Act
+        const result = await service.bulkCreateCampaigns(campaigns);
+
+        // Assert - Verify error messages
+        expect(result.results[3].error).toBe('Invalid status field: INVALID');
+        expect(result.results[4].error).toBe('Invalid budget amount: -1000');
+      });
+    });
+
+    /**
+     * Test 4.4.3.5: Test full failure scenario
+     */
+    describe('full failure scenario', () => {
+      it('should handle batch with all invalid campaigns', async () => {
+        // Arrange
+        const invalidCampaigns = Array(10).fill({
+          accountId: '',
+          name: '',
+          status: 'INVALID' as any,
+          budget: { amount: -1000, deliveryMethod: 'INVALID' as any },
+          biddingStrategy: '',
+        });
+        const batchJobId = 'batch-job-all-fail';
+
+        mockHttpClient.post.mockResolvedValueOnce({
+          data: {
+            id: batchJobId,
+            accountId: 'test-account-123',
+            publisher: 'google',
+            jobStatus: 'PENDING',
+            totalOperations: 0,
+            processedOperations: 0,
+            createdAt: '2025-11-11T12:00:00Z',
+            sequenceToken: 'seq-token-123',
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.put.mockResolvedValueOnce({
+          data: {
+            sequenceToken: 'seq-token-456',
+            operationsAdded: 10,
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.put.mockResolvedValueOnce({
+          data: {
+            jobStatus: 'RUNNING',
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.get.mockResolvedValueOnce({
+          data: {
+            jobId: batchJobId,
+            jobStatus: 'DONE',
+            totalOperations: 10,
+            processedOperations: 10,
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.get.mockResolvedValueOnce({
+          data: {
+            jobId: batchJobId,
+            jobStatus: 'DONE',
+            summary: {
+              total: 10,
+              successful: 0,
+              failed: 10,
+            },
+            results: Array(10).fill({
+              operationId: 'op-1',
+              operationType: 'CREATE',
+              resourceType: 'CAMPAIGN',
+              success: false,
+              error: 'Invalid campaign data',
+            }),
+          },
+        });
+
+        // Act
+        const result = await service.bulkCreateCampaigns(invalidCampaigns);
+
+        // Assert
+        expect(result.summary.successful).toBe(0);
+        expect(result.summary.failed).toBe(10);
+        expect(result.summary.total).toBe(10);
+      });
+
+      it('should handle error when all campaigns fail', async () => {
+        // Arrange
+        const invalidCampaigns = Array(5).fill({
+          accountId: '',
+          name: '',
+          status: 'INVALID' as any,
+          budget: { amount: -1000, deliveryMethod: 'INVALID' as any },
+          biddingStrategy: '',
+        });
+        const batchJobId = 'batch-job-all-fail-error';
+
+        mockHttpClient.post.mockResolvedValueOnce({
+          data: {
+            id: batchJobId,
+            accountId: 'test-account-123',
+            publisher: 'google',
+            jobStatus: 'PENDING',
+            totalOperations: 0,
+            processedOperations: 0,
+            createdAt: '2025-11-11T12:00:00Z',
+            sequenceToken: 'seq-token-123',
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.put.mockResolvedValueOnce({
+          data: {
+            sequenceToken: 'seq-token-456',
+            operationsAdded: 5,
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.put.mockResolvedValueOnce({
+          data: {
+            jobStatus: 'RUNNING',
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.get.mockResolvedValueOnce({
+          data: {
+            jobId: batchJobId,
+            jobStatus: 'DONE',
+            totalOperations: 5,
+            processedOperations: 5,
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.get.mockResolvedValueOnce({
+          data: {
+            jobId: batchJobId,
+            jobStatus: 'DONE',
+            summary: {
+              total: 5,
+              successful: 0,
+              failed: 5,
+            },
+            results: Array(5).fill({
+              operationId: 'op-1',
+              operationType: 'CREATE',
+              resourceType: 'CAMPAIGN',
+              success: false,
+              error: 'Invalid campaign data',
+            }),
+          },
+        });
+
+        // Act
+        const result = await service.bulkCreateCampaigns(invalidCampaigns);
+
+        // Assert
+        expect(result.summary.failed).toBe(5);
+        expect(result.summary.successful).toBe(0);
+      });
+
+      it('should show all campaigns as failed in summary', async () => {
+        // Arrange
+        const invalidCampaigns = Array(20).fill({
+          accountId: '',
+          name: '',
+          status: 'INVALID' as any,
+          budget: { amount: -1000, deliveryMethod: 'INVALID' as any },
+          biddingStrategy: '',
+        });
+        const batchJobId = 'batch-job-all-fail-summary';
+
+        mockHttpClient.post.mockResolvedValueOnce({
+          data: {
+            id: batchJobId,
+            accountId: 'test-account-123',
+            publisher: 'google',
+            jobStatus: 'PENDING',
+            totalOperations: 0,
+            processedOperations: 0,
+            createdAt: '2025-11-11T12:00:00Z',
+            sequenceToken: 'seq-token-123',
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.put.mockResolvedValueOnce({
+          data: {
+            sequenceToken: 'seq-token-456',
+            operationsAdded: 20,
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.put.mockResolvedValueOnce({
+          data: {
+            jobStatus: 'RUNNING',
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.get.mockResolvedValueOnce({
+          data: {
+            jobId: batchJobId,
+            jobStatus: 'DONE',
+            totalOperations: 20,
+            processedOperations: 20,
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.get.mockResolvedValueOnce({
+          data: {
+            jobId: batchJobId,
+            jobStatus: 'DONE',
+            summary: {
+              total: 20,
+              successful: 0,
+              failed: 20,
+            },
+            results: Array(20).fill({
+              operationId: 'op-1',
+              operationType: 'CREATE',
+              resourceType: 'CAMPAIGN',
+              success: false,
+              error: 'Invalid campaign data',
+            }),
+          },
+        });
+
+        // Act
+        const result = await service.bulkCreateCampaigns(invalidCampaigns);
+
+        // Assert
+        expect(result.summary.total).toBe(20);
+        expect(result.summary.failed).toBe(20);
+        expect(result.summary.successful).toBe(0);
+      });
+    });
+
+    /**
+     * Test 4.4.3.6: Test timeout scenario
+     */
+    describe('timeout scenario', () => {
+      it('should wrap errors from underlying service calls', async () => {
+        // Arrange
+        const campaigns = createCampaigns(10);
+        const batchJobId = 'batch-job-error';
+
+        mockHttpClient.post.mockResolvedValueOnce({
+          data: {
+            id: batchJobId,
+            accountId: 'test-account-123',
+            publisher: 'google',
+            jobStatus: 'PENDING',
+            totalOperations: 0,
+            processedOperations: 0,
+            createdAt: '2025-11-11T12:00:00Z',
+            sequenceToken: 'seq-token-123',
+            status: 'SUCCESS',
+          },
+        });
+
+        // Make addOperationsToBatch fail
+        mockHttpClient.put.mockRejectedValueOnce(
+          new Error('Failed to add operations')
+        );
+
+        // Act & Assert - Verify errors are wrapped
+        await expect(service.bulkCreateCampaigns(campaigns)).rejects.toThrow(
+          'Bulk campaign creation failed'
+        );
+      });
+
+      it('should handle API errors during batch job operations', async () => {
+        // Arrange
+        const campaigns = createCampaigns(10);
+        const batchJobId = 'batch-job-api-error';
+
+        mockHttpClient.post.mockResolvedValueOnce({
+          data: {
+            id: batchJobId,
+            accountId: 'test-account-123',
+            publisher: 'google',
+            jobStatus: 'PENDING',
+            totalOperations: 0,
+            processedOperations: 0,
+            createdAt: '2025-11-11T12:00:00Z',
+            sequenceToken: 'seq-token-123',
+            status: 'SUCCESS',
+          },
+        });
+
+        // Mock addOperationsToBatch to fail
+        mockHttpClient.put.mockRejectedValue(
+          new Error('Failed to add operations to batch')
+        );
+
+        // Act & Assert
+        await expect(service.bulkCreateCampaigns(campaigns)).rejects.toThrow(
+          'Bulk campaign creation failed'
+        );
+      });
+    });
+
+    /**
+     * Test 4.4.3.7: Input validation tests
+     */
+    describe('input validation', () => {
+      it('should reject null campaigns array', async () => {
+        // Act & Assert
+        await expect(
+          service.bulkCreateCampaigns(null as any)
+        ).rejects.toThrow(
+          'campaigns array is required and must contain at least one campaign'
+        );
+      });
+
+      it('should reject undefined campaigns array', async () => {
+        // Act & Assert
+        await expect(
+          service.bulkCreateCampaigns(undefined as any)
+        ).rejects.toThrow(
+          'campaigns array is required and must contain at least one campaign'
+        );
+      });
+
+      it('should reject empty campaigns array', async () => {
+        // Act & Assert
+        await expect(service.bulkCreateCampaigns([])).rejects.toThrow(
+          'campaigns array is required and must contain at least one campaign'
+        );
+      });
+
+      it('should reject non-array input', async () => {
+        // Act & Assert
+        await expect(
+          service.bulkCreateCampaigns({} as any)
+        ).rejects.toThrow(
+          'campaigns array is required and must contain at least one campaign'
+        );
+      });
+    });
+
+    /**
+     * Test 4.4.3.8: X-Ray tracing tests
+     */
+    describe('X-Ray tracing', () => {
+      it('should properly create and close X-Ray subsegment on success', async () => {
+        // Arrange
+        const campaigns = createCampaigns(5);
+        const batchJobId = 'batch-job-xray-success';
+        const mockSubsegment = {
+          close: jest.fn(),
+        };
+        const mockSegment = {
+          addNewSubsegment: jest.fn().mockReturnValue(mockSubsegment),
+        };
+        (AWSXRay.getSegment as jest.Mock).mockReturnValue(mockSegment);
+
+        mockHttpClient.post.mockResolvedValueOnce({
+          data: {
+            id: batchJobId,
+            accountId: 'test-account-123',
+            publisher: 'google',
+            jobStatus: 'PENDING',
+            totalOperations: 0,
+            processedOperations: 0,
+            createdAt: '2025-11-11T12:00:00Z',
+            sequenceToken: 'seq-token-123',
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.put.mockResolvedValueOnce({
+          data: {
+            sequenceToken: 'seq-token-456',
+            operationsAdded: 5,
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.put.mockResolvedValueOnce({
+          data: {
+            jobStatus: 'RUNNING',
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.get.mockResolvedValueOnce({
+          data: {
+            jobId: batchJobId,
+            jobStatus: 'DONE',
+            totalOperations: 5,
+            processedOperations: 5,
+            status: 'SUCCESS',
+          },
+        });
+
+        mockHttpClient.get.mockResolvedValueOnce({
+          data: {
+            jobId: batchJobId,
+            jobStatus: 'DONE',
+            summary: {
+              total: 5,
+              successful: 5,
+              failed: 0,
+            },
+            results: Array(5).fill({
+              operationId: 'op-1',
+              operationType: 'CREATE',
+              resourceType: 'CAMPAIGN',
+              success: true,
+              resourceId: 'campaign-123',
+            }),
+          },
+        });
+
+        // Act
+        await service.bulkCreateCampaigns(campaigns);
+
+        // Assert
+        expect(mockSegment.addNewSubsegment).toHaveBeenCalledWith(
+          'MarinBatchJobService.bulkCreateCampaigns'
+        );
+        // 6 subsegments created: bulkCreateCampaigns, createBatchJob, addOperationsToBatch, runBatchJob, pollBatchJobStatus, getBatchJobResults
+        expect(mockSubsegment.close).toHaveBeenCalledTimes(6);
+      });
+
+      it('should properly close X-Ray subsegment on error', async () => {
+        // Arrange
+        const campaigns = createCampaigns(5);
+        const mockSubsegment = {
+          close: jest.fn(),
+        };
+        const mockSegment = {
+          addNewSubsegment: jest.fn().mockReturnValue(mockSubsegment),
+        };
+        (AWSXRay.getSegment as jest.Mock).mockReturnValue(mockSegment);
+
+        // Act & Assert
+        await expect(
+          service.bulkCreateCampaigns(null as any)
+        ).rejects.toThrow();
+
+        // Verify subsegment was closed (called in validation check and in catch block)
+        expect(mockSubsegment.close).toHaveBeenCalledTimes(2);
       });
     });
   });
