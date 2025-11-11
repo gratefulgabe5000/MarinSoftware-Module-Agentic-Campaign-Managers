@@ -9,7 +9,8 @@
     "start": "node dist/index.js",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "test:marin-connectivity": "ts-node scripts/test-marin-connectivity.ts"
   },
   "keywords": [],
   "author": "",
