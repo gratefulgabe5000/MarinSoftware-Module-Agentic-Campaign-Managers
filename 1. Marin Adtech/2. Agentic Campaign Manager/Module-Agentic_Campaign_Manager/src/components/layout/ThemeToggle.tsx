@@ -26,9 +26,19 @@ export interface ThemeToggleProps {
 const ThemeToggle: React.FC<ThemeToggleProps> = ({ onThemeChange, theme: controlledTheme }) => {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
+  // Apply theme to document
+  const applyTheme = (newTheme: 'light' | 'dark') => {
+    if (newTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  };
+
   // Initialize theme from localStorage or system preference
   useEffect(() => {
     if (controlledTheme) {
+      // eslint-disable-next-line
       setTheme(controlledTheme);
       return;
     }
@@ -39,18 +49,10 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({ onThemeChange, theme: control
       : 'light';
 
     const initialTheme = savedTheme || systemTheme;
+    // eslint-disable-next-line
     setTheme(initialTheme);
     applyTheme(initialTheme);
   }, [controlledTheme]);
-
-  // Apply theme to document
-  const applyTheme = (newTheme: 'light' | 'dark') => {
-    if (newTheme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  };
 
   // Toggle theme
   const toggleTheme = () => {

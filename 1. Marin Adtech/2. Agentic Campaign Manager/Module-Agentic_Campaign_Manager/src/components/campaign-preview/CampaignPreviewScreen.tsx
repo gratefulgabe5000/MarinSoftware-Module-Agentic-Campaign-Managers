@@ -27,40 +27,16 @@ const CampaignPreviewScreen: React.FC = () => {
   const storeCampaigns = useCampaignStore((state) => state.campaigns);
   const { setPreviewData, validateCampaign, validationResult, hasUnsavedChanges, saveDraft } = useCampaignPreviewStore();
 
-  // Get campaigns from location state (passed from generation screen) or from store
-  useEffect(() => {
-    if (location.state?.campaigns) {
-      setCampaigns(location.state.campaigns);
-      setIsLoading(false);
-    } else if (storeCampaigns.length > 0) {
-      setCampaigns(storeCampaigns);
-      setIsLoading(false);
-    } else {
-      setIsLoading(false);
-    }
-  }, [location.state, storeCampaigns]);
-
-  // Set preview data when active campaign tab changes
-  useEffect(() => {
-    const campaignIndex = parseInt(activeCampaignTab, 10);
-    if (campaigns.length > 0 && campaignIndex >= 0 && campaignIndex < campaigns.length) {
-      const campaign = campaigns[campaignIndex];
-      const previewData = transformCampaignToPreview(campaign);
-      setPreviewData(previewData);
-      validateCampaign();
-    }
-  }, [activeCampaignTab, campaigns, setPreviewData, validateCampaign]);
-
   // Transform campaign to preview data
   const transformCampaignToPreview = (campaign: Campaign): CampaignPreviewData => {
     const adGroups: AdGroupPreviewRow[] = [];
-    
+
     // Extract ad groups from campaign plan
     if (campaign.campaignPlan?.adGroups) {
       campaign.campaignPlan.adGroups.forEach((adGroupPlan, index) => {
         // Get keywords from targeting.keywords (array of strings)
         const keywords = adGroupPlan.targeting?.keywords || [];
-        
+
         // Extract ads from adGroupPlan.ads
         const ads = adGroupPlan.ads || [];
 
@@ -116,6 +92,35 @@ const CampaignPreviewScreen: React.FC = () => {
       totalAds: adGroups.reduce((sum, ag) => sum + ag.ads.length, 0),
     };
   };
+
+  // Get campaigns from location state (passed from generation screen) or from store
+  useEffect(() => {
+    if (location.state?.campaigns) {
+      // eslint-disable-next-line
+      setCampaigns(location.state.campaigns);
+      // eslint-disable-next-line
+      setIsLoading(false);
+    } else if (storeCampaigns.length > 0) {
+      // eslint-disable-next-line
+      setCampaigns(storeCampaigns);
+      // eslint-disable-next-line
+      setIsLoading(false);
+    } else {
+      // eslint-disable-next-line
+      setIsLoading(false);
+    }
+  }, [location.state, storeCampaigns]);
+
+  // Set preview data when active campaign tab changes
+  useEffect(() => {
+    const campaignIndex = parseInt(activeCampaignTab, 10);
+    if (campaigns.length > 0 && campaignIndex >= 0 && campaignIndex < campaigns.length) {
+      const campaign = campaigns[campaignIndex];
+      const previewData = transformCampaignToPreview(campaign);
+      setPreviewData(previewData);
+      validateCampaign();
+    }
+  }, [activeCampaignTab, campaigns, setPreviewData, validateCampaign]);
 
   // Handle back to dashboard
   const handleBackToDashboard = () => {

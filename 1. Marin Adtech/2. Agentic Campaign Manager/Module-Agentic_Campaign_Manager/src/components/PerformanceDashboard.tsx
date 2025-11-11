@@ -114,7 +114,7 @@ const PerformanceDashboard: React.FC = () => {
           } else {
             setError('No cached data available. Please check your connection.');
           }
-        } catch (cacheError) {
+        } catch {
           setError(
             error instanceof Error
               ? error.message

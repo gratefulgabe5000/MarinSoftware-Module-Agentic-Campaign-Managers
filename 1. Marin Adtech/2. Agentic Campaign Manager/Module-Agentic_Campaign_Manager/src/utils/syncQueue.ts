@@ -34,7 +34,7 @@ class SyncQueueManager {
   private queue: QueuedRequest[] = [];
   private isProcessing = false;
   private isOnline = navigator.onLine;
-  private processingInterval: NodeJS.Timeout | null = null;
+  private processingInterval: ReturnType<typeof setTimeout> | null = null;
   private listeners: Array<(isOnline: boolean) => void> = [];
 
   constructor() {
@@ -112,7 +112,7 @@ class SyncQueueManager {
         await this.executeRequest(request);
         // Request succeeded, remove from queue
         this.queue.shift();
-      } catch (error) {
+      } catch {
         // Request failed
         request.retries++;
 
