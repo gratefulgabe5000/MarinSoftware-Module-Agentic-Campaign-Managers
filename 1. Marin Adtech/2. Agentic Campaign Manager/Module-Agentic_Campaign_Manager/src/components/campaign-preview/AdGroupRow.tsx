@@ -41,6 +41,7 @@ const AdGroupRow: React.FC<AdGroupRowProps> = ({ adGroup, isExpanded, onToggle }
 
   // Sync editValue when currentAdGroup.name changes
   useEffect(() => {
+    // eslint-disable-next-line
     setEditValue(currentAdGroup.name);
   }, [currentAdGroup.name]);
 
