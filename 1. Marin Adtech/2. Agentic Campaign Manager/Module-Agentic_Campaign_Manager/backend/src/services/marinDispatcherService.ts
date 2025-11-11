@@ -130,6 +130,19 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
   /**
    * Check if authenticated
    * For Marin Dispatcher, this verifies we can reach the API (internal network)
+   *
+   * @returns Promise<boolean> True if API is reachable, false otherwise
+   *
+   * @example
+   * ```typescript
+   * const service = new MarinDispatcherService();
+   * const isAuth = await service.isAuthenticated();
+   * if (isAuth) {
+   *   console.log('Connected to Marin Dispatcher API');
+   * }
+   * ```
+   *
+   * @error Network connectivity errors are caught and logged, returning false
    */
   async isAuthenticated(): Promise<boolean> {
     const segment = AWSXRay.getSegment();
@@ -157,6 +170,25 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
 
   /**
    * Create a campaign on Marin Dispatcher
+   *
+   * @param campaignPlan - Campaign plan with budget and objective information
+   * @param name - Campaign name (max 255 characters)
+   * @returns Promise<PlatformAPIResponse> Response with success status, campaign ID, and details
+   *
+   * @example
+   * ```typescript
+   * const campaignPlan: CampaignPlan = {
+   *   budget: { total: 1000, daily: 50 },
+   *   objective: 'SALES'
+   * };
+   * const response = await service.createCampaign(campaignPlan, 'Summer Sale 2024');
+   * if (response.success) {
+   *   console.log('Campaign created:', response.campaignId);
+   * }
+   * ```
+   *
+   * @error Validation errors if budget is missing or name exceeds 255 chars
+   * @error Network errors from Dispatcher API are caught and returned in response
    */
   async createCampaign(
     campaignPlan: CampaignPlan,
@@ -197,6 +229,24 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
 
   /**
    * Update a campaign on Marin Dispatcher
+   *
+   * @param campaignId - Campaign ID to update (required)
+   * @param updates - Partial campaign plan with fields to update (budget, etc.)
+   * @returns Promise<PlatformAPIResponse> Response with success status and campaign details
+   *
+   * @example
+   * ```typescript
+   * const updates: Partial<CampaignPlan> = {
+   *   budget: { total: 1500, daily: 75 }
+   * };
+   * const response = await service.updateCampaign('campaign-123', updates);
+   * if (response.success) {
+   *   console.log('Campaign updated');
+   * }
+   * ```
+   *
+   * @error Returns error response if campaignId is empty or invalid
+   * @error Returns error response if no valid fields are provided for update
    */
   async updateCampaign(
     campaignId: string,
@@ -266,6 +316,22 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
 
   /**
    * Pause a campaign on Marin Dispatcher
+   *
+   * Pausing a campaign stops serving ads but preserves all campaign settings and data.
+   * The campaign can be resumed at any time.
+   *
+   * @param campaignId - Campaign ID to pause (required)
+   * @returns Promise<PlatformAPIResponse> Response with success status and updated campaign details
+   *
+   * @example
+   * ```typescript
+   * const response = await service.pauseCampaign('campaign-123');
+   * if (response.success) {
+   *   console.log('Campaign paused');
+   * }
+   * ```
+   *
+   * @error Returns error response if campaignId is empty or invalid
    */
   async pauseCampaign(campaignId: string): Promise<PlatformAPIResponse> {
     const segment = AWSXRay.getSegment();
@@ -304,6 +370,23 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
 
   /**
    * Resume a campaign on Marin Dispatcher
+   *
+   * Resumes a paused campaign, allowing ads to be served again.
+   * Only works on campaigns that are in PAUSED status.
+   *
+   * @param campaignId - Campaign ID to resume (required)
+   * @returns Promise<PlatformAPIResponse> Response with success status and updated campaign details
+   *
+   * @example
+   * ```typescript
+   * const response = await service.resumeCampaign('campaign-123');
+   * if (response.success) {
+   *   console.log('Campaign resumed and ads serving');
+   * }
+   * ```
+   *
+   * @error Returns error response if campaignId is empty or invalid
+   * @error API may return error if campaign is not in PAUSED status
    */
   async resumeCampaign(campaignId: string): Promise<PlatformAPIResponse> {
     const segment = AWSXRay.getSegment();
@@ -342,7 +425,24 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
 
   /**
    * Delete a campaign on Marin Dispatcher
-   * Note: Marin Dispatcher uses status update to REMOVED instead of DELETE endpoint
+   *
+   * Deletes a campaign by setting its status to REMOVED. Note: Marin Dispatcher uses
+   * a status update to REMOVED instead of a DELETE HTTP method. The campaign data is
+   * preserved in the system but marked as removed.
+   *
+   * @param campaignId - Campaign ID to delete (required)
+   * @returns Promise<PlatformAPIResponse> Response with success status and campaign details
+   *
+   * @example
+   * ```typescript
+   * const response = await service.deleteCampaign('campaign-123');
+   * if (response.success) {
+   *   console.log('Campaign deleted (status set to REMOVED)');
+   * }
+   * ```
+   *
+   * @error Returns error response if campaignId is empty or invalid
+   * @note Deleted campaigns (status=REMOVED) can be seen in API queries but are not active
    */
   async deleteCampaign(campaignId: string): Promise<PlatformAPIResponse> {
     const segment = AWSXRay.getSegment();
@@ -381,6 +481,24 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
 
   /**
    * Get campaign status from Marin Dispatcher
+   *
+   * Retrieves the current status and details of a campaign including budget,
+   * bidding strategy, and other campaign metadata.
+   *
+   * @param campaignId - Campaign ID to get status for (required)
+   * @returns Promise<PlatformAPIResponse> Response with success status and complete campaign details
+   *
+   * @example
+   * ```typescript
+   * const response = await service.getCampaignStatus('campaign-123');
+   * if (response.success) {
+   *   console.log('Campaign status:', response.details?.status);
+   *   console.log('Budget:', response.details?.budget);
+   * }
+   * ```
+   *
+   * @error Returns error response if campaignId is empty or invalid
+   * @error Network errors from Dispatcher API are caught and returned in response
    */
   async getCampaignStatus(campaignId: string): Promise<PlatformAPIResponse> {
     const segment = AWSXRay.getSegment();
