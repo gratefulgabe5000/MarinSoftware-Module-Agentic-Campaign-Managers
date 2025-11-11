@@ -106,6 +106,7 @@ export interface PlatformAPIResponse {
   adGroupId?: string;
   adId?: string;
   keywordId?: string;
+  keywords?: any[]; // For bulk keyword creation
   error?: string;
   details?: any;
 }

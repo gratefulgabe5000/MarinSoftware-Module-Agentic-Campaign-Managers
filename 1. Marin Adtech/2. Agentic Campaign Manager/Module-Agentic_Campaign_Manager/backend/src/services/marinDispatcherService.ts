@@ -20,8 +20,12 @@ import {
   MarinAdRequest,
   MarinAdResponse,
   MarinAdUpdateRequest,
+  MarinKeywordRequest,
+  MarinKeywordResponse,
+  MarinKeywordUpdateRequest,
+  MarinBulkKeywordRequest,
 } from '../types/marinDispatcher.types';
-import { validateCampaignRequest, validateAdGroupRequest, validateAdRequest, ValidationResult } from '../utils/marinTypeValidators';
+import { validateCampaignRequest, validateAdGroupRequest, validateAdRequest, validateKeywordRequest, ValidationResult } from '../utils/marinTypeValidators';
 import config from '../config/env';
 
 /**
@@ -619,6 +623,130 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
       };
     } catch (error) {
       return this.handleError(error, 'updateAd');
+    }
+  }
+
+  // ========================================================================
+  // Keyword Methods (Phase 2B.3)
+  // ========================================================================
+
+  /**
+   * Create keywords in bulk for an ad group in Marin Dispatcher
+   *
+   * @param adGroupId - The ad group ID to create keywords in
+   * @param keywords - Array of keyword data (without accountId and adGroupId)
+   * @returns PlatformAPIResponse with keyword creation results
+   */
+  async createKeywords(
+    adGroupId: string,
+    keywords: Omit<MarinKeywordRequest, 'accountId' | 'adGroupId'>[]
+  ): Promise<PlatformAPIResponse> {
+    try {
+      console.log(`[Marin Dispatcher] Creating ${keywords.length} keywords in ad group: ${adGroupId}`);
+      console.log(`[Marin Dispatcher] Keywords:`, keywords);
+
+      // Build complete request with accountId and adGroupId for each keyword
+      const request: MarinBulkKeywordRequest = {
+        accountId: this.accountId,
+        adGroupId,
+        keywords: keywords.map(kw => ({
+          accountId: this.accountId,
+          adGroupId,
+          ...kw
+        }))
+      };
+
+      // Validate all keywords
+      const validationErrors: string[] = [];
+      request.keywords.forEach((kw, index) => {
+        const validation = validateKeywordRequest(kw);
+        if (!validation.isValid) {
+          validationErrors.push(`Keyword ${index}: ${validation.errors.join(', ')}`);
+        }
+      });
+
+      if (validationErrors.length > 0) {
+        console.error(`[Marin Dispatcher] Keyword validation failed:`, validationErrors);
+        return {
+          success: false,
+          error: `Validation failed: ${validationErrors.join('; ')}`
+        };
+      }
+
+      const segment = AWSXRay.getSegment();
+      const subsegment = segment?.addNewSubsegment('MarinDispatcher.createKeywords');
+
+      // Make API call to create keywords in bulk
+      const response = await this.httpClient.post<{ keywords: MarinKeywordResponse[] }>(
+        this.buildApiPath('/keywords'),  // InfraDocs format: /dispatcher/${publisher}/keywords
+        request
+      );
+
+      subsegment?.close();
+
+      console.log(`[Marin Dispatcher] ${response.data.keywords.length} keywords created successfully`);
+
+      return {
+        success: true,
+        keywords: response.data.keywords,
+        details: response.data
+      };
+    } catch (error) {
+      return this.handleError(error, 'createKeywords');
+    }
+  }
+
+  /**
+   * Update a keyword in Marin Dispatcher
+   *
+   * @param keywordId - The keyword ID to update
+   * @param updates - The fields to update
+   * @returns PlatformAPIResponse with keyword update results
+   */
+  async updateKeywords(
+    keywordId: string,
+    updates: MarinKeywordUpdateRequest
+  ): Promise<PlatformAPIResponse> {
+    try {
+      console.log(`[Marin Dispatcher] Updating keyword: ${keywordId}`);
+      console.log(`[Marin Dispatcher] Updates:`, updates);
+
+      const request: MarinKeywordUpdateRequest = { ...updates };
+
+      // Remove undefined fields
+      Object.keys(request).forEach(key =>
+        request[key as keyof MarinKeywordUpdateRequest] === undefined && delete request[key as keyof MarinKeywordUpdateRequest]
+      );
+
+      // Check if there are any fields to update
+      if (Object.keys(request).length === 0) {
+        console.warn(`[Marin Dispatcher] No valid fields to update for keyword: ${keywordId}`);
+        return {
+          success: false,
+          error: 'No valid fields to update'
+        };
+      }
+
+      const segment = AWSXRay.getSegment();
+      const subsegment = segment?.addNewSubsegment('MarinDispatcher.updateKeywords');
+
+      // Make API call to update keyword
+      const response = await this.httpClient.put<MarinKeywordResponse>(
+        this.buildApiPath(`/keywords/${keywordId}`),  // InfraDocs format: /dispatcher/${publisher}/keywords/{id}
+        request
+      );
+
+      subsegment?.close();
+
+      console.log(`[Marin Dispatcher] Keyword updated successfully: ${response.data.id}`);
+
+      return {
+        success: true,
+        keywordId: response.data.id,
+        details: response.data
+      };
+    } catch (error) {
+      return this.handleError(error, 'updateKeywords');
     }
   }
 }
