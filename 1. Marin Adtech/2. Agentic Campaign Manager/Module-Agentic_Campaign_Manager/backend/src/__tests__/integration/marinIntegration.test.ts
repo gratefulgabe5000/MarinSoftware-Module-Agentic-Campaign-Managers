@@ -1,11 +1,16 @@
 /**
  * Marin Integration Tests
- * 
+ *
  * Integration tests for Marin Dispatcher Lambda client integration
  * Tests Lambda event handling, response format, SQS events, and error handling
- * 
+ *
  * @module marinIntegration.test
  */
+
+// Set test environment variables before importing modules
+process.env.NODE_ENV = 'test';
+process.env.MARIN_DISPATCHER_BASE_URL = 'http://localhost:3000';
+process.env.MARIN_DISPATCHER_ACCOUNT_ID = 'test-account-123';
 
 import { MarinDispatcherClient } from '../../lib/marinDispatcherClient';
 import { MarinBatchJobClient } from '../../lib/marinBatchJobClient';

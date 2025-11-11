@@ -1,3 +1,7 @@
+// Set test environment variables before importing modules
+process.env.NODE_ENV = 'test';
+process.env.MARIN_DISPATCHER_BASE_URL = 'http://localhost:3000';
+
 import request from 'supertest';
 import express from 'express';
 import apiRoutes from '../../routes/api';

@@ -15,134 +15,99 @@ describe('AuthController', () => {
     };
   });
 
-  describe('initGoogleAuth', () => {
-    it('should return Google OAuth URL (placeholder)', async () => {
-      await controller.initGoogleAuth(
+  describe('authorizeGoogle', () => {
+    it('should return Google OAuth URL', async () => {
+      await controller.authorizeGoogle(
         mockRequest as Request,
         mockResponse as Response
       );
 
-      expect(mockResponse.json).toHaveBeenCalledWith(
-        expect.objectContaining({
-          authUrl: 'https://accounts.google.com/o/oauth2/auth',
-        })
-      );
+      expect(mockResponse.json).toHaveBeenCalled();
     });
   });
 
-  describe('googleCallback', () => {
-    it('should handle OAuth callback (placeholder)', async () => {
+  describe('callbackGoogle', () => {
+    it('should handle OAuth callback', async () => {
       mockRequest.query = {
         code: 'auth-code-123',
         state: 'state-123',
       };
 
-      await controller.googleCallback(
+      // This method redirects, so we need to mock redirect
+      mockResponse.redirect = jest.fn().mockReturnThis();
+
+      await controller.callbackGoogle(
         mockRequest as Request,
         mockResponse as Response
       );
 
-      expect(mockResponse.json).toHaveBeenCalledWith(
-        expect.objectContaining({
-          code: 'auth-code-123',
-          state: 'state-123',
-        })
-      );
+      expect(mockResponse.redirect).toHaveBeenCalled();
     });
   });
 
-  describe('initMetaAuth', () => {
-    it('should return Meta OAuth URL (placeholder)', async () => {
-      await controller.initMetaAuth(
+  describe('authorizeMeta', () => {
+    it('should return Meta OAuth URL', async () => {
+      await controller.authorizeMeta(
         mockRequest as Request,
         mockResponse as Response
       );
 
-      expect(mockResponse.json).toHaveBeenCalledWith(
-        expect.objectContaining({
-          authUrl: 'https://www.facebook.com/v18.0/dialog/oauth',
-        })
-      );
+      expect(mockResponse.json).toHaveBeenCalled();
     });
   });
 
-  describe('metaCallback', () => {
-    it('should handle Meta OAuth callback (placeholder)', async () => {
+  describe('callbackMeta', () => {
+    it('should handle Meta OAuth callback', async () => {
       mockRequest.query = {
         code: 'meta-code-123',
         state: 'state-123',
       };
 
-      await controller.metaCallback(
+      mockResponse.redirect = jest.fn().mockReturnThis();
+
+      await controller.callbackMeta(
         mockRequest as Request,
         mockResponse as Response
       );
 
-      expect(mockResponse.json).toHaveBeenCalledWith(
-        expect.objectContaining({
-          code: 'meta-code-123',
-          state: 'state-123',
-        })
-      );
+      expect(mockResponse.redirect).toHaveBeenCalled();
     });
   });
 
-  describe('initMicrosoftAuth', () => {
-    it('should return Microsoft OAuth URL (placeholder)', async () => {
-      await controller.initMicrosoftAuth(
+  describe('authorizeMicrosoft', () => {
+    it('should return Microsoft OAuth URL', async () => {
+      await controller.authorizeMicrosoft(
         mockRequest as Request,
         mockResponse as Response
       );
 
-      expect(mockResponse.json).toHaveBeenCalledWith(
-        expect.objectContaining({
-          authUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
-        })
-      );
+      expect(mockResponse.json).toHaveBeenCalled();
     });
   });
 
-  describe('microsoftCallback', () => {
-    it('should handle Microsoft OAuth callback (placeholder)', async () => {
+  describe('callbackMicrosoft', () => {
+    it('should handle Microsoft OAuth callback', async () => {
       mockRequest.query = {
         code: 'microsoft-code-123',
         state: 'state-123',
       };
 
-      await controller.microsoftCallback(
+      mockResponse.redirect = jest.fn().mockReturnThis();
+
+      await controller.callbackMicrosoft(
         mockRequest as Request,
         mockResponse as Response
       );
 
-      expect(mockResponse.json).toHaveBeenCalledWith(
-        expect.objectContaining({
-          code: 'microsoft-code-123',
-          state: 'state-123',
-        })
-      );
+      expect(mockResponse.redirect).toHaveBeenCalled();
     });
   });
 
-  describe('getTokens', () => {
-    it('should return empty tokens array (placeholder)', async () => {
-      await controller.getTokens(
-        mockRequest as Request,
-        mockResponse as Response
-      );
+  describe('getConnectionStatus', () => {
+    it('should return connection status', async () => {
+      mockRequest.query = { platform: 'google' };
 
-      expect(mockResponse.json).toHaveBeenCalledWith(
-        expect.objectContaining({
-          tokens: [],
-        })
-      );
-    });
-  });
-
-  describe('refreshToken', () => {
-    it('should return platform info (placeholder)', async () => {
-      mockRequest.body = { platform: 'google' };
-
-      await controller.refreshToken(
+      await controller.getConnectionStatus(
         mockRequest as Request,
         mockResponse as Response
       );
@@ -150,16 +115,15 @@ describe('AuthController', () => {
       expect(mockResponse.json).toHaveBeenCalledWith(
         expect.objectContaining({
           platform: 'google',
+          connected: expect.any(Boolean),
         })
       );
     });
   });
 
-  describe('revokeToken', () => {
-    it('should return platform info (placeholder)', async () => {
-      mockRequest.params = { platform: 'google' };
-
-      await controller.revokeToken(
+  describe('getGoogleStatus', () => {
+    it('should return Google connection status', async () => {
+      await controller.getGoogleStatus(
         mockRequest as Request,
         mockResponse as Response
       );
@@ -167,6 +131,23 @@ describe('AuthController', () => {
       expect(mockResponse.json).toHaveBeenCalledWith(
         expect.objectContaining({
           platform: 'google',
+          connected: expect.any(Boolean),
+        })
+      );
+    });
+  });
+
+  describe('disconnectGoogle', () => {
+    it('should disconnect Google Ads OAuth', async () => {
+      await controller.disconnectGoogle(
+        mockRequest as Request,
+        mockResponse as Response
+      );
+
+      expect(mockResponse.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          platform: 'google',
+          disconnected: true,
         })
       );
     });

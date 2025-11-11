@@ -1,3 +1,7 @@
+// Set test environment variables before importing modules
+process.env.NODE_ENV = 'test';
+process.env.MARIN_DISPATCHER_BASE_URL = 'http://localhost:3000';
+
 import { Request, Response } from 'express';
 import { CampaignCreationController } from '../../controllers/campaignCreationController';
 import { campaignCreationService } from '../../services/campaignCreationService';
