@@ -1,16 +1,16 @@
 # Marin Dispatcher Integration - Workflow Diagram
 
-**Document Version**: 1.11
+**Document Version**: 1.12
 **Created**: 2025-11-09
 **Last Updated**: 2025-11-11
 **Purpose**: Visual workflow diagram showing GABE and VANES parallel work paths
-**Updated**: Phase 2B and Phase 3 complete - Phase 2B: Ad Structure complete, Phase 3: Integration complete, Task 4.2.2: Campaign Query complete, Task 4.3.1: Ad Group Tests complete, Task 4.3.2: Ad Tests complete (56 tasks total, 312+ tests passing)
+**Updated**: Phase 2B and Phase 3 complete - Phase 2B: Ad Structure complete, Phase 3: Integration complete, All Phase 4.3 Ad Structure Tests complete (Tasks 4.3.1, 4.3.2, 4.3.3) - 57 tasks total, 330+ tests passing
 
 ---
 
 ## Progress Summary
 
-### ✅ Completed Tasks (56 tasks)
+### ✅ Completed Tasks (57 tasks)
 - ✅ **0.1.1**: Add Environment Variables (GABE) - Commit: eea4682
 - ✅ **0.1.2**: Update Environment Config Module (GABE) - Commit: eea4682
 - ✅ **0.1.3**: Verify Project Structure (VANES)
@@ -59,6 +59,7 @@
 - ✅ **4.2.2**: Campaign Query Tests (VANES) - 15 tests passing
 - ✅ **4.3.1**: Ad Group Operation Tests (VANES) - 45 tests passing (17 ad group tests)
 - ✅ **4.3.2**: Ad Operation Tests (VANES) - 46 tests passing (16 ad tests, includes full integration test)
+- ✅ **4.3.3**: Keyword Operation Tests (VANES) - 18 tests passing (10 createKeywords, 8 updateKeywords, includes full integration test)
 
 ### 📊 Progress Statistics
 - **Phase 0**: 4/4 tasks complete (100%) ✅
@@ -83,8 +84,8 @@
 - **Phase 3.1**: 2/2 tasks complete (100%) ✅
 - **Phase 3.2**: 1/1 tasks complete (100%) ✅
 - **Phase 3**: 3/3 tasks complete (100%) ✅
-- **Phase 4.3**: 2/3 tasks complete (67%)
-- **Overall**: 56/100+ tasks complete (~56%)
+- **Phase 4.3**: 3/3 tasks complete (100%) ✅
+- **Overall**: 57/100+ tasks complete (~57%)
 
 ### 🎯 Next Up
 - **GABE**: Phase 2.3 (Optional - queryCampaigns) or Phase 4 (Testing)
@@ -210,7 +211,7 @@
 │  ├─ 4.2.1: Campaign Lifecycle│  ├─ ✅ 4.2.2: Campaign Query (15 tests)   │
 │  └─ 4.4.1-4.4.3: Batch Tests│  ├─ ✅ 4.3.1: Ad Group Tests              │
 │                            │  ├─ ✅ 4.3.2: Ad Tests (46 total)         │
-│                            │  ├─ 4.3.3: Keyword Tests                   │
+│                            │  ├─ ✅ 4.3.3: Keyword Tests (18 total)    │
 │                            │  └─ 4.5.1-4.5.2: REST API Tests            │
 └─────────────────────────────────────────────────────────────────────────┘
                                     │
@@ -311,7 +312,7 @@ graph TB
         V4_2["✅ VANES: Campaign Query<br/>4.2.2 (15 tests)"]
         V4_3["✅ VANES: Ad Group Tests<br/>4.3.1"]
         V4_3B["✅ VANES: Ad Tests<br/>4.3.2 (46 total)"]
-        V4_3C[VANES: Keyword Tests<br/>4.3.3]
+        V4_3C["✅ VANES: Keyword Tests<br/>4.3.3 (18 total)"]
         G4_3[GABE: Batch Job Tests<br/>4.4.1-4.4.3]
         V4_4[VANES: REST API Tests<br/>4.5.1, 4.5.2]
     end
@@ -399,7 +400,7 @@ graph TB
 
     class G0_1,G0_2,G2_1,G2_2,G2_3,G2C_1,G2C_2,G2C_3,G2C_4,G2D_1,G2D_2,G2D_3,G2D_4,G2D_5,G2D_6,G3_1,G3_2,G3_3,G4_1,G4_2,G4_3,G5_1,G5_2 gabePath
     class V0_1,V0_2,V1_1,V1_2,V1_3,V1_2_1,V1_4,V1_3_1,V1_3_2,V2B_1,V2B_2,V2B_3,V2B_4,V4_1,V4_2,V4_3,V4_3B,V4_3C,V4_4,V5_1,V5_2 vanesPath
-    class G0_1,G0_2,V0_1,V0_2,V1_1,V1_2,V1_3,V1_2_1,V1_4,V1_3_1,V1_3_2,G2_1,G2_2,G2_3,V2B_1,V2B_2,V2B_3,V2B_4,G2C_1,G2C_2,G2C_3,G2C_4,G2D_1,G2D_2,G2D_3,G2D_4,G2D_5,G2D_6,G3_1,G3_2,G3_3,V4_1,V4_2,V4_3,V4_3B completed
+    class G0_1,G0_2,V0_1,V0_2,V1_1,V1_2,V1_3,V1_2_1,V1_4,V1_3_1,V1_3_2,G2_1,G2_2,G2_3,V2B_1,V2B_2,V2B_3,V2B_4,G2C_1,G2C_2,G2C_3,G2C_4,G2D_1,G2D_2,G2D_3,G2D_4,G2D_5,G2D_6,G3_1,G3_2,G3_3,V4_1,V4_2,V4_3,V4_3B,V4_3C completed
     class Phase3,Phase4,Phase5 whiteBackground
 ```
 
@@ -473,12 +474,12 @@ Phase 3: Integration (SEQUENTIAL - waits for 2D) - GABE ✅ COMPLETE
   ├─ ✅ 3.1.2: Lambda Verification - 8 tests passing
   └─ ✅ 3.2.1: Integration Tests - 10 tests passing
 
-Phase 4: Testing (4/10+ tasks complete - 40%)
+Phase 4: Testing (5/10+ tasks complete - 50%)
   ├─ ✅ 4.1.2: Env Tests (VANES)
   ├─ ✅ 4.2.2: Campaign Query (VANES) - 15 tests passing
   ├─ ✅ 4.3.1: Ad Group Tests (VANES)
   ├─ ✅ 4.3.2: Ad Tests (VANES) - 46 tests passing (includes full integration test)
-  ├─ 4.3.3: Keyword Tests (VANES)
+  ├─ ✅ 4.3.3: Keyword Tests (VANES) - 18 tests passing (includes full integration test)
   └─ 4.5.1-4.5.2: REST API Tests (VANES)
 
 Phase 5: Documentation
@@ -617,9 +618,22 @@ Phase 5: Documentation
 ---
 
 **Last Updated**: 2025-11-11
-**Status**: Workflow Diagram Updated with Progress ✅ - Phase 2B & Phase 3 Complete, Task 4.3.2 Complete
+**Status**: Workflow Diagram Updated with Progress ✅ - Phase 2B & Phase 3 Complete, All Phase 4.3 Ad Structure Tests Complete (Tasks 4.3.1, 4.3.2, 4.3.3)
 
 ### Recent Updates (2025-11-11)
+
+#### Task 4.3.3: Keyword Operation Tests - COMPLETE ✅
+- **Status**: All tests passing (18 tests total: 10 createKeywords, 8 updateKeywords)
+- **Test File**: `backend/src/__tests__/services/marinDispatcherService.test.ts`
+- **Key Tests**:
+  - Full integration test: Campaign creation → Ad group creation → Keywords creation
+  - Bulk keyword creation with 3 keywords
+  - Validation tests: Keyword text length (max 80 chars), match types (BROAD, PHRASE, EXACT), CPC bids (must be positive)
+  - Verification tests: All keywords created (count verified), match types correct, bids set correctly (1.5, 2.0, 2.5)
+  - updateKeywords with bid changes
+  - Error scenarios: Invalid ad group ID (404), network errors, API errors, multiple validation errors
+- **Documentation**: Task list, progress summary, and workflow diagram updated
+- **Progress**: 57/100+ tasks complete (~57%), 330+ tests passing
 
 #### Task 4.3.2: Ad Operation Tests - COMPLETE ✅
 - **Status**: All tests passing (46 tests total, 16 ad specific tests)
@@ -677,8 +691,8 @@ Phase 5: Documentation
 - ✅ Phase 2C.3: 100% complete (2/2 tasks) 🎉 - High-level orchestration complete
 - ✅ Phase 2C.4: 100% complete (1/1 tasks) 🎉 - Manual testing complete (7 validation tests passing)
 
-- ✅ Overall: ~56% complete (56/100+ tasks)
-- ✅ All Phase 0, 1, 2.1, 2.2, 2.3, 2B, 2C, 2D, 3, 4 (partial) tests complete: 312+ tests passing (81 automated + 8 manual + 31 verification + 54 batch job verification + 21 combined validation tests + 33 lambda integration verification tests + 23 Phase 3 integration tests + 15 campaign query tests + 46 ad structure tests)
+- ✅ Overall: ~57% complete (57/100+ tasks)
+- ✅ All Phase 0, 1, 2.1, 2.2, 2.3, 2B, 2C, 2D, 3, 4 (partial) tests complete: 330+ tests passing (81 automated + 8 manual + 31 verification + 54 batch job verification + 21 combined validation tests + 33 lambda integration verification tests + 23 Phase 3 integration tests + 15 campaign query tests + 46 ad structure tests + 18 keyword tests)
 =======
 - ✅ Overall: ~33% complete (33/100+ tasks)
 - ✅ All Phase 0, 1, 2.1, 2.2, 2.3, 2C tests complete: 195 tests passing (81 automated + 8 manual + 31 verification + 54 batch job verification + 21 combined validation tests)
