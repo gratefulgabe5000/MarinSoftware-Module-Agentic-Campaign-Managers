@@ -12,6 +12,40 @@ process.env.NODE_ENV = 'test';
 process.env.MARIN_DISPATCHER_BASE_URL = 'http://localhost:3000';
 process.env.MARIN_DISPATCHER_ACCOUNT_ID = 'test-account-123';
 
+// Mock MarinDispatcherService before importing clients
+jest.mock('../../services/marinDispatcherService', () => ({
+  MarinDispatcherService: jest.fn().mockImplementation(() => ({
+    createCampaign: jest.fn().mockResolvedValue({
+      success: true,
+      campaignId: 'test-123',
+      details: { status: 'active' },
+    }),
+    getCampaignStatus: jest.fn().mockResolvedValue({
+      success: true,
+      details: { status: 'active' },
+    }),
+    updateCampaign: jest.fn().mockResolvedValue({
+      success: true,
+      campaignId: 'test-123',
+      details: { status: 'updated' },
+    }),
+    pauseCampaign: jest.fn().mockResolvedValue({
+      success: true,
+      campaignId: 'test-123',
+      details: { status: 'paused' },
+    }),
+    resumeCampaign: jest.fn().mockResolvedValue({
+      success: true,
+      campaignId: 'test-123',
+      details: { status: 'active' },
+    }),
+    deleteCampaign: jest.fn().mockResolvedValue({
+      success: true,
+      details: { deleted: true },
+    }),
+  })),
+}));
+
 import { MarinDispatcherClient } from '../../lib/marinDispatcherClient';
 import { MarinBatchJobClient } from '../../lib/marinBatchJobClient';
 import { LambdaEvent, LambdaResponse, SqsEvent } from '../../types/lambda.types';
