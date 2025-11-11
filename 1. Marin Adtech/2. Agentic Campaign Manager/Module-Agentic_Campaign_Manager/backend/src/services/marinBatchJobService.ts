@@ -139,7 +139,7 @@ export class MarinBatchJobService {
         payload.sequenceToken = sequenceToken;
       }
 
-      const response = await this.httpClient.post<AddBatchOperationsResponse>(
+      const response = await this.httpClient.put<AddBatchOperationsResponse>(
         this.buildApiPath(`/batch-jobs/${batchJobId}/operations`), // InfraDocs format
         payload
       );
