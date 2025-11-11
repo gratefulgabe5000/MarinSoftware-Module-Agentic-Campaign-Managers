@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { AuthController } from '../../controllers/authController';
-import { oauthService } from '../../services/oauthService';
+import * as oauthServiceModule from '../../services/oauthService';
 
 jest.mock('../../services/oauthService', () => ({
   oauthService: {
@@ -17,6 +17,8 @@ jest.mock('../../services/oauthService', () => ({
     removeToken: jest.fn(),
   },
 }));
+
+const { oauthService } = oauthServiceModule;
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -54,6 +56,7 @@ describe('AuthController', () => {
         })
       );
     });
+  });
 
   describe('callbackGoogle', () => {
     it('should handle OAuth callback', async () => {
@@ -75,11 +78,29 @@ describe('AuthController', () => {
 
     it('should handle errors', async () => {
       // Simulate an error in exchangeGoogleCode
-      (require('../../services/oauthService').exchangeGoogleCode as jest.Mock).mockImplementationOnce(() => {
-        throw new Error('OAuth error');
-      });
+      (oauthService.exchangeGoogleCode as jest.Mock).mockRejectedValueOnce(new Error('OAuth error'));
+
+      mockRequest.query = {
+        code: 'auth-code-123',
+        state: 'state-123',
+      };
 
       await controller.callbackGoogle(
+        mockRequest as Request,
+        mockResponse as Response
+      );
+
+      expect(mockResponse.redirect).toHaveBeenCalled();
+    });
+  });
+
+  describe('authorizeGoogle error handling', () => {
+    it('should handle errors when generating authorization URL', async () => {
+      (oauthService.generateGoogleAuthUrl as jest.Mock).mockImplementationOnce(() => {
+        throw new Error('Authorization error');
+      });
+
+      await controller.authorizeGoogle(
         mockRequest as Request,
         mockResponse as Response
       );
@@ -87,21 +108,9 @@ describe('AuthController', () => {
       expect(mockResponse.status).toHaveBeenCalledWith(500);
       expect(mockResponse.json).toHaveBeenCalledWith(
         expect.objectContaining({
-          error: 'Failed to handle Google OAuth callback',
+          error: 'Failed to generate authorization URL',
         })
       );
-    });
-  });
-        mockRequest as Request,
-        mockResponse as Response
-      );
-
-expect(mockResponse.status).toHaveBeenCalledWith(500);
-expect(mockResponse.json).toHaveBeenCalledWith(
-  expect.objectContaining({
-    error: 'Failed to generate authorization URL',
-  })
-);
     });
   });
 
@@ -120,6 +129,7 @@ expect(mockResponse.json).toHaveBeenCalledWith(
       );
     });
   });
+
   describe('authorizeMicrosoft', () => {
     it('should return Microsoft OAuth URL', async () => {
       await controller.authorizeMicrosoft(
@@ -150,7 +160,13 @@ expect(mockResponse.json).toHaveBeenCalledWith(
         })
       );
     });
-  });
+
+    it('should return Google status when token is present', async () => {
+      const expiryTime = Date.now() + 3600000; // 1 hour from now
+      (oauthService.getToken as jest.Mock).mockReturnValueOnce({ accessToken: 'token-123', expiresAt: expiryTime });
+      (oauthService.isTokenExpired as jest.Mock).mockReturnValueOnce(false);
+
+      await controller.getGoogleStatus(
         mockRequest as Request,
         mockResponse as Response
       );
@@ -158,16 +174,16 @@ expect(mockResponse.json).toHaveBeenCalledWith(
       expect(mockResponse.json).toHaveBeenCalledWith(
         expect.objectContaining({
           platform: 'google',
-          connected: false,
-          hasToken: false,
+          connected: true,
+          hasToken: true,
         })
       );
     });
   });
 
-describe('disconnectGoogle', () => {
-  it('should disconnect Google Ads OAuth', async () => {
-    await controller.disconnectGoogle(
+  describe('disconnectGoogle', () => {
+    it('should disconnect Google Ads OAuth', async () => {
+      await controller.disconnectGoogle(
         mockRequest as Request,
         mockResponse as Response
       );
@@ -176,7 +192,6 @@ describe('disconnectGoogle', () => {
       expect(mockResponse.json).toHaveBeenCalledWith(
         expect.objectContaining({
           platform: 'google',
-          disconnected: true,
           disconnected: true,
         })
       );

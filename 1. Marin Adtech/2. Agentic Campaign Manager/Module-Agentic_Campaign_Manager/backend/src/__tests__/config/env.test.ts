@@ -222,6 +222,7 @@ describe('Environment Configuration', () => {
     it('should handle empty string values', async () => {
       process.env.OPENAI_API_KEY = '';
       process.env.MARIN_DISPATCHER_BASE_URL = '';
+      delete process.env.DISPATCHER_URL;
 
       const { config } = await import('../../config/env');
 
@@ -241,6 +242,7 @@ describe('Environment Configuration', () => {
     it('should handle special characters in string values', async () => {
       process.env.OPENAI_API_KEY = 'key-with-$pecial-ch@rs!';
       process.env.MARIN_DISPATCHER_BASE_URL = 'https://api.example.com/v1?key=value&foo=bar';
+      delete process.env.DISPATCHER_URL;
 
       const { config } = await import('../../config/env');
 
