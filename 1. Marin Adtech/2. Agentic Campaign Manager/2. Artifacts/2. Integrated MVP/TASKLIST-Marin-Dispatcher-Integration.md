@@ -2420,16 +2420,44 @@ This document provides a granular, step-by-step task list for implementing the M
 
 ### Subphase 4.4: Batch Job Tests (1.5 hours)
 
-#### Task 4.4.1: Test Batch Job Creation
-**Assigned to**: GABE  
+#### Task 4.4.1: Test Batch Job Creation ✅
+**Assigned to**: GABE
 **Dependencies**: Subphase 2C.1 complete
+**Status**: COMPLETE
+**Completion Date**: 2025-11-11
 
-- [ ] Test `createBatchJob()` method:
-  - Verify batch job is created
-  - Verify batch job ID is returned
-  - Verify status is PENDING
-- [ ] Test error scenarios
-- [ ] Document test results
+- [x] Test `createBatchJob()` method:
+  - Verify batch job is created ✅
+  - Verify batch job ID is returned ✅
+  - Verify status is PENDING ✅
+- [x] Test error scenarios ✅
+- [x] Document test results ✅
+
+**Test Results Summary:**
+- **Total Tests**: 18 tests
+- **Passed**: 18 tests (100%)
+- **Failed**: 0 tests
+- **Test File**: `backend/src/__tests__/services/marinBatchJobService.test.ts`
+
+**Test Coverage:**
+1. ✅ Successfully create batch job and return batch job ID
+2. ✅ Verify batch job status is PENDING
+3. ✅ Include correct request payload with accountId and publisher
+4. ✅ Use correct API endpoint path format (`/dispatcher/{publisher}/batch-jobs`)
+5. ✅ Properly close X-Ray subsegment on success
+6. ✅ Handle network errors gracefully
+7. ✅ Handle API 404 errors
+8. ✅ Handle API 500 errors
+9. ✅ Handle API 401 unauthorized errors
+10. ✅ Handle API 403 forbidden errors
+11. ✅ Handle timeout errors
+12. ✅ Handle malformed response data
+13. ✅ Properly close X-Ray subsegment on error
+14. ✅ Handle empty error message
+15. ✅ Handle error without message property
+16. ✅ Work with custom accountId
+17. ✅ Work with different publishers (e.g., bing)
+18. ✅ Handle X-Ray unavailable (no segment)
 
 #### Task 4.4.2: Test Batch Job Operations
 **Assigned to**: GABE  
