@@ -411,6 +411,60 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
     }
   }
 
+  /**
+   * Query campaigns from Marin Dispatcher with optional pagination
+   *
+   * @param limit - Maximum number of campaigns to return (optional)
+   * @param offset - Number of campaigns to skip for pagination (optional)
+   * @returns Promise<MarinCampaignListResponse> with campaigns array and pagination info
+   */
+  async queryCampaigns(
+    limit?: number,
+    offset?: number
+  ): Promise<MarinCampaignListResponse> {
+    const segment = AWSXRay.getSegment();
+    const subsegment = segment?.addNewSubsegment('MarinDispatcher.queryCampaigns');
+
+    try {
+      console.log(`[Marin Dispatcher] Querying campaigns with limit: ${limit}, offset: ${offset}`);
+
+      // Build query parameters
+      const params: MarinCampaignListRequest = {
+        accountId: this.accountId,
+      };
+
+      if (limit !== undefined) {
+        params.limit = limit;
+      }
+
+      if (offset !== undefined) {
+        params.offset = offset;
+      }
+
+      // Make API call to list campaigns (using InfraDocs path format)
+      const response = await this.httpClient.get<MarinCampaignListResponse>(
+        this.buildApiPath('/campaigns'), // InfraDocs format: /dispatcher/${publisher}/campaigns
+        { params }
+      );
+
+      subsegment?.close();
+
+      console.log(`[Marin Dispatcher] Successfully retrieved ${response.data.campaigns.length} campaigns (total: ${response.data.total})`);
+
+      return response.data;
+    } catch (error: any) {
+      subsegment?.close();
+      console.error('[Marin Dispatcher] Query campaigns failed:', error);
+
+      // Re-throw the error to allow callers to handle it
+      throw new Error(
+        error.response?.data?.message ||
+        error.message ||
+        'Failed to query campaigns'
+      );
+    }
+  }
+
   // ========================================================================
   // Ad Group Methods (Phase 2B.1)
   // ========================================================================
