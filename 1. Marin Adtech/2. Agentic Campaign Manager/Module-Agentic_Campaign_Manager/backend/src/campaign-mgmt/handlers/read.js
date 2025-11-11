@@ -2,7 +2,7 @@
  * Read Campaign Handler
  * 
  * Handles get_campaign_status action
- * Gets campaign status from Marin Dispatcher
+ * Gets campaign status from Zilkr Dispatcher
  * 
  * @module read-handler
  */
@@ -12,7 +12,7 @@
  * 
  * @param {Object} event - Lambda event
  * @param {Object} context - Lambda context
- * @param {Object} dispatcherClient - MarinDispatcherClient instance
+ * @param {Object} dispatcherClient - ZilkrDispatcherClient instance
  * @param {Object} pool - PostgreSQL connection pool
  * @returns {Promise<Object>} Lambda response
  */

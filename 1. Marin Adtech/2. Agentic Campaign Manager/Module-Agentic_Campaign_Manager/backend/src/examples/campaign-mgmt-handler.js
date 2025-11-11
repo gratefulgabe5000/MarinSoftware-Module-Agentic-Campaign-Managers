@@ -2,16 +2,16 @@
  * Campaign Management Lambda Handler Example
  * 
  * Example Lambda handler function for campaign management operations
- * Shows how to use MarinDispatcherClient in a Lambda function
+ * Shows how to use ZilkrDispatcherClient in a Lambda function
  * 
  * This handler:
  * - Processes Lambda events for campaign operations
  * - Integrates with PostgreSQL for campaign storage
- * - Uses MarinDispatcherClient to call Marin Dispatcher API
+ * - Uses ZilkrDispatcherClient to call Zilkr Dispatcher API
  * - Includes X-Ray tracing for observability
  * 
  * Environment Variables Required:
- * - DISPATCHER_URL: Marin Dispatcher API URL (set by CloudFormation)
+ * - DISPATCHER_URL: Zilkr Dispatcher API URL (set by CloudFormation)
  * - POSTGRES_HOST: PostgreSQL host
  * - POSTGRES_DB: PostgreSQL database name
  * - POSTGRES_USER: PostgreSQL user
@@ -20,7 +20,7 @@
  * @module campaign-mgmt-handler
  */
 
-const { MarinDispatcherClient } = require('../lib/marinDispatcherClient');
+const { ZilkrDispatcherClient } = require('../lib/zilkrDispatcherClient');
 const AWSXRay = require('aws-xray-sdk-core');
 const { Pool } = require('pg');
 
@@ -42,18 +42,18 @@ AWSXRay.capturePostgres(pool);
 
 // Create dispatcher client instance
 // Uses DISPATCHER_URL from environment (set by CloudFormation)
-const dispatcherClient = new MarinDispatcherClient();
+const dispatcherClient = new ZilkrDispatcherClient();
 
 /**
  * Lambda handler function for campaign management
  * 
  * Handles Lambda events for campaign operations:
- * - create_campaign: Creates campaign in PostgreSQL and Marin Dispatcher
- * - update_campaign: Updates campaign in Marin Dispatcher
- * - pause_campaign: Pauses campaign in Marin Dispatcher
- * - resume_campaign: Resumes campaign in Marin Dispatcher
- * - delete_campaign: Deletes campaign in Marin Dispatcher
- * - get_campaign_status: Gets campaign status from Marin Dispatcher
+ * - create_campaign: Creates campaign in PostgreSQL and Zilkr Dispatcher
+ * - update_campaign: Updates campaign in Zilkr Dispatcher
+ * - pause_campaign: Pauses campaign in Zilkr Dispatcher
+ * - resume_campaign: Resumes campaign in Zilkr Dispatcher
+ * - delete_campaign: Deletes campaign in Zilkr Dispatcher
+ * - get_campaign_status: Gets campaign status from Zilkr Dispatcher
  * 
  * @param {Object} event - Lambda event containing action, data, and user info
  * @param {Object} context - Lambda context
@@ -107,7 +107,7 @@ exports.handler = async (event, context) => {
       };
     }
 
-    // For create_campaign action: Create in PostgreSQL first, then in Marin Dispatcher
+    // For create_campaign action: Create in PostgreSQL first, then in Zilkr Dispatcher
     if (action === 'create_campaign') {
       const client = await pool.connect();
       
@@ -128,7 +128,7 @@ exports.handler = async (event, context) => {
 
         const campaign = insertResult.rows[0];
 
-        // Call Marin Dispatcher via client (uses DISPATCHER_URL from environment)
+        // Call Zilkr Dispatcher via client (uses DISPATCHER_URL from environment)
         const dispatcherResult = await dispatcherClient.handleLambdaEvent({
           action: 'create_campaign',
           data: {
@@ -139,19 +139,19 @@ exports.handler = async (event, context) => {
         });
 
         if (dispatcherResult.success) {
-          // Update campaign with Marin Dispatcher ID
+          // Update campaign with Zilkr Dispatcher ID
           await client.query(
-            'UPDATE campaigns SET marin_id = $1, updated_at = NOW() WHERE id = $2',
+            'UPDATE campaigns SET zilkr_id = $1, updated_at = NOW() WHERE id = $2',
             [dispatcherResult.result?.campaignId || dispatcherResult.details?.campaignId, campaign.id]
           );
-          campaign.marin_id = dispatcherResult.result?.campaignId || dispatcherResult.details?.campaignId;
+          campaign.zilkr_id = dispatcherResult.result?.campaignId || dispatcherResult.details?.campaignId;
         } else {
           // If Dispatcher call failed, rollback PostgreSQL transaction
           await client.query('ROLLBACK');
           subsegment?.close();
           return {
             success: false,
-            error: `Failed to create campaign in Marin Dispatcher: ${dispatcherResult.error}`,
+            error: `Failed to create campaign in Zilkr Dispatcher: ${dispatcherResult.error}`,
             details: { campaign, dispatcherResult },
           };
         }

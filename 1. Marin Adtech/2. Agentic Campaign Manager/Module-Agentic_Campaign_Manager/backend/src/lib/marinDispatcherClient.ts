@@ -1,35 +1,35 @@
 /**
- * Marin Dispatcher Lambda Client
+ * Zilkr Dispatcher Lambda Client
  * 
- * Wraps MarinDispatcherService for use in AWS Lambda functions
+ * Wraps ZilkrDispatcherService for use in AWS Lambda functions
  * Maps Lambda event format to service methods and formats responses
  * 
  * @module marinDispatcherClient
  */
 
-import { MarinDispatcherService } from '../services/marinDispatcherService';
+import { ZilkrDispatcherService } from '../services/zilkrDispatcherService';
 import { LambdaEvent, LambdaResponse, CampaignAction } from '../types/lambda.types';
 import { PlatformAPIResponse } from '../types/campaign.types';
 import { CampaignPlan } from '../types/ai.types';
 import * as AWSXRay from 'aws-xray-sdk-core';
 
 /**
- * Marin Dispatcher Lambda Client
+ * Zilkr Dispatcher Lambda Client
  * 
- * Wraps MarinDispatcherService to handle Lambda events and format responses
- * Provides a clean interface for Lambda functions to interact with Marin Dispatcher
+ * Wraps ZilkrDispatcherService to handle Lambda events and format responses
+ * Provides a clean interface for Lambda functions to interact with Zilkr Dispatcher
  */
-export class MarinDispatcherClient {
-  private service: MarinDispatcherService;
+export class ZilkrDispatcherClient {
+  private service: ZilkrDispatcherService;
 
   /**
-   * Create a new Marin Dispatcher Lambda Client
+   * Create a new Zilkr Dispatcher Lambda Client
    * 
-   * @param accountId - Marin Dispatcher account ID (optional, uses config default)
+   * @param accountId - Zilkr Dispatcher account ID (optional, uses config default)
    * @param publisher - Publisher platform (default: 'google')
    */
   constructor(accountId?: string, publisher: string = 'google') {
-    this.service = new MarinDispatcherService(accountId, publisher);
+    this.service = new ZilkrDispatcherService(accountId, publisher);
   }
 
   /**
@@ -43,7 +43,7 @@ export class MarinDispatcherClient {
    * 
    * @example
    * ```typescript
-   * const client = new MarinDispatcherClient();
+   * const client = new ZilkrDispatcherClient();
    * const event = {
    *   action: 'create_campaign',
    *   data: { campaignPlan: {...}, name: 'My Campaign' },
@@ -54,7 +54,7 @@ export class MarinDispatcherClient {
    */
   async handleLambdaEvent(event: LambdaEvent): Promise<LambdaResponse> {
     const segment = AWSXRay.getSegment();
-    const subsegment = segment?.addNewSubsegment('MarinDispatcherClient.handleLambdaEvent');
+    const subsegment = segment?.addNewSubsegment('ZilkrDispatcherClient.handleLambdaEvent');
 
     try {
       const { action, data, user } = event;
@@ -210,7 +210,7 @@ export class MarinDispatcherClient {
    * 
    * Converts service response format to Lambda response format
    * 
-   * @param platformResponse - Response from MarinDispatcherService
+   * @param platformResponse - Response from ZilkrDispatcherService
    * @returns Lambda-formatted response
    */
   private mapPlatformResponseToLambdaResponse(
@@ -232,9 +232,9 @@ export class MarinDispatcherClient {
    * 
    * Useful for direct service access if needed
    * 
-   * @returns The MarinDispatcherService instance
+   * @returns The ZilkrDispatcherService instance
    */
-  getService(): MarinDispatcherService {
+  getService(): ZilkrDispatcherService {
     return this.service;
   }
 }

@@ -43,13 +43,31 @@ class CampaignCreationService {
     request: CampaignCreationRequest
   ): Promise<CampaignCreationResponse> {
     const { campaignPlan, name } = request;
+    // Get API status from request (for draft creation) - default to 'ENABLED'
+    const apiStatus = (request as any).status === 'paused' ? 'PAUSED' : 'ENABLED';
     const campaignId = `campaign-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const platformCampaignIds: PlatformCampaignIds = {};
     const errors: CampaignCreationError[] = [];
 
     // Create campaign on each platform
     const platformPromises = campaignPlan.platforms.map(async (platform) => {
-      const service = this.getPlatformService(platform);
+      // For Google Ads campaigns, always use Zilkr Dispatcher instead of direct Google Ads API
+      // This ensures we use the Zilkr Dispatcher for all Google Ads operations (draft or active)
+      let service: IPlatformAPI | null = null;
+      
+      // Check if this is a Google Ads platform
+      const isGoogleAds = platform.toLowerCase() === 'google' || 
+                         platform.toLowerCase() === 'googleads' || 
+                         platform.toLowerCase() === 'google ads' ||
+                         platform.toLowerCase().includes('google');
+      
+      if (isGoogleAds) {
+        // Always use Zilkr Dispatcher for Google Ads campaigns
+        service = this.getPlatformService('Zilkr');
+      } else {
+        // For other platforms, use the registered service
+        service = this.getPlatformService(platform);
+      }
 
       if (!service) {
         errors.push({
@@ -59,19 +77,25 @@ class CampaignCreationService {
         return;
       }
 
-      // Check authentication
+      // Check authentication (Zilkr Dispatcher doesn't require auth, but other services might)
       const isAuthenticated = await service.isAuthenticated();
       if (!isAuthenticated) {
-        errors.push({
-          platform,
-          error: `Not authenticated for ${platform}. Please connect your account first.`,
-        });
-        return;
+        // For Zilkr Dispatcher, authentication check might fail in local dev but still work
+        // Check if this is Zilkr Dispatcher service
+        const isZilkrDispatcher = service.constructor.name === 'ZilkrDispatcherService';
+        if (!isZilkrDispatcher) {
+          errors.push({
+            platform,
+            error: `Not authenticated for ${platform}. Please connect your account first.`,
+          });
+          return;
+        }
+        // For Zilkr Dispatcher, continue even if auth check fails (it's internal network)
       }
 
       try {
-        // Create campaign on platform
-        const response = await service.createCampaign(campaignPlan, name);
+        // Create campaign on platform with API status (for Zilkr Dispatcher, pass status; other platforms may ignore it)
+        const response = await service.createCampaign(campaignPlan, name, apiStatus);
 
         if (response.success && response.campaignId) {
           // Map platform name to response key

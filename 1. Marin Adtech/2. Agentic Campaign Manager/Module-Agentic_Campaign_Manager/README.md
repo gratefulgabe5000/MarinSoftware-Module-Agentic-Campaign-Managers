@@ -7,7 +7,7 @@ AI-powered campaign creation and management for performance marketers. This modu
 ### Core Functionality
 - **Conversational Campaign Creation**: Natural language interface with intelligent AI response extraction
 - **CSV/URL-Based Campaign Generation**: Generate complete Google Ads campaigns from CSV files or product URL lists
-- **Multi-Platform Support**: Google Ads, Meta, Microsoft Advertising, Marin Dispatcher
+- **Multi-Platform Support**: Google Ads, Meta, Microsoft Advertising, Zilkr Dispatcher
 - **Campaign Management**: Create, view, edit, pause, resume, and delete campaigns
 - **Campaign Plan Editing**: Full editor for modifying campaign plans before creation
 - **Campaign Preview & Editing**: Spreadsheet-like interface for reviewing and editing generated campaigns
@@ -130,7 +130,7 @@ Module-Agentic_Campaign_Manager/
 │   │   ├── adgroup-generation.types.ts
 │   │   ├── keyword-generation.types.ts
 │   │   ├── rsa-generation.types.ts
-│   │   ├── marinDispatcher.types.ts  # Marin Dispatcher API types
+│   │   ├── zilkrDispatcher.types.ts  # Zilkr Dispatcher API types
 │   │   └── ade.types.ts
 │   ├── config/              # Configuration
 │   │   └── module.config.ts

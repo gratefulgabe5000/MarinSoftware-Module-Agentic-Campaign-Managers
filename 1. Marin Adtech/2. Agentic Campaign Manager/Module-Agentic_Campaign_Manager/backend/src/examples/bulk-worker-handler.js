@@ -2,22 +2,22 @@
  * Bulk Worker Lambda Handler Example
  * 
  * Example Lambda handler function for bulk campaign creation
- * Shows how to use MarinBatchJobClient in a Lambda function triggered by SQS
+ * Shows how to use ZilkrBatchJobClient in a Lambda function triggered by SQS
  * 
  * This handler:
  * - Processes SQS events for bulk campaign creation
  * - Integrates with DynamoDB for job status tracking
- * - Uses MarinBatchJobClient to call Marin Dispatcher Batch Job API
+ * - Uses ZilkrBatchJobClient to call Zilkr Dispatcher Batch Job API
  * - Includes X-Ray tracing for observability
  * 
  * Environment Variables Required:
- * - DISPATCHER_URL: Marin Dispatcher API URL (set by CloudFormation)
+ * - DISPATCHER_URL: Zilkr Dispatcher API URL (set by CloudFormation)
  * - DYNAMODB_JOB_STATUS: DynamoDB table name for job status tracking
  * 
  * @module bulk-worker-handler
  */
 
-const { MarinBatchJobClient } = require('../lib/marinBatchJobClient');
+const { ZilkrBatchJobClient } = require('../lib/zilkrBatchJobClient');
 const AWSXRay = require('aws-xray-sdk-core');
 const AWS = require('aws-sdk');
 
@@ -30,7 +30,7 @@ AWSXRay.captureAWSClient(dynamodb.service);
 
 // Create batch job client instance
 // Uses DISPATCHER_URL from environment (set by CloudFormation)
-const batchJobClient = new MarinBatchJobClient();
+const batchJobClient = new ZilkrBatchJobClient();
 
 /**
  * Lambda handler function for bulk campaign creation
@@ -38,7 +38,7 @@ const batchJobClient = new MarinBatchJobClient();
  * Processes SQS events containing batch job requests:
  * - Parses SQS message body containing jobId and campaigns array
  * - Updates job status in DynamoDB
- * - Calls MarinBatchJobClient to process batch job
+ * - Calls ZilkrBatchJobClient to process batch job
  * - Updates job status with results
  * 
  * @param {Object} event - SQS event containing Records array
@@ -157,7 +157,7 @@ exports.handler = async (event, context) => {
           continue;
         }
 
-        // Call Marin Dispatcher via batch job client (uses DISPATCHER_URL from environment)
+        // Call Zilkr Dispatcher via batch job client (uses DISPATCHER_URL from environment)
         const result = await batchJobClient.handleSqsEvent({ Records: [record] });
 
         // Update job status with results in DynamoDB

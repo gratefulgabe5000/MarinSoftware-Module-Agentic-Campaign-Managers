@@ -4,7 +4,7 @@
  * Main Lambda handler function for campaign management operations
  * Routes to appropriate handler based on action
  * 
- * Uses MarinDispatcherClient and PostgreSQL for campaign operations
+ * Uses ZilkrDispatcherClient and PostgreSQL for campaign operations
  * 
  * @module campaign-mgmt-handler
  */

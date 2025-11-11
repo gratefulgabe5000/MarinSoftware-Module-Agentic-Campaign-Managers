@@ -1,10 +1,10 @@
 /**
- * Marin Dispatcher API Type Definitions
+ * Zilkr Dispatcher API Type Definitions
  *
- * This file contains all TypeScript type definitions for interacting with the Marin Dispatcher API.
- * These types ensure type safety when making requests to and handling responses from the Marin platform.
+ * This file contains all TypeScript type definitions for interacting with the Zilkr Dispatcher API.
+ * These types ensure type safety when making requests to and handling responses from the Zilkr platform.
  *
- * @module marinDispatcher.types
+ * @module zilkrDispatcher.types
  */
 
 // ============================================================================
@@ -12,19 +12,19 @@
 // ============================================================================
 
 /**
- * Base request interface for all Marin Dispatcher API requests
+ * Base request interface for all Zilkr Dispatcher API requests
  * All specific request types extend this interface
  */
-export interface MarinBaseRequest {
-  /** The Marin account ID for the request */
+export interface ZilkrBaseRequest {
+  /** The Zilkr account ID for the request */
   accountId: string;
 }
 
 /**
- * Base response interface for all Marin Dispatcher API responses
+ * Base response interface for all Zilkr Dispatcher API responses
  * All specific response types extend this interface
  */
-export interface MarinBaseResponse {
+export interface ZilkrBaseResponse {
   /** Optional resource ID returned from the operation */
   resourceId?: string;
   /** Status of the operation */
@@ -36,40 +36,88 @@ export interface MarinBaseResponse {
 }
 
 // ============================================================================
+// Budget Types
+// ============================================================================
+
+/**
+ * Request interface for creating a new campaign budget in Zilkr
+ */
+export interface ZilkrBudgetRequest {
+  /** The Zilkr account ID */
+  accountId: string;
+  /** Budget amount in dollars (NOT micros) */
+  amount: number;
+  /** Budget delivery method */
+  deliveryMethod: 'STANDARD' | 'ACCELERATED';
+}
+
+/**
+ * Response interface for budget operations
+ * Extends ZilkrBaseResponse with budget-specific data
+ */
+export interface ZilkrBudgetResponse extends ZilkrBaseResponse {
+  /** Unique budget ID */
+  budgetId: string;
+  /** Full resource name for the budget (e.g., customers/{ID}/campaignBudgets/{BUDGET_ID}) */
+  resourceName: string;
+  /** Budget amount in dollars */
+  amount: number;
+  /** Budget delivery method */
+  deliveryMethod: string;
+}
+
+// ============================================================================
 // Campaign Types
 // ============================================================================
 
 /**
- * Request interface for creating a new campaign in Marin
+ * Network settings for a campaign
  */
-export interface MarinCampaignRequest {
-  /** The Marin account ID */
+export interface ZilkrNetworkSettings {
+  /** Whether to include Google Search Network */
+  targetGoogleSearch?: boolean;
+  /** Whether to include Search Network partners */
+  targetSearchNetwork?: boolean;
+  /** Whether to include Google Display Network */
+  targetContentNetwork?: boolean;
+  /** Whether to include YouTube */
+  targetYouTube?: boolean;
+}
+
+/**
+ * Request interface for creating a new campaign in Zilkr
+ */
+export interface ZilkrCampaignRequest {
+  /** The Zilkr account ID */
   accountId: string;
   /** Campaign name (max 255 characters) */
   name: string;
   /** Campaign status */
   status: 'ENABLED' | 'PAUSED' | 'REMOVED';
-  /** Campaign budget configuration */
-  budget: {
-    /** Budget amount in dollars (NOT micros) */
-    amount: number;
-    /** Budget delivery method */
-    deliveryMethod: 'STANDARD' | 'ACCELERATED';
-  };
+  /** Campaign budget resource reference (required - must be created first) */
+  campaignBudget: string; // Resource reference: customers/{ID}/campaignBudgets/{BUDGET_ID} or just {BUDGET_ID}
   /** Bidding strategy identifier */
   biddingStrategy: string;
+  /** Advertising channel type (required for Google Ads campaigns) */
+  advertisingChannelType?: 'SEARCH' | 'DISPLAY' | 'SHOPPING' | 'VIDEO' | 'MULTI_CHANNEL' | 'HOTEL' | 'PERFORMANCE_MAX' | 'LOCAL' | 'SMART';
+  /** Campaign start date (YYYY-MM-DD format) */
+  startDate?: string;
+  /** Campaign end date (YYYY-MM-DD format, optional) */
+  endDate?: string;
+  /** Network settings (may be required for SEARCH campaigns) */
+  networkSettings?: ZilkrNetworkSettings;
   /** Campaign objective - primarily used for Meta campaigns */
   objective?: string;
 }
 
 /**
  * Response interface for campaign operations
- * Extends MarinBaseResponse with campaign-specific data
+ * Extends ZilkrBaseResponse with campaign-specific data
  */
-export interface MarinCampaignResponse extends MarinBaseResponse {
+export interface ZilkrCampaignResponse extends ZilkrBaseResponse {
   /** Unique campaign ID */
   id: string;
-  /** The Marin account ID */
+  /** The Zilkr account ID */
   accountId: string;
   /** Campaign name */
   name: string;
@@ -94,7 +142,7 @@ export interface MarinCampaignResponse extends MarinBaseResponse {
  * Request interface for updating an existing campaign
  * All fields are optional - only provided fields will be updated
  */
-export interface MarinCampaignUpdateRequest {
+export interface ZilkrCampaignUpdateRequest {
   /** New campaign name (max 255 characters) */
   name?: string;
   /** New campaign status */
@@ -113,8 +161,8 @@ export interface MarinCampaignUpdateRequest {
 /**
  * Request interface for listing/querying campaigns
  */
-export interface MarinCampaignListRequest {
-  /** The Marin account ID to query campaigns for */
+export interface ZilkrCampaignListRequest {
+  /** The Zilkr account ID to query campaigns for */
   accountId: string;
   /** Maximum number of campaigns to return (pagination) */
   limit?: number;
@@ -125,9 +173,9 @@ export interface MarinCampaignListRequest {
 /**
  * Response interface for campaign list queries
  */
-export interface MarinCampaignListResponse {
+export interface ZilkrCampaignListResponse {
   /** Array of campaign objects */
-  campaigns: MarinCampaignResponse[];
+  campaigns: ZilkrCampaignResponse[];
   /** Total number of campaigns matching the query */
   total: number;
   /** Limit used for this query */
@@ -141,10 +189,10 @@ export interface MarinCampaignListResponse {
 // ============================================================================
 
 /**
- * Request interface for creating a new ad group in Marin
+ * Request interface for creating a new ad group in Zilkr
  */
-export interface MarinAdGroupRequest {
-  /** The Marin account ID */
+export interface ZilkrAdGroupRequest {
+  /** The Zilkr account ID */
   accountId: string;
   /** Campaign ID that this ad group belongs to */
   campaignId: string;
@@ -160,12 +208,12 @@ export interface MarinAdGroupRequest {
 
 /**
  * Response interface for ad group operations
- * Extends MarinBaseResponse with ad group-specific data
+ * Extends ZilkrBaseResponse with ad group-specific data
  */
-export interface MarinAdGroupResponse extends MarinBaseResponse {
+export interface ZilkrAdGroupResponse extends ZilkrBaseResponse {
   /** Unique ad group ID */
   id: string;
-  /** The Marin account ID */
+  /** The Zilkr account ID */
   accountId: string;
   /** Campaign ID that this ad group belongs to */
   campaignId: string;
@@ -183,7 +231,7 @@ export interface MarinAdGroupResponse extends MarinBaseResponse {
  * Request interface for updating an existing ad group
  * All fields are optional - only provided fields will be updated
  */
-export interface MarinAdGroupUpdateRequest {
+export interface ZilkrAdGroupUpdateRequest {
   /** New ad group name */
   name?: string;
   /** New ad group status */
@@ -209,10 +257,10 @@ export interface AdAsset {
 }
 
 /**
- * Request interface for creating a new ad in Marin
+ * Request interface for creating a new ad in Zilkr
  */
-export interface MarinAdRequest {
-  /** The Marin account ID */
+export interface ZilkrAdRequest {
+  /** The Zilkr account ID */
   accountId: string;
   /** Ad group ID that this ad belongs to */
   adGroupId: string;
@@ -232,12 +280,12 @@ export interface MarinAdRequest {
 
 /**
  * Response interface for ad operations
- * Extends MarinBaseResponse with ad-specific data
+ * Extends ZilkrBaseResponse with ad-specific data
  */
-export interface MarinAdResponse extends MarinBaseResponse {
+export interface ZilkrAdResponse extends ZilkrBaseResponse {
   /** Unique ad ID */
   id: string;
-  /** The Marin account ID */
+  /** The Zilkr account ID */
   accountId: string;
   /** Ad group ID that this ad belongs to */
   adGroupId: string;
@@ -259,7 +307,7 @@ export interface MarinAdResponse extends MarinBaseResponse {
  * Request interface for updating an existing ad
  * All fields are optional - only provided fields will be updated
  */
-export interface MarinAdUpdateRequest {
+export interface ZilkrAdUpdateRequest {
   /** New array of headline assets */
   headlines?: AdAsset[];
   /** New array of description assets */
@@ -277,10 +325,10 @@ export interface MarinAdUpdateRequest {
 // ============================================================================
 
 /**
- * Request interface for creating a new keyword in Marin
+ * Request interface for creating a new keyword in Zilkr
  */
-export interface MarinKeywordRequest {
-  /** The Marin account ID */
+export interface ZilkrKeywordRequest {
+  /** The Zilkr account ID */
   accountId: string;
   /** Ad group ID that this keyword belongs to */
   adGroupId: string;
@@ -296,12 +344,12 @@ export interface MarinKeywordRequest {
 
 /**
  * Response interface for keyword operations
- * Extends MarinBaseResponse with keyword-specific data
+ * Extends ZilkrBaseResponse with keyword-specific data
  */
-export interface MarinKeywordResponse extends MarinBaseResponse {
+export interface ZilkrKeywordResponse extends ZilkrBaseResponse {
   /** Unique keyword ID */
   id: string;
-  /** The Marin account ID */
+  /** The Zilkr account ID */
   accountId: string;
   /** Ad group ID that this keyword belongs to */
   adGroupId: string;
@@ -319,7 +367,7 @@ export interface MarinKeywordResponse extends MarinBaseResponse {
  * Request interface for updating an existing keyword
  * All fields are optional - only provided fields will be updated
  */
-export interface MarinKeywordUpdateRequest {
+export interface ZilkrKeywordUpdateRequest {
   /** New keyword text */
   text?: string;
   /** New match type */
@@ -334,13 +382,13 @@ export interface MarinKeywordUpdateRequest {
  * Request interface for bulk keyword creation
  * Allows creating multiple keywords in a single API call
  */
-export interface MarinBulkKeywordRequest {
-  /** The Marin account ID */
+export interface ZilkrBulkKeywordRequest {
+  /** The Zilkr account ID */
   accountId: string;
   /** Ad group ID that these keywords belong to */
   adGroupId: string;
   /** Array of keyword requests to create */
-  keywords: MarinKeywordRequest[];
+  keywords: ZilkrKeywordRequest[];
 }
 
 // ============================================================================
@@ -450,7 +498,7 @@ export interface BatchOperation {
   /** Type of resource being operated on */
   resourceType: BatchResourceType;
   /** The actual resource data (campaign, ad group, ad, or keyword) */
-  resource: MarinCampaignRequest | MarinAdGroupRequest | MarinAdRequest | MarinKeywordRequest;
+  resource: ZilkrCampaignRequest | ZilkrAdGroupRequest | ZilkrAdRequest | ZilkrKeywordRequest;
   /** Optional operation ID for tracking (auto-generated if not provided) */
   operationId?: string;
 }
@@ -459,7 +507,7 @@ export interface BatchOperation {
  * Request to create a new batch job
  */
 export interface BatchJobRequest {
-  /** The Marin account ID */
+  /** The Zilkr account ID */
   accountId: string;
   /** Publisher/platform for the batch job (e.g., 'google') */
   publisher: string;
@@ -470,10 +518,10 @@ export interface BatchJobRequest {
 /**
  * Response from creating a batch job
  */
-export interface BatchJobResponse extends MarinBaseResponse {
+export interface BatchJobResponse extends ZilkrBaseResponse {
   /** Unique batch job ID */
   id: string;
-  /** The Marin account ID */
+  /** The Zilkr account ID */
   accountId: string;
   /** Publisher/platform for the batch job */
   publisher: string;

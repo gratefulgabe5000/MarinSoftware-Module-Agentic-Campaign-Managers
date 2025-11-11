@@ -1,4 +1,4 @@
-# Marin Software - Agentic Campaign Manager - Master Bug Tracker
+﻿# Marin Software - Agentic Campaign Manager - Master Bug Tracker
 
 **Version:** 1.0  
 **Created:** January 2025  
@@ -48,8 +48,8 @@
 | âœ… BUG-004 | Product Tab Navigation Scrolls Off-Screen on Pattern Learning Page | ðŸŸ¡ Medium | UI/UX | ðŸŸ¢ Fixed | 30-45 min |
 | BUG-005 | URLs Not Verified to Exist/Be Reachable During CSV Upload | ðŸŸ¡ Medium | CSV Processing | ðŸ”´ Open | 1-2 hours |
 | âœ… BUG-006 | Campaign Preview Pages Should Match Dashboard/Details Layout with PREVIEW Badge | ðŸŸ¡ Medium | UI/UX | ðŸŸ¢ Fixed | 2-3 hours |
-| BUG-007 | Campaign Dashboard Enhancement: Hashtags, Tag Filtering, and Batch Actions | ðŸŸ¡ Medium | UI/UX, Data Management | ðŸ”´ Open | 3-5 hours |
-| BUG-008 | Campaign Dashboard Should Filter by Product Category with Batch Actions | ðŸŸ¡ Medium | UI/UX, Data Management | ðŸ”´ Open | 2-3 hours |
+|  True | 3-5 hours |
+|  True | 2-3 hours |
 | âœ… BUG-009 | Campaign Dashboard Filter Bar Should Remain Static While Scrolling | ðŸŸ¡ Medium | UI/UX | ðŸŸ¢ Fixed | 30-45 min |
 | BUG-010 | Performance Dashboard Header Should Remain Static While Scrolling | ðŸŸ¡ Medium | UI/UX | ðŸ”´ Open | 30-45 min |
 | âœ… BUG-011 | Performance Dashboard Export CSV Fails with "point.date.toISOString is not a function" | ðŸŸ  High | Export, Data Processing | ðŸŸ¢ Fixed | 30-60 min |
@@ -73,9 +73,9 @@
 
 - ðŸ”´ Critical: 0 bugs
 - ðŸŸ  High: 1 bug (1 remaining: BUG-014)
-- ðŸŸ¡ Medium: 7 bugs (7 remaining: BUG-005, BUG-007, BUG-008, BUG-010, BUG-012, BUG-013, BUG-015)
+- ðŸŸ¡ Medium: 5 bugs (5 remaining: BUG-005, BUG-010, BUG-012, BUG-013, BUG-015)
 - ðŸŸ¢ Low: 0 bugs
-- âœ… Fixed: 12 bugs (BUG-001, BUG-002, BUG-003, BUG-004, BUG-006, BUG-009, BUG-011, BUG-016, BUG-017, BUG-018, BUG-019, BUG-020)
+- âœ… Fixed: 14 bugs (BUG-001, BUG-002, BUG-003, BUG-004, BUG-006, BUG-007, BUG-008, BUG-009, BUG-011, BUG-016, BUG-017, BUG-018, BUG-019, BUG-020)
 
 ---
 

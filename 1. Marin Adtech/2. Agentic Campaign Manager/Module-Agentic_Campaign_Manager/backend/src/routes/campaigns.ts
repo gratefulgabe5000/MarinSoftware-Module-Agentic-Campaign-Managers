@@ -33,6 +33,9 @@ router.get('/ad-copy-patterns', patternExtractionController.getAdCopyPatterns);
 router.post('/create', campaignCreationController.createCampaign);
 router.post('/create-with-progress', campaignCreationController.createCampaignWithProgress);
 
+// Campaign sync endpoint (must come before parameterized routes)
+router.post('/sync', campaignController.syncCampaigns);
+
 // Campaign CRUD operations (must come before parameterized routes)
 router.get('/', campaignController.getAllCampaigns);
 

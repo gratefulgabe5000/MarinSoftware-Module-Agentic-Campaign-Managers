@@ -1,4 +1,7 @@
 import { Request, Response } from 'express';
+import { ZilkrDispatcherService } from '../services/zilkrDispatcherService';
+import { config } from '../config/env';
+import { ZilkrCampaignResponse } from '../types/zilkrDispatcher.types';
 
 /**
  * Campaign Controller
@@ -230,6 +233,120 @@ export class CampaignController {
       console.error('Error in resumeCampaign:', error);
       res.status(500).json({
         error: 'Failed to resume campaign',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  };
+
+  /**
+   * Sync campaigns from Zilkr Dispatcher
+   * POST /api/campaigns/sync
+   * Fetches all campaigns from Zilkr Dispatcher API and returns them in Campaign format
+   */
+  syncCampaigns = async (req: Request, res: Response): Promise<void> => {
+    try {
+      // Get account ID from query params or use default from config
+      const accountId = (req.query.accountId as string) || config.zilkrDispatcher.accountId;
+      const publisher = (req.query.publisher as string) || config.zilkrDispatcher.publisher;
+
+      if (!accountId) {
+        res.status(400).json({
+          error: 'Invalid request',
+          message: 'Account ID is required. Provide accountId query parameter or set ZILKR_DISPATCHER_ACCOUNT_ID in environment.',
+        });
+        return;
+      }
+
+      // Initialize Zilkr Dispatcher Service
+      const dispatcherService = new ZilkrDispatcherService(accountId, publisher);
+
+      // Query all campaigns (with pagination if needed)
+      let allCampaigns: ZilkrCampaignResponse[] = [];
+      let offset = 0;
+      const limit = 100; // Fetch in batches of 100
+      let hasMore = true;
+
+      while (hasMore) {
+        const response = await dispatcherService.queryCampaigns(limit, offset);
+        
+        if (response.campaigns && Array.isArray(response.campaigns)) {
+          allCampaigns = [...allCampaigns, ...response.campaigns];
+          
+          // Check if there are more campaigns to fetch
+          hasMore = response.campaigns.length === limit && allCampaigns.length < response.total;
+          offset += limit;
+        } else {
+          hasMore = false;
+        }
+      }
+
+      // Map ZilkrCampaignResponse to Campaign format
+      const mappedCampaigns = allCampaigns.map((zilkrCampaign) => {
+        // Map Zilkr status to Campaign status
+        const statusMap: Record<string, string> = {
+          'ENABLED': 'active',
+          'PAUSED': 'paused',
+          'REMOVED': 'archived',
+        };
+
+        const campaignStatus = statusMap[zilkrCampaign.campaignStatus] || 'active';
+
+        // Create a minimal CampaignPlan from Zilkr campaign data
+        const campaignPlan = {
+          objective: 'sync', // Default objective for synced campaigns
+          budget: {
+            total: zilkrCampaign.budget?.amount || 0,
+            daily: zilkrCampaign.budget?.amount || 0,
+            currency: 'USD',
+          },
+          timeline: {
+            startDate: zilkrCampaign.createdAt || new Date().toISOString(),
+            endDate: undefined,
+            duration: 30, // Default duration in days
+          },
+          platforms: ['google'], // Default to google for now
+          targetAudience: {
+            demographics: {
+              age: '18-65',
+              gender: 'all',
+              location: 'all',
+              interests: [],
+            },
+          },
+          kpis: {
+            primary: 'conversions',
+            secondary: [],
+          },
+        };
+
+        return {
+          id: zilkrCampaign.id,
+          name: zilkrCampaign.name,
+          description: `Synced from Zilkr Dispatcher - ${zilkrCampaign.campaignStatus}`,
+          campaignPlan,
+          status: campaignStatus as any,
+          platformCampaignIds: {
+            googleAds: zilkrCampaign.id,
+            zilkr: zilkrCampaign.id,
+          },
+          createdAt: zilkrCampaign.createdAt ? new Date(zilkrCampaign.createdAt) : new Date(),
+          updatedAt: zilkrCampaign.updatedAt ? new Date(zilkrCampaign.updatedAt) : new Date(),
+          metadata: {
+            tags: ['synced', 'zilkr-dispatcher'],
+            notes: `Synced from Zilkr Dispatcher. Bidding Strategy: ${zilkrCampaign.biddingStrategy || 'N/A'}`,
+          },
+        };
+      });
+
+      res.json({
+        campaigns: mappedCampaigns,
+        total: mappedCampaigns.length,
+        syncedAt: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error('Error in syncCampaigns:', error);
+      res.status(500).json({
+        error: 'Failed to sync campaigns from Zilkr Dispatcher',
         message: error instanceof Error ? error.message : 'Unknown error',
       });
     }
