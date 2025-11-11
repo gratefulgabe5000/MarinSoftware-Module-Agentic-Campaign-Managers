@@ -64,7 +64,7 @@ const HeaderNav: React.FC<HeaderNavProps> = ({
             key={item.path}
             to={item.path}
             end={item.path === '/' || item.path === '/campaigns'}
-            className={({ isActive }) =>
+            className={({ isActive }: { isActive: boolean }) =>
               `relative flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors
               ${
                 isActive
@@ -74,10 +74,9 @@ const HeaderNav: React.FC<HeaderNavProps> = ({
               ${item.disabled ? 'pointer-events-none opacity-50' : ''}
               focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-md`
             }
-            aria-current={({ isActive }) => (isActive ? 'page' : undefined)}
             aria-disabled={item.disabled}
           >
-            {({ isActive }) => (
+            {({ isActive }: { isActive: boolean }) => (
               <>
                 {/* Icon */}
                 {showIcons && Icon && (

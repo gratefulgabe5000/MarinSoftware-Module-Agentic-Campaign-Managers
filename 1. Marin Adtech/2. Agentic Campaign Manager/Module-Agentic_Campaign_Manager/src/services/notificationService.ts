@@ -128,7 +128,7 @@ class NotificationService {
 
       // Handle notification close
       notification.onclose = () => {
-        console.log('Notification closed');
+        // Notification closed
       };
 
       // Auto-close after 5 seconds (unless requireInteraction is true)

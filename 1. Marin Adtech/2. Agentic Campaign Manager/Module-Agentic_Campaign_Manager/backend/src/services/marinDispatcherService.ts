@@ -544,8 +544,6 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
     const subsegment = segment?.addNewSubsegment('MarinDispatcher.queryCampaigns');
 
     try {
-      console.log(`[Marin Dispatcher] Querying campaigns with limit: ${limit}, offset: ${offset}`);
-
       // Build query parameters
       const params: MarinCampaignListRequest = {
         accountId: this.accountId,
@@ -566,8 +564,6 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
       );
 
       subsegment?.close();
-
-      console.log(`[Marin Dispatcher] Successfully retrieved ${response.data.campaigns.length} campaigns (total: ${response.data.total})`);
 
       return response.data;
     } catch (error: any) {
@@ -599,9 +595,6 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
     adGroupData: Omit<MarinAdGroupRequest, 'accountId' | 'campaignId'>
   ): Promise<PlatformAPIResponse> {
     try {
-      console.log(`[Marin Dispatcher] Creating ad group in campaign: ${campaignId}`);
-      console.log(`[Marin Dispatcher] Ad group data:`, adGroupData);
-
       const request: MarinAdGroupRequest = {
         accountId: this.accountId,
         campaignId,
@@ -628,8 +621,6 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
 
       subsegment?.close();
 
-      console.log(`[Marin Dispatcher] Ad group created successfully: ${response.data.id}`);
-
       return {
         success: true,
         adGroupId: response.data.id,
@@ -652,9 +643,6 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
     updates: MarinAdGroupUpdateRequest
   ): Promise<PlatformAPIResponse> {
     try {
-      console.log(`[Marin Dispatcher] Updating ad group: ${adGroupId}`);
-      console.log(`[Marin Dispatcher] Updates:`, updates);
-
       const request: MarinAdGroupUpdateRequest = { ...updates };
 
       // Remove undefined fields
@@ -671,8 +659,6 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
       );
 
       subsegment?.close();
-
-      console.log(`[Marin Dispatcher] Ad group updated successfully: ${response.data.id}`);
 
       return {
         success: true,
@@ -700,9 +686,6 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
     adData: Omit<MarinAdRequest, 'accountId' | 'adGroupId'>
   ): Promise<PlatformAPIResponse> {
     try {
-      console.log(`[Marin Dispatcher] Creating ad in ad group: ${adGroupId}`);
-      console.log(`[Marin Dispatcher] Ad data:`, adData);
-
       // Build complete request with accountId and adGroupId
       const request: MarinAdRequest = {
         accountId: this.accountId,
@@ -732,8 +715,6 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
 
       subsegment?.close();
 
-      console.log(`[Marin Dispatcher] Ad created successfully: ${response.data.id}`);
-
       return {
         success: true,
         adId: response.data.id,
@@ -756,9 +737,6 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
     updates: MarinAdUpdateRequest
   ): Promise<PlatformAPIResponse> {
     try {
-      console.log(`[Marin Dispatcher] Updating ad: ${adId}`);
-      console.log(`[Marin Dispatcher] Updates:`, updates);
-
       const request: MarinAdUpdateRequest = { ...updates };
 
       // Remove undefined fields
@@ -786,8 +764,6 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
 
       subsegment?.close();
 
-      console.log(`[Marin Dispatcher] Ad updated successfully: ${response.data.id}`);
-
       return {
         success: true,
         adId: response.data.id,
@@ -814,9 +790,6 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
     keywords: Omit<MarinKeywordRequest, 'accountId' | 'adGroupId'>[]
   ): Promise<PlatformAPIResponse> {
     try {
-      console.log(`[Marin Dispatcher] Creating ${keywords.length} keywords in ad group: ${adGroupId}`);
-      console.log(`[Marin Dispatcher] Keywords:`, keywords);
-
       // Build complete request with accountId and adGroupId for each keyword
       const request: MarinBulkKeywordRequest = {
         accountId: this.accountId,
@@ -856,8 +829,6 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
 
       subsegment?.close();
 
-      console.log(`[Marin Dispatcher] ${response.data.keywords.length} keywords created successfully`);
-
       return {
         success: true,
         keywords: response.data.keywords,
@@ -880,9 +851,6 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
     updates: MarinKeywordUpdateRequest
   ): Promise<PlatformAPIResponse> {
     try {
-      console.log(`[Marin Dispatcher] Updating keyword: ${keywordId}`);
-      console.log(`[Marin Dispatcher] Updates:`, updates);
-
       const request: MarinKeywordUpdateRequest = { ...updates };
 
       // Remove undefined fields
@@ -909,8 +877,6 @@ export class MarinDispatcherService extends BasePlatformAPI implements IPlatform
       );
 
       subsegment?.close();
-
-      console.log(`[Marin Dispatcher] Keyword updated successfully: ${response.data.id}`);
 
       return {
         success: true,

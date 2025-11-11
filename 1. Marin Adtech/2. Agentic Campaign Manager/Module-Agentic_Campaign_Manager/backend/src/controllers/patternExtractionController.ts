@@ -60,7 +60,6 @@ export class PatternExtractionController {
 
       // If using mock token and productName is provided, load product-specific mock data
       if (isMockToken && productName && typeof productName === 'string') {
-        console.log(`Loading product-specific mock data for: ${productName}`);
         isMockData = true;
         const { loadProductMockCampaigns } = await import('../utils/mockDataLoader');
         const mockCampaigns = loadProductMockCampaigns(productName);
@@ -107,7 +106,6 @@ export class PatternExtractionController {
           );
         } catch (error) {
           // If API fails, use general mock data
-          console.log('Using general mock data for pattern extraction (API unavailable)');
           isMockData = true;
           const { loadMockCampaigns } = await import('../utils/mockDataLoader');
           const mockCampaigns = loadMockCampaigns();

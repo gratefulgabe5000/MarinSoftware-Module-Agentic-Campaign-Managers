@@ -62,7 +62,7 @@ const ExportButton: React.FC<ExportButtonProps> = ({ previewData }) => {
     }
   };
 
-  const isDisabled = isExporting || isValidating || dataToExport.adGroups.length === 0 || (validationResult && !validationResult.isValid);
+  const isDisabled = isExporting || isValidating || dataToExport.adGroups.length === 0 || (validationResult ? !validationResult.isValid : false);
   const isLoading = isExporting || isValidating;
 
   return (

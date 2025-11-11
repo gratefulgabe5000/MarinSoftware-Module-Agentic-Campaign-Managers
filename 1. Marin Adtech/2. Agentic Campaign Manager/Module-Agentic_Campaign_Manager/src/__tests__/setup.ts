@@ -74,7 +74,7 @@ class MockIDBDatabase {
     return new MockIDBObjectStore(this.stores.get(name)!);
   }
 
-  transaction(storeNames: string | string[], mode?: string) {
+  transaction(storeNames: string | string[], _mode?: string) {
     const stores = Array.isArray(storeNames) ? storeNames : [storeNames];
     const objectStores = stores.map((name) => {
       if (!this.stores.has(name)) {
@@ -128,7 +128,7 @@ class MockIDBObjectStore {
 class MockIDBTransaction {
   constructor(private objectStores: MockIDBObjectStore[]) {}
 
-  objectStore(name: string) {
+  objectStore(_name: string) {
     return this.objectStores[0] || new MockIDBObjectStore(new Map());
   }
 }
@@ -146,14 +146,14 @@ class MockIDBOpenDBRequest extends MockIDBRequest {
 class MockIndexedDB {
   private databases: Map<string, MockIDBDatabase> = new Map();
 
-  open(name: string, version?: number) {
+  open(_name: string, _version?: number) {
     const request = new MockIDBOpenDBRequest();
 
-    if (!this.databases.has(name)) {
-      this.databases.set(name, new MockIDBDatabase());
+    if (!this.databases.has(_name)) {
+      this.databases.set(_name, new MockIDBDatabase());
     }
 
-    const db = this.databases.get(name)!;
+    const db = this.databases.get(_name)!;
 
     // Simulate async behavior
     Promise.resolve().then(() => {
@@ -164,9 +164,9 @@ class MockIndexedDB {
     return request;
   }
 
-  deleteDatabase(name: string) {
+  deleteDatabase(_name: string) {
     const request = new MockIDBRequest();
-    this.databases.delete(name);
+    this.databases.delete(_name);
     request.triggerSuccess(undefined);
     return request;
   }

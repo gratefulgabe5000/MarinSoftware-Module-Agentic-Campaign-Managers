@@ -139,12 +139,9 @@ class SyncQueueManager {
   /**
    * Execute a queued request
    */
-  private async executeRequest(request: QueuedRequest): Promise<void> {
+  private async executeRequest(_request: QueuedRequest): Promise<void> {
     // This is a placeholder - in production, this would execute the actual request
-    // For MVP, we'll just log it
-    console.log(`Executing queued request: ${request.method} ${request.url}`);
-    
-    // Simulate request execution
+    // For MVP, we'll simulate request execution
     // In production, this would use the appropriate service method
     await new Promise((resolve) => setTimeout(resolve, 100));
   }

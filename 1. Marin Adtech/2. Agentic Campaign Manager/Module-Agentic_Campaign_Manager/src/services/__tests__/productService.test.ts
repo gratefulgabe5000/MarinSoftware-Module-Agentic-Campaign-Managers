@@ -1,5 +1,4 @@
 import axios from 'axios';
-import ProductService from '../productService';
 import { productService } from '../productService';
 
 // Mock axios
@@ -62,7 +61,7 @@ describe('ProductService', () => {
         },
       };
 
-      mockedAxios.isAxiosError = jest.fn().mockReturnValue(true);
+      mockedAxios.isAxiosError = jest.fn().mockReturnValue(true) as any;
       mockedAxios.post.mockRejectedValue(mockError);
 
       const file = new File(['Invalid CSV'], 'test.csv', { type: 'text/csv' });
@@ -75,7 +74,7 @@ describe('ProductService', () => {
         request: {},
       };
 
-      mockedAxios.isAxiosError = jest.fn().mockReturnValue(true);
+      mockedAxios.isAxiosError = jest.fn().mockReturnValue(true) as any;
       mockedAxios.post.mockRejectedValue(mockError);
 
       const file = new File(['Product Name,URL\nTest,https://example.com'], 'test.csv', {
@@ -161,7 +160,7 @@ describe('ProductService', () => {
         },
       };
 
-      mockedAxios.isAxiosError = jest.fn().mockReturnValue(true);
+      mockedAxios.isAxiosError = jest.fn().mockReturnValue(true) as any;
       mockedAxios.post.mockRejectedValue(mockError);
 
       const urls = ['invalid-url'];
@@ -174,7 +173,7 @@ describe('ProductService', () => {
         request: {},
       };
 
-      mockedAxios.isAxiosError = jest.fn().mockReturnValue(true);
+      mockedAxios.isAxiosError = jest.fn().mockReturnValue(true) as any;
       mockedAxios.post.mockRejectedValue(mockError);
 
       const urls = ['https://example.com'];

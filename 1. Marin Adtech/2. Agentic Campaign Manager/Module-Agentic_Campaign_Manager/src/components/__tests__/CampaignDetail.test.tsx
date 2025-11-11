@@ -1,5 +1,4 @@
-import React from 'react';
-import { render, screen, waitFor, findByText } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
 import CampaignDetail from '../CampaignDetail';
@@ -27,14 +26,14 @@ jest.mock('../../services/campaignService', () => ({
 
 // Mock campaign status component
 jest.mock('../CampaignStatus', () => {
-  return function MockCampaignStatus(props: any) {
+  return function MockCampaignStatus(_props: any) {
     return <div data-testid="campaign-status">Campaign Status</div>;
   };
 });
 
 // Mock campaign actions component
 jest.mock('../CampaignActions', () => {
-  return function MockCampaignActions(props: any) {
+  return function MockCampaignActions(_props: any) {
     return <div data-testid="campaign-actions">Campaign Actions</div>;
   };
 });
@@ -78,7 +77,7 @@ describe('CampaignDetail', () => {
 
   it('renders without crashing', () => {
     (useParams as jest.Mock).mockReturnValue({ id: 'campaign-123' });
-    (useCampaignStore as jest.Mock).mockImplementation((selector) => {
+    (useCampaignStore as unknown as jest.Mock).mockImplementation((selector) => {
       return selector(mockStoreState);
     });
     (campaignService.getCampaign as jest.Mock).mockImplementation(() => new Promise(() => {})); // Never resolves
@@ -92,7 +91,7 @@ describe('CampaignDetail', () => {
 
   it('displays loading state', () => {
     (useParams as jest.Mock).mockReturnValue({ id: 'campaign-123' });
-    (useCampaignStore as jest.Mock).mockImplementation((selector) => {
+    (useCampaignStore as unknown as jest.Mock).mockImplementation((selector) => {
       return selector(mockStoreState);
     });
     (campaignService.getCampaign as jest.Mock).mockImplementation(() => new Promise(() => {})); // Never resolves
@@ -108,7 +107,7 @@ describe('CampaignDetail', () => {
 
   it('displays campaign information', async () => {
     (useParams as jest.Mock).mockReturnValue({ id: 'campaign-123' });
-    (useCampaignStore as jest.Mock).mockImplementation((selector) => {
+    (useCampaignStore as unknown as jest.Mock).mockImplementation((selector) => {
       return selector(mockStoreState);
     });
 
@@ -132,7 +131,7 @@ describe('CampaignDetail', () => {
 
   it('displays error state', async () => {
     (useParams as jest.Mock).mockReturnValue({ id: 'campaign-123' });
-    (useCampaignStore as jest.Mock).mockImplementation((selector) => {
+    (useCampaignStore as unknown as jest.Mock).mockImplementation((selector) => {
       return selector(mockStoreState);
     });
 
@@ -158,7 +157,7 @@ describe('CampaignDetail', () => {
 
   it('displays empty state when campaign not found', async () => {
     (useParams as jest.Mock).mockReturnValue({ id: 'campaign-123' });
-    (useCampaignStore as jest.Mock).mockImplementation((selector) => {
+    (useCampaignStore as unknown as jest.Mock).mockImplementation((selector) => {
       return selector(mockStoreState);
     });
 

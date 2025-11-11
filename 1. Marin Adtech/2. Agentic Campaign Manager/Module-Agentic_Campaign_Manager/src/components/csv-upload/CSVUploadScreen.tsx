@@ -40,7 +40,6 @@ const CSVUploadScreen: React.FC = () => {
   const [products, setProducts] = useState<ProductInput[]>([]);
   const [errors, setErrors] = useState<ProductValidationError[]>([]);
   const [warnings, setWarnings] = useState<string[]>([]);
-  const [isValid, setIsValid] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
 
   const handleParseComplete = (result: ProductParsingResult) => {
@@ -98,9 +97,7 @@ const CSVUploadScreen: React.FC = () => {
     setErrors(result.errors);
 
     // Auto-validate products after parsing if no errors
-    if (result.products.length > 0 && result.errors.length === 0) {
-      setIsValid(true);
-    }
+    // No validation state needed - validation is handled in ProductPreview component
   };
 
   const handleError = (error: string) => {
@@ -121,7 +118,6 @@ const CSVUploadScreen: React.FC = () => {
     setProducts([]);
     setErrors([]);
     setWarnings([]);
-    setIsValid(false);
     setUploadedFiles([]);
   };
 
@@ -151,18 +147,12 @@ const CSVUploadScreen: React.FC = () => {
     setProducts(limitedProducts);
     // Auto-validate if products are valid
     if (limitedProducts.length > 0) {
-      const allValid = limitedProducts.every(p => 
-        p.name && p.name.trim().length > 0 && 
-        p.url && p.url.trim().length > 0
-      );
-      if (allValid) {
-        setIsValid(true);
-      }
+      // Validation is handled in ProductPreview component
     }
   };
 
-  const handleValidationChange = (valid: boolean) => {
-    setIsValid(valid);
+  const handleValidationChange = (_valid: boolean) => {
+    // Validation state handled internally in ProductPreview
   };
 
   const handleGenerateCampaign = () => {

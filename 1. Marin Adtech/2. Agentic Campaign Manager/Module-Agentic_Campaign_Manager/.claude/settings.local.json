@@ -4,7 +4,8 @@
       "Bash(npm test:*)",
       "Bash(npm run tests:*)",
       "Bash(npm run:*)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(tsc:*)"
     ],
     "deny": [],
     "ask": []

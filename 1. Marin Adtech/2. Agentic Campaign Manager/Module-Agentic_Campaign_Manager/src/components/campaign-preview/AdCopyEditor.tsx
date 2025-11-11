@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { GeneratedRSA } from '../../types/rsa-generation.types';
 import { useCampaignPreviewStore } from '../../store/campaignPreviewStore';
 import { handleHeadlineEdit, handleDescriptionEdit, handleUrlEdit } from '../../utils/inlineEditing';
@@ -9,7 +9,6 @@ import { Textarea } from '../ui/textarea';
 import { Button } from '../ui/button';
 import { Label } from '../ui/label';
 import { Badge } from '../ui/badge';
-import { Alert, AlertDescription } from '../ui/alert';
 import { TrashIcon, PlusIcon } from 'lucide-react';
 
 /**
@@ -23,8 +22,6 @@ interface AdCopyEditorProps {
 }
 
 const AdCopyEditor: React.FC<AdCopyEditorProps> = ({ ad, adGroupId, onUpdate }) => {
-  const [editingHeadlineIndex, setEditingHeadlineIndex] = useState<number | null>(null);
-  const [editingDescriptionIndex, setEditingDescriptionIndex] = useState<number | null>(null);
   const [editingUrl, setEditingUrl] = useState(false);
   const [headlineErrors, setHeadlineErrors] = useState<Record<number, string>>({});
   const [descriptionErrors, setDescriptionErrors] = useState<Record<number, string>>({});
@@ -112,6 +109,9 @@ const AdCopyEditor: React.FC<AdCopyEditorProps> = ({ ad, adGroupId, onUpdate }) 
     if (onUpdate) onUpdate();
   };
 
+  // Suppress unused variable warning
+  void editingUrl;
+
   // Handle delete headline
   const handleDeleteHeadline = (index: number) => {
     if (ad.headlines.length <= 3) {
@@ -164,8 +164,6 @@ const AdCopyEditor: React.FC<AdCopyEditorProps> = ({ ad, adGroupId, onUpdate }) 
                     value={headline.text}
                     maxLength={30}
                     onChange={(e) => handleHeadlineChange(index, e.target.value)}
-                    onFocus={() => setEditingHeadlineIndex(index)}
-                    onBlur={() => setEditingHeadlineIndex(null)}
                     className={headlineErrors[index] ? 'border-destructive' : ''}
                     placeholder={`Headline ${index + 1}`}
                   />
@@ -228,8 +226,6 @@ const AdCopyEditor: React.FC<AdCopyEditorProps> = ({ ad, adGroupId, onUpdate }) 
                     value={description.text}
                     maxLength={90}
                     onChange={(e) => handleDescriptionChange(index, e.target.value)}
-                    onFocus={() => setEditingDescriptionIndex(index)}
-                    onBlur={() => setEditingDescriptionIndex(null)}
                     className={descriptionErrors[index] ? 'border-destructive' : ''}
                     placeholder={`Description ${index + 1}`}
                     rows={2}
@@ -293,7 +289,7 @@ const AdCopyEditor: React.FC<AdCopyEditorProps> = ({ ad, adGroupId, onUpdate }) 
                 id="display-url"
                 type="text"
                 value={ad.displayUrl}
-                onChange={(e) => {
+                onChange={() => {
                   // Display URL is optional, so we can update it directly
                   // TODO: Add updateDisplayUrl to store if needed
                 }}

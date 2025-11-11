@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ProductInput } from '../../types/product.types';
 import { CampaignPatterns } from '../../types/campaign-patterns.types';
@@ -7,7 +7,6 @@ import { useKeywordGeneration } from '../../hooks/useKeywordGeneration';
 import { useRSAGeneration } from '../../hooks/useRSAGeneration';
 import { useCampaignStore } from '../../store/campaignStore';
 import { Campaign } from '../../types/campaign.types';
-import LoadingSpinner from '../LoadingSpinner';
 import { Button } from '../ui/button';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '../ui/card';
 import { Badge } from '../ui/badge';
@@ -48,9 +47,9 @@ const CampaignGenerationScreen: React.FC = () => {
     }
   }, [location.state]);
 
-  const { generateAdGroups, loading: adGroupsLoading, error: adGroupsError } = useAdGroupGeneration();
-  const { generateKeywords, loading: keywordsLoading, error: keywordsError } = useKeywordGeneration();
-  const { generateRSA, loading: adsLoading, error: adsError } = useRSAGeneration();
+  const { generateAdGroups, error: adGroupsError } = useAdGroupGeneration();
+  const { generateKeywords, error: keywordsError } = useKeywordGeneration();
+  const { generateRSA, error: adsError } = useRSAGeneration();
   const { addCampaign, setCampaigns } = useCampaignStore();
 
   // Generate ad groups for all products
@@ -58,7 +57,7 @@ const CampaignGenerationScreen: React.FC = () => {
     if (currentStep === 'adgroups' && products.length > 0) {
       const generateAllAdGroups = async () => {
         const adGroupsMap: { [key: number]: any } = {};
-        
+
         for (let i = 0; i < products.length; i++) {
           try {
             const adGroups = await generateAdGroups({
@@ -74,7 +73,7 @@ const CampaignGenerationScreen: React.FC = () => {
             console.error(`Error generating ad groups for product ${i}:`, error);
           }
         }
-        
+
         setCurrentStep('keywords');
       };
 
@@ -87,7 +86,7 @@ const CampaignGenerationScreen: React.FC = () => {
     if (currentStep === 'keywords' && products.length > 0) {
       const generateAllKeywords = async () => {
         const keywordsMap: { [key: number]: any } = {};
-        
+
         for (let i = 0; i < products.length; i++) {
           try {
             const keywords = await generateKeywords({
@@ -103,7 +102,7 @@ const CampaignGenerationScreen: React.FC = () => {
             console.error(`Error generating keywords for product ${i}:`, error);
           }
         }
-        
+
         setCurrentStep('ads');
       };
 
@@ -116,10 +115,10 @@ const CampaignGenerationScreen: React.FC = () => {
     if (currentStep === 'ads' && products.length > 0) {
       const generateAllAds = async () => {
         const adsMap: { [key: number]: any } = {};
-        
+
         for (let i = 0; i < products.length; i++) {
           const adGroups = generationProgress.adGroups[i] || [];
-          
+
           for (let j = 0; j < adGroups.length; j++) {
             try {
               const adGroup = adGroups[j];
@@ -141,7 +140,7 @@ const CampaignGenerationScreen: React.FC = () => {
             }
           }
         }
-        
+
         setCurrentStep('complete');
       };
 
@@ -156,10 +155,10 @@ const CampaignGenerationScreen: React.FC = () => {
         const adGroups = generationProgress.adGroups[index] || [];
         const keywords = generationProgress.keywords[index] || [];
         const ads = generationProgress.ads[index] || [];
-        
+
         const startDate = new Date();
         const endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
-        
+
         // Create a campaign for each product
         const campaign: Campaign = {
           id: `campaign-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`,
@@ -213,7 +212,7 @@ const CampaignGenerationScreen: React.FC = () => {
             },
           },
         };
-        
+
         return campaign;
       });
 
@@ -235,8 +234,59 @@ const CampaignGenerationScreen: React.FC = () => {
     }
   }, [currentStep, products, generationProgress, addCampaign, setCampaigns]);
 
-  const isLoading = adGroupsLoading || keywordsLoading || adsLoading;
   const error = adGroupsError || keywordsError || adsError;
+
+  // Helper function to determine class name for step
+  const getStepBorder = (step: 'adgroups' | 'keywords' | 'ads' | 'complete', compareStep: 'adgroups' | 'keywords' | 'ads' | 'complete') => {
+    if (step === compareStep) return 'border-primary bg-primary/5';
+    if ((compareStep === 'adgroups' && (step === 'keywords' || step === 'ads' || step === 'complete')) ||
+        (compareStep === 'keywords' && (step === 'ads' || step === 'complete'))) {
+      return 'border-green-500/50 bg-green-500/5';
+    }
+    return 'border-muted';
+  };
+
+  // Helper to render step badge
+  const renderStepBadge = (compareStep: 'keywords' | 'ads'): React.ReactNode => {
+    if (compareStep === 'keywords') {
+      if (currentStep === 'keywords') {
+        return <Badge variant="default">In Progress</Badge>;
+      }
+      if (currentStep === 'adgroups') {
+        return <Badge variant="secondary">Waiting</Badge>;
+      }
+      return <Badge variant="outline">Complete</Badge>;
+    }
+    // compareStep === 'ads'
+    if (currentStep === 'ads') {
+      return <Badge variant="default">In Progress</Badge>;
+    }
+    if (currentStep === 'complete') {
+      return <Badge variant="outline">Complete</Badge>;
+    }
+    return <Badge variant="secondary">Waiting</Badge>;
+  };
+
+  // Helper to render step icon
+  const renderStepIcon = (compareStep: 'keywords' | 'ads'): React.ReactNode => {
+    if (compareStep === 'keywords') {
+      if (currentStep === 'keywords') {
+        return <Loader2Icon className="h-5 w-5 animate-spin text-primary" />;
+      }
+      if (currentStep === 'adgroups') {
+        return <ClockIcon className="h-5 w-5 text-muted-foreground" />;
+      }
+      return <CheckCircle2Icon className="h-5 w-5 text-green-600" />;
+    }
+    // compareStep === 'ads'
+    if (currentStep === 'ads') {
+      return <Loader2Icon className="h-5 w-5 animate-spin text-primary" />;
+    }
+    if (currentStep === 'complete') {
+      return <CheckCircle2Icon className="h-5 w-5 text-green-600" />;
+    }
+    return <ClockIcon className="h-5 w-5 text-muted-foreground" />;
+  };
 
   if (products.length === 0) {
     return (
@@ -388,7 +438,7 @@ const CampaignGenerationScreen: React.FC = () => {
               {/* Step 1: Ad Groups */}
               <div className={`flex items-start gap-4 p-4 rounded-lg border ${
                 currentStep === 'adgroups' ? 'border-primary bg-primary/5' :
-                currentStep !== 'adgroups' ? 'border-green-500/50 bg-green-500/5' : 'border-muted'
+                currentStep === 'keywords' || currentStep === 'ads' || currentStep === 'complete' ? 'border-green-500/50 bg-green-500/5' : 'border-muted'
               }`}>
                 <div className="mt-0.5">
                   {currentStep === 'adgroups' ? (
@@ -408,57 +458,27 @@ const CampaignGenerationScreen: React.FC = () => {
               </div>
 
               {/* Step 2: Keywords */}
-              <div className={`flex items-start gap-4 p-4 rounded-lg border ${
-                currentStep === 'keywords' ? 'border-primary bg-primary/5' :
-                currentStep === 'ads' || currentStep === 'complete' ? 'border-green-500/50 bg-green-500/5' : 'border-muted'
-              }`}>
+              <div className={`flex items-start gap-4 p-4 rounded-lg border ${getStepBorder(currentStep, 'keywords')}`}>
                 <div className="mt-0.5">
-                  {currentStep === 'keywords' ? (
-                    <Loader2Icon className="h-5 w-5 animate-spin text-primary" />
-                  ) : currentStep === 'ads' || currentStep === 'complete' ? (
-                    <CheckCircle2Icon className="h-5 w-5 text-green-600" />
-                  ) : (
-                    <ClockIcon className="h-5 w-5 text-muted-foreground" />
-                  )}
+                  {renderStepIcon('keywords')}
                 </div>
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center justify-between">
                     <h3 className="font-semibold">Generating Keywords</h3>
-                    <Badge variant={
-                      currentStep === 'keywords' ? 'default' :
-                      currentStep === 'ads' || currentStep === 'complete' ? 'outline' : 'secondary'
-                    }>
-                      {currentStep === 'keywords' ? 'In Progress' :
-                       currentStep === 'ads' || currentStep === 'complete' ? 'Complete' : 'Waiting'}
-                    </Badge>
+                    {renderStepBadge('keywords')}
                   </div>
                 </div>
               </div>
 
               {/* Step 3: Ads */}
-              <div className={`flex items-start gap-4 p-4 rounded-lg border ${
-                currentStep === 'ads' ? 'border-primary bg-primary/5' :
-                currentStep === 'complete' ? 'border-green-500/50 bg-green-500/5' : 'border-muted'
-              }`}>
+              <div className={`flex items-start gap-4 p-4 rounded-lg border ${getStepBorder(currentStep, 'ads')}`}>
                 <div className="mt-0.5">
-                  {currentStep === 'ads' ? (
-                    <Loader2Icon className="h-5 w-5 animate-spin text-primary" />
-                  ) : currentStep === 'complete' ? (
-                    <CheckCircle2Icon className="h-5 w-5 text-green-600" />
-                  ) : (
-                    <ClockIcon className="h-5 w-5 text-muted-foreground" />
-                  )}
+                  {renderStepIcon('ads')}
                 </div>
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center justify-between">
                     <h3 className="font-semibold">Generating Ads</h3>
-                    <Badge variant={
-                      currentStep === 'ads' ? 'default' :
-                      currentStep === 'complete' ? 'outline' : 'secondary'
-                    }>
-                      {currentStep === 'ads' ? 'In Progress' :
-                       currentStep === 'complete' ? 'Complete' : 'Waiting'}
-                    </Badge>
+                    {renderStepBadge('ads')}
                   </div>
                 </div>
               </div>

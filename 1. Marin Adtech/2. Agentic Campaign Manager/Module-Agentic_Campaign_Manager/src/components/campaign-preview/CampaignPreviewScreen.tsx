@@ -1,17 +1,15 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useCampaignStore } from '../../store/campaignStore';
 import { useCampaignPreviewStore } from '../../store/campaignPreviewStore';
 import { Campaign } from '../../types/campaign.types';
 import { CampaignPreviewData, AdGroupPreviewRow } from '../../types/campaign-preview.types';
-import { GeneratedAdGroup } from '../../types/adgroup-generation.types';
 import CampaignPreviewTable from './CampaignPreviewTable';
-import LoadingSpinner from '../LoadingSpinner';
 import { Button } from '../ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';
 import { ArrowLeftIcon, SparklesIcon, CheckCircle2Icon, AlertCircleIcon, AlertTriangleIcon, SaveIcon, Loader2Icon } from 'lucide-react';
 
 /**
@@ -24,7 +22,7 @@ const CampaignPreviewScreen: React.FC = () => {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [activeCampaignTab, setActiveCampaignTab] = useState<string>('0');
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
 
   const storeCampaigns = useCampaignStore((state) => state.campaigns);
   const { setPreviewData, validateCampaign, validationResult, hasUnsavedChanges, saveDraft } = useCampaignPreviewStore();
@@ -74,12 +72,12 @@ const CampaignPreviewScreen: React.FC = () => {
           name: adGroupPlan.name || 'Untitled Ad Group',
           productId: `product-${index}`,
           productName: campaign.name || 'Untitled Product',
-          keywords: keywords.map((kw) => ({
-            text: typeof kw === 'string' ? kw : (kw.text || String(kw)),
-            matchType: typeof kw === 'string' ? 'broad' : (kw.matchType || 'broad'),
+          keywords: keywords.map((kw: any) => ({
+            text: typeof kw === 'string' ? kw : (kw?.text || String(kw)),
+            matchType: typeof kw === 'string' ? 'broad' : (kw?.matchType || 'broad'),
             source: {
               type: 'llm_generated',
-              keyword: typeof kw === 'string' ? kw : (kw.text || String(kw)),
+              keyword: typeof kw === 'string' ? kw : (kw?.text || String(kw)),
               relevance: 0.8,
               confidence: 0.7,
             },
@@ -87,15 +85,21 @@ const CampaignPreviewScreen: React.FC = () => {
           ads: ads.map((ad, adIndex) => ({
             id: ad.id || `ad-${index}-${adIndex}`,
             adGroupId: ad.adGroupId || `adgroup-${index}`,
-            headlines: ad.headlines?.map((h, hIndex) => ({
-              text: typeof h === 'string' ? h : h.text || h,
-              pinned: h.pinned || false,
-              position: h.position ?? hIndex,
-            })) || [],
-            descriptions: ad.descriptions?.map((d, dIndex) => ({
-              text: typeof d === 'string' ? d : d.text || d,
-            })) || [],
-            finalUrl: ad.finalUrl || campaign.campaignPlan.targetUrl || '',
+            headlines: ad.headlines?.map((h, hIndex) => {
+              const headline = typeof h === 'string' ? { text: h } : h;
+              return {
+                text: headline.text || '',
+                pinned: headline.pinned || false,
+                position: headline.position ?? hIndex,
+              };
+            }) || [],
+            descriptions: ad.descriptions?.map((d) => {
+              const description = typeof d === 'string' ? { text: d } : d;
+              return {
+                text: description.text || '',
+              };
+            }) || [],
+            finalUrl: ad.finalUrl || '',
             displayUrl: ad.displayUrl,
           })),
         };

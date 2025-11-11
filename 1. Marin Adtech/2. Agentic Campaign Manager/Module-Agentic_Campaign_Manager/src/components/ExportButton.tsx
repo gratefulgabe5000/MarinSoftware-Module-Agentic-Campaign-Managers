@@ -3,7 +3,6 @@ import { performanceService } from '../services/performanceService';
 import {
   PerformanceMetrics,
   PerformanceTimeSeries,
-  PerformanceDataPoint,
 } from '../types/performance.types';
 import { Button } from './ui/button';
 import { Alert, AlertDescription } from './ui/alert';

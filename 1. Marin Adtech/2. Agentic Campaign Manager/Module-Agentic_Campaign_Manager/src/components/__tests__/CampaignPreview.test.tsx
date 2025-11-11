@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import CampaignPreview from '../CampaignPreview';
@@ -24,7 +23,7 @@ describe('CampaignPreview', () => {
   });
 
   it('renders without crashing', () => {
-    (useCampaignStore as jest.Mock).mockImplementation((selector) => {
+    (useCampaignStore as unknown as jest.Mock).mockImplementation((selector) => {
       const state = {
         currentCampaignPlan: null,
         isLoading: false,
@@ -41,7 +40,7 @@ describe('CampaignPreview', () => {
   });
 
   it('displays empty state when no campaign plan', () => {
-    (useCampaignStore as jest.Mock).mockImplementation((selector) => {
+    (useCampaignStore as unknown as jest.Mock).mockImplementation((selector) => {
       const state = {
         currentCampaignPlan: null,
         isLoading: false,
@@ -60,7 +59,7 @@ describe('CampaignPreview', () => {
   });
 
   it('displays error state when error exists', () => {
-    (useCampaignStore as jest.Mock).mockImplementation((selector) => {
+    (useCampaignStore as unknown as jest.Mock).mockImplementation((selector) => {
       const state = {
         currentCampaignPlan: null,
         isLoading: false,

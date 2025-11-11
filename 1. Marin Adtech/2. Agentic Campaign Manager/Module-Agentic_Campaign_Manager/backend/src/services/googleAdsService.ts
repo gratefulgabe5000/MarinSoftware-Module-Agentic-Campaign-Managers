@@ -51,11 +51,6 @@ export class GoogleAdsService extends BasePlatformAPI implements IPlatformAPI {
       // Get campaign type for Google Ads
       const campaignType = campaignPlan.campaignType?.googleAds || 'SEARCH';
 
-      console.log(`[Google Ads] Creating campaign: ${name}`);
-      console.log(`[Google Ads] Campaign type: ${campaignType}`);
-      console.log(`[Google Ads] Campaign objective: ${campaignPlan.objective}`);
-      console.log(`[Google Ads] Campaign plan:`, campaignPlan);
-
       return {
         success: true,
         campaignId: mockCampaignId,

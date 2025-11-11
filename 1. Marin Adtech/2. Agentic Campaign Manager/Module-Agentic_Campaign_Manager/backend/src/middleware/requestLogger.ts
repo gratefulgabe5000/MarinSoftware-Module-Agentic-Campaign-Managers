@@ -9,22 +9,8 @@ export const requestLogger = (
   res: Response,
   next: NextFunction
 ): void => {
-  const startTime = Date.now();
-  
-  // Log request
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`, {
-    query: req.query,
-    body: req.method !== 'GET' ? req.body : undefined,
-  });
-
-  // Log response when finished
-  res.on('finish', () => {
-    const duration = Date.now() - startTime;
-    console.log(
-      `[${new Date().toISOString()}] ${req.method} ${req.path} ${res.statusCode} - ${duration}ms`
-    );
-  });
-
+  // Logging middleware for request/response tracking
+  // Debug logging removed - use structured logging in production
   next();
 };
 

@@ -81,7 +81,7 @@ const generateId = (): string => {
  * - Mock data for development
  * - Persistent storage (optional)
  */
-export const useNotificationStore = create<NotificationState>((set, get) => ({
+export const useNotificationStore = create<NotificationState>((set, _get) => ({
   // Initial state
   notifications: mockNotifications,
   unreadCount: mockNotifications.filter((n) => !n.read).length,

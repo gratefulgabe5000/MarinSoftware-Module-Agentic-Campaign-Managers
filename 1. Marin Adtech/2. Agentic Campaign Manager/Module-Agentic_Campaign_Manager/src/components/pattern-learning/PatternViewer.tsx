@@ -4,7 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '../ui
 import { Badge } from '../ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { Button } from '../ui/button';
-import { AlertTriangleIcon, SparklesIcon } from 'lucide-react';
+import { SparklesIcon } from 'lucide-react';
 
 /**
  * Pattern Viewer Component Props

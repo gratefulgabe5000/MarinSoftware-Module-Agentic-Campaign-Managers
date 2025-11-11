@@ -40,7 +40,7 @@ const PatternLearningScreen: React.FC = () => {
       try {
         // Fetch patterns for each product in parallel
         const axios = (await import('axios')).default;
-        const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || 'http://localhost:3001/api';
+        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
 
         const patternPromises = products.map(async (product: any) => {
           try {

@@ -27,19 +27,11 @@ const CSVUploadComponent: React.FC<CSVUploadComponentProps> = ({
   onParseComplete,
   onError,
   onClearErrorsWarnings,
-  onClear,
   onRemoveFile,
   uploadedFiles = [],
 }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [currentFileName, setCurrentFileName] = useState<string | null>(null);
-
-  const handleClear = useCallback(() => {
-    setCurrentFileName(null);
-    if (onClear) {
-      onClear();
-    }
-  }, [onClear]);
 
   const handleRemoveFile = useCallback((fileName: string) => {
     if (onRemoveFile) {
@@ -52,8 +44,8 @@ const CSVUploadComponent: React.FC<CSVUploadComponentProps> = ({
     if (onClearErrorsWarnings) {
       onClearErrorsWarnings();
     }
-    
-    fileRejections.forEach(({ file, errors }) => {
+
+    fileRejections.forEach(({ errors }) => {
       if (errors.some((e: any) => e.code === 'file-invalid-type')) {
         onError('Only CSV files are allowed.');
       } else if (errors.some((e: any) => e.code === 'file-too-large')) {

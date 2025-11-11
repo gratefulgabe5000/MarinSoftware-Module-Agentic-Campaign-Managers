@@ -4,7 +4,6 @@ import {
   saveConversation,
   loadConversation,
   clearConversation,
-  clearAllConversations,
 } from '../utils/indexedDB';
 
 /**

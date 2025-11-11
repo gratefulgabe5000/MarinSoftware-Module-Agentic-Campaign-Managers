@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { CampaignPreviewData, AdGroupPreviewRow } from '../../types/campaign-preview.types';
+import { CampaignPreviewData } from '../../types/campaign-preview.types';
 import { useCampaignPreviewStore } from '../../store/campaignPreviewStore';
 import AdGroupRow from './AdGroupRow';
 import ExportButton from './ExportButton';
@@ -9,7 +9,6 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Button } from '../ui/button';
-import { Badge } from '../ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { ArrowUpIcon, ArrowDownIcon, FolderIcon, KeyIcon, FileTextIcon } from 'lucide-react';
 
