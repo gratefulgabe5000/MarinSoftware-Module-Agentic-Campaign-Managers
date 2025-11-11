@@ -269,6 +269,241 @@ describe('MarinDispatcherService - Keyword Methods', () => {
       expect(result.keywords).toHaveLength(1);
       expect(mockHttpClient.post).toHaveBeenCalled();
     });
+
+    it('should handle network errors gracefully', async () => {
+      mockHttpClient.post.mockRejectedValue(new Error('Network error'));
+
+      const result = await service.createKeywords(adGroupId, mockKeywords);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBeDefined();
+    });
+
+    // ========================================================================
+    // Task 4.3.3: Integration & Error Tests
+    // ========================================================================
+
+    it('should create campaign, ad group, and keywords in sequence', async () => {
+      // Step 1: Create a campaign
+      const mockCampaignResponse: any = {
+        id: 'campaign-keyword-test',
+        accountId: 'test-account-123',
+        name: 'Keyword Integration Test Campaign',
+        status: 'SUCCESS',
+        campaignStatus: 'ENABLED',
+        budget: {
+          amount: 100.0,
+          deliveryMethod: 'STANDARD',
+        },
+        biddingStrategy: 'MANUAL_CPC',
+      };
+
+      // Step 2: Mock Ad Group Response
+      const mockAdGroupResponse: any = {
+        id: 'adgroup-keyword-test',
+        accountId: 'test-account-123',
+        campaignId: 'campaign-keyword-test',
+        name: 'Keyword Test Ad Group',
+        adGroupStatus: 'ENABLED',
+        cpcBid: 2.0,
+        status: 'SUCCESS',
+      };
+
+      // Step 3: Mock Keywords Response
+      const mockKeywordsResponse: { keywords: MarinKeywordResponse[] } = {
+        keywords: [
+          {
+            id: 'keyword-integration-1',
+            accountId: 'test-account-123',
+            adGroupId: 'adgroup-keyword-test',
+            text: 'test keyword one',
+            matchType: 'BROAD',
+            cpcBid: 1.5,
+            keywordStatus: 'ENABLED',
+            status: 'SUCCESS',
+          },
+          {
+            id: 'keyword-integration-2',
+            accountId: 'test-account-123',
+            adGroupId: 'adgroup-keyword-test',
+            text: 'test keyword two',
+            matchType: 'PHRASE',
+            cpcBid: 2.0,
+            keywordStatus: 'ENABLED',
+            status: 'SUCCESS',
+          },
+          {
+            id: 'keyword-integration-3',
+            accountId: 'test-account-123',
+            adGroupId: 'adgroup-keyword-test',
+            text: 'test keyword three',
+            matchType: 'EXACT',
+            cpcBid: 2.5,
+            keywordStatus: 'ENABLED',
+            status: 'SUCCESS',
+          },
+        ],
+      };
+
+      // Mock all three API calls
+      mockHttpClient.post
+        .mockResolvedValueOnce({ data: mockCampaignResponse })  // Campaign creation
+        .mockResolvedValueOnce({ data: mockAdGroupResponse })   // Ad Group creation
+        .mockResolvedValueOnce({ data: mockKeywordsResponse }); // Keywords creation
+
+      // Create campaign first
+      const campaignResult = await service.createCampaign(
+        {
+          objective: 'conversions',
+          budget: {
+            total: 100.0,
+            daily: 100.0,
+            currency: 'USD'
+          },
+          targetAudience: {
+            demographics: {
+              age: '25-54',
+              gender: 'All',
+              location: 'United States'
+            }
+          },
+          timeline: {
+            startDate: '2025-01-15',
+            endDate: '2025-02-15',
+            duration: 30
+          },
+          platforms: ['google'],
+          kpis: {
+            primary: 'conversions',
+            secondary: ['ctr', 'roas']
+          }
+        },
+        'Keyword Integration Test Campaign'
+      );
+
+      expect(campaignResult.success).toBe(true);
+      expect(campaignResult.campaignId).toBe('campaign-keyword-test');
+
+      // Then create ad group in that campaign
+      const adGroupResult = await service.createAdGroup('campaign-keyword-test', {
+        name: 'Keyword Test Ad Group',
+        status: 'ENABLED',
+        cpcBid: 2.0,
+      });
+
+      expect(adGroupResult.success).toBe(true);
+      expect(adGroupResult.adGroupId).toBe('adgroup-keyword-test');
+
+      // Finally create keywords in that ad group
+      const testKeywords: Omit<MarinKeywordRequest, 'accountId' | 'adGroupId'>[] = [
+        {
+          text: 'test keyword one',
+          matchType: 'BROAD',
+          cpcBid: 1.5,
+        },
+        {
+          text: 'test keyword two',
+          matchType: 'PHRASE',
+          cpcBid: 2.0,
+        },
+        {
+          text: 'test keyword three',
+          matchType: 'EXACT',
+          cpcBid: 2.5,
+        },
+      ];
+
+      const keywordsResult = await service.createKeywords('adgroup-keyword-test', testKeywords);
+
+      expect(keywordsResult.success).toBe(true);
+      expect(keywordsResult.keywords).toHaveLength(3);
+
+      // Verify all keywords were created
+      expect(keywordsResult.keywords).toEqual(mockKeywordsResponse.keywords);
+
+      // Verify match types are correct
+      expect(keywordsResult.keywords![0].matchType).toBe('BROAD');
+      expect(keywordsResult.keywords![1].matchType).toBe('PHRASE');
+      expect(keywordsResult.keywords![2].matchType).toBe('EXACT');
+
+      // Verify bids are set correctly
+      expect(keywordsResult.keywords![0].cpcBid).toBe(1.5);
+      expect(keywordsResult.keywords![1].cpcBid).toBe(2.0);
+      expect(keywordsResult.keywords![2].cpcBid).toBe(2.5);
+
+      // Verify all three API calls were made in correct order
+      expect(mockHttpClient.post).toHaveBeenCalledTimes(3);
+
+      // Verify campaign creation call
+      expect(mockHttpClient.post).toHaveBeenNthCalledWith(
+        1,
+        '/dispatcher/google/campaigns',
+        expect.any(Object)
+      );
+
+      // Verify ad group creation call
+      expect(mockHttpClient.post).toHaveBeenNthCalledWith(
+        2,
+        '/dispatcher/google/campaigns/campaign-keyword-test/adgroups',
+        expect.objectContaining({
+          campaignId: 'campaign-keyword-test',
+          name: 'Keyword Test Ad Group',
+        })
+      );
+
+      // Verify keywords creation call
+      expect(mockHttpClient.post).toHaveBeenNthCalledWith(
+        3,
+        '/dispatcher/google/keywords',
+        expect.objectContaining({
+          accountId: 'test-account-123',
+          adGroupId: 'adgroup-keyword-test',
+          keywords: expect.arrayContaining([
+            expect.objectContaining({
+              text: 'test keyword one',
+              matchType: 'BROAD',
+              cpcBid: 1.5,
+            }),
+            expect.objectContaining({
+              text: 'test keyword two',
+              matchType: 'PHRASE',
+              cpcBid: 2.0,
+            }),
+            expect.objectContaining({
+              text: 'test keyword three',
+              matchType: 'EXACT',
+              cpcBid: 2.5,
+            }),
+          ]),
+        })
+      );
+    });
+
+    it('should return error when creating keywords with invalid ad group ID', async () => {
+      const invalidAdGroupId = 'invalid-adgroup-id';
+
+      // Mock API error for invalid ad group ID
+      mockHttpClient.post.mockRejectedValue({
+        response: {
+          status: 404,
+          data: {
+            error: 'Ad group not found',
+            message: `Ad group with ID ${invalidAdGroupId} does not exist`
+          },
+        },
+      });
+
+      const result = await service.createKeywords(invalidAdGroupId, mockKeywords);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBeDefined();
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        '/dispatcher/google/keywords',
+        expect.objectContaining({
+          adGroupId: invalidAdGroupId,
+        })
+      );
+    });
   });
 
   // ========================================================================
