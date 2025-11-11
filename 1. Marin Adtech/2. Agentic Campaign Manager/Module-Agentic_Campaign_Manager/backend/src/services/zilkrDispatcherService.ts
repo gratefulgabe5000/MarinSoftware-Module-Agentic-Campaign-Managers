@@ -393,6 +393,16 @@ export class ZilkrDispatcherService extends BasePlatformAPI implements IPlatform
       // Step 2: Use budget resource reference in campaign creation
       // Use resourceName if available, otherwise use budgetId
       const campaignBudget = budgetResponse.resourceName || budgetResponse.budgetId || budgetResponse.resourceId || '';
+      
+      // Validate that we have a budget reference (required by Google Ads API)
+      if (!campaignBudget || campaignBudget.trim() === '') {
+        subsegment?.close();
+        return {
+          success: false,
+          error: 'Budget creation succeeded but did not return a valid budget reference. ' +
+                `Received: resourceName=${budgetResponse.resourceName}, budgetId=${budgetResponse.budgetId}, resourceId=${budgetResponse.resourceId}`,
+        };
+      }
 
       // Step 3: Map CampaignPlan to ZilkrCampaignRequest with budget reference
       const request: ZilkrCampaignRequest = this.mapCampaignPlanToRequest(

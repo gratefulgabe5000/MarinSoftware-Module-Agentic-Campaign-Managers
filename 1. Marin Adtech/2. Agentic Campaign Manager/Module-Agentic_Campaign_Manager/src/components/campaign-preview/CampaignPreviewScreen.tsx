@@ -172,143 +172,150 @@ const CampaignPreviewScreen: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="mx-auto max-w-7xl space-y-6">
-        {/* Header */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="flex items-center gap-3 mb-1">
-              <h1 className="text-3xl font-bold tracking-tight">Campaign Preview & Edit</h1>
-              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-300 text-sm px-3 py-1">
-                PREVIEW
-              </Badge>
+    <div className="min-h-screen bg-background">
+      {/* Header - Fixed (below navigation bar) */}
+      <div className="fixed top-16 left-0 right-0 z-10 bg-background border-b shadow-sm">
+        <div className="mx-auto max-w-7xl px-8 py-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="flex items-center gap-3 mb-1">
+                <h1 className="text-3xl font-bold tracking-tight">Campaign Preview & Edit</h1>
+                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-300 text-sm px-3 py-1">
+                  PREVIEW
+                </Badge>
+              </div>
+              <p className="text-muted-foreground mt-1">
+                Review and edit your generated campaigns before exporting
+              </p>
             </div>
-            <p className="text-muted-foreground mt-1">
-              Review and edit your generated campaigns before exporting
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={handleBackToDashboard} type="button">
-              <ArrowLeftIcon className="h-4 w-4" />
-              Back to Dashboard
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={handleBackToDashboard} type="button">
+                <ArrowLeftIcon className="h-4 w-4" />
+                Back to Dashboard
+              </Button>
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Campaign Tabs */}
-        {campaigns.length > 1 && (
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Select Campaign to Preview</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <Tabs value={activeCampaignTab} onValueChange={setActiveCampaignTab}>
-                <div className="overflow-x-auto pb-2">
-                  <TabsList className="inline-flex w-auto">
-                    {campaigns.map((campaign, index) => (
-                      <TabsTrigger
-                        key={campaign.id}
-                        value={index.toString()}
-                        className="whitespace-nowrap"
-                      >
-                        {campaign.name}
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
+      {/* Content - with top padding to account for fixed header (64px nav + ~140px header) */}
+      <div className="pt-52 pb-8">
+        <div className="mx-auto max-w-7xl px-8 space-y-6">
+          {/* Campaign Tabs */}
+          {campaigns.length > 1 && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Select Campaign to Preview</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <Tabs value={activeCampaignTab} onValueChange={setActiveCampaignTab}>
+                  <div className="overflow-x-auto pb-2">
+                    <TabsList className="inline-flex w-auto">
+                      {campaigns.map((campaign, index) => (
+                        <TabsTrigger
+                          key={campaign.id}
+                          value={index.toString()}
+                          className="whitespace-nowrap"
+                        >
+                          {campaign.name}
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
+                  </div>
+                </Tabs>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Error Alert */}
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircleIcon className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          {/* Validation Summary */}
+          {validationResult && (
+            <Card>
+              <CardHeader className="pb-4">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-xl">Validation Summary</CardTitle>
+                  {hasUnsavedChanges && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={saveDraft}
+                      type="button"
+                    >
+                      <SaveIcon className="h-4 w-4" />
+                      Save Draft
+                    </Button>
+                  )}
                 </div>
-              </Tabs>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Error Alert */}
-        {error && (
-          <Alert variant="destructive">
-            <AlertCircleIcon className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-
-        {/* Validation Summary */}
-        {validationResult && (
-          <Card>
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-xl">Validation Summary</CardTitle>
-                {hasUnsavedChanges && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={saveDraft}
-                    type="button"
-                  >
-                    <SaveIcon className="h-4 w-4" />
-                    Save Draft
-                  </Button>
+              </CardHeader>
+              <CardContent className="space-y-4 pt-0">
+                {validationResult.isValid ? (
+                  <Alert className="border-green-500/50 bg-green-500/5">
+                    <CheckCircle2Icon className="h-4 w-4 text-green-600" />
+                    <AlertTitle className="text-green-600">All Valid</AlertTitle>
+                    <AlertDescription className="text-green-600">
+                      All fields are valid. Ready to export.
+                    </AlertDescription>
+                  </Alert>
+                ) : (
+                  <Alert variant="destructive">
+                    <AlertCircleIcon className="h-4 w-4" />
+                    <AlertTitle>{validationResult.errors.length} Error{validationResult.errors.length !== 1 ? 's' : ''} Found</AlertTitle>
+                    <AlertDescription>
+                      <ul className="mt-2 space-y-1 list-disc list-inside">
+                        {validationResult.errors.slice(0, 10).map((error, index) => (
+                          <li key={index} className="text-sm">
+                            <strong>{error.field}</strong>: {error.message}
+                          </li>
+                        ))}
+                        {validationResult.errors.length > 10 && (
+                          <li className="text-sm">
+                            ... and {validationResult.errors.length - 10} more errors
+                          </li>
+                        )}
+                      </ul>
+                    </AlertDescription>
+                  </Alert>
                 )}
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4 pt-0">
-              {validationResult.isValid ? (
-                <Alert className="border-green-500/50 bg-green-500/5">
-                  <CheckCircle2Icon className="h-4 w-4 text-green-600" />
-                  <AlertTitle className="text-green-600">All Valid</AlertTitle>
-                  <AlertDescription className="text-green-600">
-                    All fields are valid. Ready to export.
-                  </AlertDescription>
-                </Alert>
-              ) : (
-                <Alert variant="destructive">
-                  <AlertCircleIcon className="h-4 w-4" />
-                  <AlertTitle>{validationResult.errors.length} Error{validationResult.errors.length !== 1 ? 's' : ''} Found</AlertTitle>
-                  <AlertDescription>
-                    <ul className="mt-2 space-y-1 list-disc list-inside">
-                      {validationResult.errors.slice(0, 10).map((error, index) => (
-                        <li key={index} className="text-sm">
-                          <strong>{error.field}</strong>: {error.message}
-                        </li>
-                      ))}
-                      {validationResult.errors.length > 10 && (
-                        <li className="text-sm">
-                          ... and {validationResult.errors.length - 10} more errors
-                        </li>
-                      )}
-                    </ul>
-                  </AlertDescription>
-                </Alert>
-              )}
-              {validationResult.warnings.length > 0 && (
-                <Alert className="border-yellow-500/50 bg-yellow-500/5">
-                  <AlertTriangleIcon className="h-4 w-4 text-yellow-600" />
-                  <AlertTitle className="text-yellow-600">
-                    {validationResult.warnings.length} Warning{validationResult.warnings.length !== 1 ? 's' : ''}
-                  </AlertTitle>
-                  <AlertDescription>
-                    <ul className="mt-2 space-y-1 list-disc list-inside text-yellow-600">
-                      {validationResult.warnings.slice(0, 5).map((warning, index) => (
-                        <li key={index} className="text-sm">
-                          <strong>{warning.field}</strong>: {warning.message}
-                        </li>
-                      ))}
-                      {validationResult.warnings.length > 5 && (
-                        <li className="text-sm">
-                          ... and {validationResult.warnings.length - 5} more warnings
-                        </li>
-                      )}
-                    </ul>
-                  </AlertDescription>
-                </Alert>
-              )}
-            </CardContent>
-          </Card>
-        )}
+                {validationResult.warnings.length > 0 && (
+                  <Alert className="border-yellow-500/50 bg-yellow-500/5">
+                    <AlertTriangleIcon className="h-4 w-4 text-yellow-600" />
+                    <AlertTitle className="text-yellow-600">
+                      {validationResult.warnings.length} Warning{validationResult.warnings.length !== 1 ? 's' : ''}
+                    </AlertTitle>
+                    <AlertDescription>
+                      <ul className="mt-2 space-y-1 list-disc list-inside text-yellow-600">
+                        {validationResult.warnings.slice(0, 5).map((warning, index) => (
+                          <li key={index} className="text-sm">
+                            <strong>{warning.field}</strong>: {warning.message}
+                          </li>
+                        ))}
+                        {validationResult.warnings.length > 5 && (
+                          <li className="text-sm">
+                            ... and {validationResult.warnings.length - 5} more warnings
+                          </li>
+                        )}
+                      </ul>
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
-        {campaigns.length > 0 && (
-          <CampaignPreviewTable 
-            previewData={transformCampaignToPreview(campaigns[parseInt(activeCampaignTab, 10)])}
-            campaign={campaigns[parseInt(activeCampaignTab, 10)]}
-          />
-        )}
+          {campaigns.length > 0 && (
+            <CampaignPreviewTable 
+              previewData={transformCampaignToPreview(campaigns[parseInt(activeCampaignTab, 10)])}
+              campaign={campaigns[parseInt(activeCampaignTab, 10)]}
+            />
+          )}
+        </div>
       </div>
     </div>
   );

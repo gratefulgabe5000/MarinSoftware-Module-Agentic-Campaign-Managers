@@ -1,4 +1,4 @@
-# Marin Dispatcher Integration - Workflow Diagram
+# Zilkr Dispatcher Integration - Workflow Diagram
 
 **Document Version**: 2.2
 **Created**: 2025-11-09
@@ -17,7 +17,7 @@
 - ✅ **0.1.3**: Verify Project Structure (VANES)
 - ✅ **0.2.1**: Install Required Dependencies (GABE) - Commit: eea4682
 - ✅ **0.2.2**: Setup Development Environment (VANES)
-- ✅ **1.1.1**: Create Marin Dispatcher Base Types (VANES) - Commit: 5a1ca65
+- ✅ **1.1.1**: Create Zilkr Dispatcher Base Types (VANES) - Commit: 5a1ca65
 - ✅ **1.1.2**: Create Ad Structure Type Definitions (VANES) - Commit: 65147ea
 - ✅ **1.1.3**: Create Batch Job Type Definitions (VANES) - Commit: 41fe9bf
 - ✅ **1.1.4**: Create Type Validation Utilities (VANES) - Commit: f2cfb06, PR #16
@@ -39,7 +39,7 @@
 - ✅ **2B.3.1**: Implement createKeyword Method (VANES) - Commit: d5a8f42
 - ✅ **2B.3.2**: Implement updateKeyword Method (VANES) - Commit: d5a8f42
 - ✅ **2B.4.1**: Create Ad Structure Tests (VANES) - All tests passing
-- ✅ **2C.1.1**: Create MarinBatchJobService Class Structure (GABE) - 10 tests passing
+- ✅ **2C.1.1**: Create ZilkrBatchJobService Class Structure (GABE) - 10 tests passing
 - ✅ **2C.2.1-2C.2.5**: Implement Batch Job Core Methods (GABE) - 34 tests passing
 - ✅ **2C.3.1-2C.3.2**: Implement Batch Job Orchestration (GABE) - 20 tests passing
 - ✅ **2.3.1**: Create Service Test File (GABE) - 8 validation tests passing
@@ -53,7 +53,7 @@
 - ✅ **2D.3.2**: Create Lambda Package Configuration (GABE) - All tests passing
 - ✅ **2D.4.1**: Create Lambda Client Tests (GABE) - Manual testing complete (33 verification tests passing)
 - ✅ **2D.4.2**: Create Lambda Handler Tests (GABE) - Manual testing complete (combined with 2D.4.1)
-- ✅ **3.1.1**: Register MarinDispatcherService in CampaignCreationService (GABE) - All tests passing (5 verification tests)
+- ✅ **3.1.1**: Register ZilkrDispatcherService in CampaignCreationService (GABE) - All tests passing (5 verification tests)
 - ✅ **3.1.2**: Verify Lambda Integration (GABE) - All tests passing (8 verification tests)
 - ✅ **3.2.1**: Create Integration Test (GABE) - All tests passing (10 verification tests)
 - ✅ **4.1.1**: API Connectivity Tests (GABE) - All tests passing (22 tests)
@@ -122,7 +122,7 @@
 - **Overall**: 60/100+ tasks complete (~60%)
 
 ### 🎯 Next Up
-- **GABE**: Phase 5.1.1 (JSDoc Comments) - ServiceMarinDispatcher, MarinBatchJobService, Lambda clients
+- **GABE**: Phase 5.1.1 (JSDoc Comments) - ServiceZilkrDispatcher, ZilkrBatchJobService, Lambda clients
 - **VANES**: Phase 5.1.1 (JSDoc Comments) - Code cleanup and documentation review
 =======
 - **Phase 5.2.1**: 1/1 task complete (100%) ✅
@@ -685,7 +685,7 @@ Phase 5: Documentation
 ### Recent Updates (2025-11-11)
 
 - ✅ **Task 5.1.2: Create API Documentation Complete** (VANES) - Complete
-  - Documentation file: `backend/docs/marin-dispatcher-integration.md` (1,714 lines, 43 KB)
+  - Documentation file: `backend/docs/zilkr-dispatcher-integration.md` (1,714 lines, 43 KB)
   - Completion date: 2025-11-11
   - All 12 documentation items complete:
     - ✅ API endpoints (InfraDocs format)
@@ -705,7 +705,7 @@ Phase 5: Documentation
 ### Phase 4 Testing - ALL COMPLETE ✅ (Previously listed updates)
 
 - ✅ **Task 4.4.3: Test Bulk Campaign Creation Complete** (GABE) - All 40+ tests passing
-  - Test file: `backend/src/__tests__/services/marinBatchJobService.test.ts` (2691 lines, 458+ total tests)
+  - Test file: `backend/src/__tests__/services/zilkrBatchJobService.test.ts` (2691 lines, 458+ total tests)
   - Comprehensive test suite with 41 test cases covering:
     - 10 campaigns: 2 tests (successful creation, reasonable completion time)
     - 100 campaigns: 3 tests (successful creation, single batch verification, sequenceToken handling)
@@ -719,7 +719,7 @@ Phase 5: Documentation
   - All 458+ tests passing successfully (npm run test - all suites pass)
 
 - ✅ **Task 4.4.2: Test Batch Job Operations Complete** (GABE) - All 24 tests passing
-  - Test file: `backend/src/__tests__/services/marinBatchJobService.test.ts`
+  - Test file: `backend/src/__tests__/services/zilkrBatchJobService.test.ts`
   - Coverage: All batch job operation methods tested comprehensively
     - `addOperationsToBatch()`: 7 tests (10 ops, 1000 ops, >1000 ops with sequenceToken, validation)
     - `runBatchJob()`: 3 tests (start job, status transitions, error handling)
@@ -735,18 +735,18 @@ Phase 5: Documentation
   - All tests passing (29 tests)
   - Test file: `backend/src/__tests__/routes/campaigns.rest-api.test.ts`
   - Documentation: `REST_API_TEST_RESULTS.md`
-  - Coverage includes campaign creation (Marin/Google Ads), update, pause/resume, delete, error handling, and key REST endpoints
+  - Coverage includes campaign creation (Zilkr/Google Ads), update, pause/resume, delete, error handling, and key REST endpoints
   - Validation: ID formats, multi-platform, partial success (207), service and API error propagation, authentication
   - Progress: 58/100+ tasks complete (~58%), 359+ tests passing
 
 - ✅ **Task 4.3.3: Keyword Operation Tests Complete**
   - All 18 tests passing (create/update/scenario/validation for keywords)
-  - Test file: `backend/src/__tests__/services/marinDispatcherService.test.ts`
+  - Test file: `backend/src/__tests__/services/zilkrDispatcherService.test.ts`
   - Includes creation, validation (text length, match type, CPC), update, verification, and error scenarios
 
 - ✅ **Task 4.3.2: Ad Operation Tests Complete**
   - All 46 tests passing (responsive search ads)
-  - Test file: `backend/src/__tests__/services/marinDispatcherService.adStructure.test.ts`
+  - Test file: `backend/src/__tests__/services/zilkrDispatcherService.adStructure.test.ts`
   - Includes integration, headline/description validation, update, error, and X-Ray tracing
 
 - ✅ Updated progress: 59/100+ tasks complete (~59%)
