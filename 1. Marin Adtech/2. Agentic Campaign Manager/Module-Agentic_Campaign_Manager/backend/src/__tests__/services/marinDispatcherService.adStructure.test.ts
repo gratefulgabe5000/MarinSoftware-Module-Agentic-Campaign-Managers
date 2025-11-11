@@ -897,6 +897,185 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
       expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
     });
+
+    // ========================================================================
+    // Task 4.3.2: Full Integration Test - Campaign → Ad Group → Ad
+    // ========================================================================
+
+    it('should create campaign, ad group, and ad in sequence', async () => {
+      // Step 1: Create a campaign
+      const mockCampaignResponse: any = {
+        id: 'campaign-integration-123',
+        accountId: 'test-account-123',
+        name: 'Integration Test Campaign',
+        status: 'SUCCESS',
+        campaignStatus: 'ENABLED',
+        budget: {
+          amount: 100.0,
+          deliveryMethod: 'STANDARD',
+        },
+        biddingStrategy: 'MANUAL_CPC',
+      };
+
+      // Step 2: Mock Ad Group Response
+      const mockAdGroupResponse: MarinAdGroupResponse = {
+        id: 'adgroup-integration-123',
+        accountId: 'test-account-123',
+        campaignId: 'campaign-integration-123',
+        name: 'Integration Test Ad Group',
+        adGroupStatus: 'ENABLED',
+        cpcBid: 2.0,
+        status: 'SUCCESS',
+      };
+
+      // Step 3: Mock Ad Response
+      const mockAdResponse: MarinAdResponse = {
+        id: 'ad-integration-123',
+        accountId: 'test-account-123',
+        adGroupId: 'adgroup-integration-123',
+        type: 'RESPONSIVE_SEARCH_AD',
+        headlines: [
+          { text: 'Best Product Ever' },
+          { text: 'Shop Now' },
+          { text: 'Limited Time Offer' },
+        ],
+        descriptions: [
+          { text: 'Get the best deals on our products today' },
+          { text: 'Free shipping on orders over $50' },
+        ],
+        finalUrl: 'https://www.example.com/products',
+        status: 'SUCCESS',
+      };
+
+      // Mock all three API calls
+      mockHttpClient.post
+        .mockResolvedValueOnce({ data: mockCampaignResponse })  // Campaign creation
+        .mockResolvedValueOnce({ data: mockAdGroupResponse })   // Ad Group creation
+        .mockResolvedValueOnce({ data: mockAdResponse });       // Ad creation
+
+      // Create campaign first
+      const campaignResult = await service.createCampaign(
+        {
+          objective: 'conversions',
+          budget: {
+            total: 100.0,
+            daily: 100.0,
+            currency: 'USD'
+          },
+          targetAudience: {
+            demographics: {
+              age: '25-54',
+              gender: 'All',
+              location: 'United States'
+            }
+          },
+          timeline: {
+            startDate: '2025-01-15',
+            endDate: '2025-02-15',
+            duration: 30
+          },
+          platforms: ['google'],
+          kpis: {
+            primary: 'conversions',
+            secondary: ['ctr', 'roas']
+          }
+        },
+        'Integration Test Campaign'
+      );
+
+      expect(campaignResult.success).toBe(true);
+      expect(campaignResult.campaignId).toBe('campaign-integration-123');
+
+      // Then create ad group in that campaign
+      const adGroupResult = await service.createAdGroup('campaign-integration-123', {
+        name: 'Integration Test Ad Group',
+        status: 'ENABLED',
+        cpcBid: 2.0,
+      });
+
+      expect(adGroupResult.success).toBe(true);
+      expect(adGroupResult.adGroupId).toBe('adgroup-integration-123');
+      expect(adGroupResult.details?.campaignId).toBe('campaign-integration-123');
+
+      // Finally create ad in that ad group
+      const adResult = await service.createAd('adgroup-integration-123', {
+        type: 'RESPONSIVE_SEARCH_AD',
+        headlines: [
+          { text: 'Best Product Ever' },
+          { text: 'Shop Now' },
+          { text: 'Limited Time Offer' },
+        ],
+        descriptions: [
+          { text: 'Get the best deals on our products today' },
+          { text: 'Free shipping on orders over $50' },
+        ],
+        finalUrl: 'https://www.example.com/products',
+      });
+
+      expect(adResult.success).toBe(true);
+      expect(adResult.adId).toBe('ad-integration-123');
+      expect(adResult.details?.adGroupId).toBe('adgroup-integration-123');
+
+      // Verify all three API calls were made in correct order
+      expect(mockHttpClient.post).toHaveBeenCalledTimes(3);
+
+      // Verify campaign creation call
+      expect(mockHttpClient.post).toHaveBeenNthCalledWith(
+        1,
+        '/dispatcher/google/campaigns',
+        expect.any(Object)
+      );
+
+      // Verify ad group creation call
+      expect(mockHttpClient.post).toHaveBeenNthCalledWith(
+        2,
+        '/dispatcher/google/campaigns/campaign-integration-123/adgroups',
+        expect.objectContaining({
+          campaignId: 'campaign-integration-123',
+          name: 'Integration Test Ad Group',
+        })
+      );
+
+      // Verify ad creation call with all validations
+      expect(mockHttpClient.post).toHaveBeenNthCalledWith(
+        3,
+        '/dispatcher/google/adgroups/adgroup-integration-123/ads',
+        expect.objectContaining({
+          accountId: 'test-account-123',
+          adGroupId: 'adgroup-integration-123',
+          type: 'RESPONSIVE_SEARCH_AD',
+          headlines: expect.arrayContaining([
+            expect.objectContaining({ text: 'Best Product Ever' }),
+            expect.objectContaining({ text: 'Shop Now' }),
+            expect.objectContaining({ text: 'Limited Time Offer' }),
+          ]),
+          descriptions: expect.arrayContaining([
+            expect.objectContaining({ text: 'Get the best deals on our products today' }),
+            expect.objectContaining({ text: 'Free shipping on orders over $50' }),
+          ]),
+          finalUrl: 'https://www.example.com/products',
+        })
+      );
+
+      // Verify headlines count (3-15 range)
+      expect(adResult.details?.headlines).toHaveLength(3);
+
+      // Verify descriptions count (2-4 range)
+      expect(adResult.details?.descriptions).toHaveLength(2);
+
+      // Verify headline character limits (max 30 chars)
+      adResult.details?.headlines?.forEach((headline: AdAsset) => {
+        expect(headline.text.length).toBeLessThanOrEqual(30);
+      });
+
+      // Verify description character limits (max 90 chars)
+      adResult.details?.descriptions?.forEach((description: AdAsset) => {
+        expect(description.text.length).toBeLessThanOrEqual(90);
+      });
+
+      // Verify finalUrl is set
+      expect(adResult.details?.finalUrl).toBe('https://www.example.com/products');
+    });
   });
 
   // ========================================================================
