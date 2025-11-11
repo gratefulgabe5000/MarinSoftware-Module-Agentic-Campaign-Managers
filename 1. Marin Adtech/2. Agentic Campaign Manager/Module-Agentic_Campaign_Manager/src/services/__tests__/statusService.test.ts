@@ -36,7 +36,7 @@ jest.mock('../statusService', () => {
     startMonitoring(
       campaignId: string,
       onStatusUpdate: (status: StatusUpdate) => void,
-      config?: any
+      _config?: any
     ): void {
       this.statusCallbacks.set(campaignId, onStatusUpdate);
       // Mock polling - just call callback immediately for testing

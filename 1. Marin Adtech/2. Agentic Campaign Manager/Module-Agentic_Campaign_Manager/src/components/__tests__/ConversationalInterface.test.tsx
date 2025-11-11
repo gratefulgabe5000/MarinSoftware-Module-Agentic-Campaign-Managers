@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, screen, waitFor, act, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import ConversationalInterface from '../ConversationalInterface';
@@ -43,12 +42,12 @@ describe('ConversationalInterface', () => {
     };
 
     // Mock the hook selector
-    (useConversationStore as any).mockImplementation((selector: any) => {
+    (useConversationStore as unknown as any).mockImplementation((selector: any) => {
       return selector ? selector(state) : state;
     });
 
     // Mock getState for direct store access
-    (useConversationStore as any).getState.mockReturnValue(state);
+    (useConversationStore as unknown as any).getState.mockReturnValue(state);
   });
 
   it('renders without crashing', () => {
@@ -80,7 +79,7 @@ describe('ConversationalInterface', () => {
   });
 
   it('hides example prompts when messages exist', () => {
-    (useConversationStore as jest.Mock).mockImplementation((selector) => {
+    (useConversationStore as unknown as jest.Mock).mockImplementation((selector) => {
       const state = {
         messages: [{ id: '1', role: 'user', content: 'Test', timestamp: new Date() }],
         isLoading: false,
@@ -104,7 +103,7 @@ describe('ConversationalInterface', () => {
   });
 
   it('displays error message when error exists', () => {
-    (useConversationStore as jest.Mock).mockImplementation((selector) => {
+    (useConversationStore as unknown as jest.Mock).mockImplementation((selector) => {
       const state = {
         messages: [],
         isLoading: false,

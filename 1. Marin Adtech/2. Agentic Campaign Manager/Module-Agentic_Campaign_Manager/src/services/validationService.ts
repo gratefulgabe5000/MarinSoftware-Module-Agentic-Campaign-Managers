@@ -121,7 +121,7 @@ export const validateUrl = (url: string): { valid: boolean; error?: string } => 
  * Validate campaign preview data
  */
 export const validateCampaignPreview = (
-  previewData: any,
+  _previewData: any,
   adGroups: any[]
 ): PreviewValidationResult => {
   const errors: ValidationError[] = [];

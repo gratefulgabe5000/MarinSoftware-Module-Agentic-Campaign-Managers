@@ -37,9 +37,6 @@ export class MetaAdsService extends BasePlatformAPI implements IPlatformAPI {
 
       const mockCampaignId = `meta-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-      console.log(`[Meta Ads] Creating campaign: ${name}`);
-      console.log(`[Meta Ads] Campaign plan:`, campaignPlan);
-
       return {
         success: true,
         campaignId: mockCampaignId,

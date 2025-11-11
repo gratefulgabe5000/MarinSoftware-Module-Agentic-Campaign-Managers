@@ -20,7 +20,7 @@ import { Loader2Icon, ArrowLeftIcon, AlertCircleIcon, ExternalLinkIcon } from 'l
 const CampaignDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [campaign, setCampaign] = useState<Campaign | null>(null);
+  const [campaign, setCampaign] = useState<Campaign | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -46,12 +46,7 @@ const CampaignDetail: React.FC = () => {
     return statusMap[status.toLowerCase()];
   };
 
-  // Log when campaign state changes
-  useEffect(() => {
-    console.log('=== CampaignDetail: campaign state changed ===');
-    console.log('Campaign:', campaign);
-    console.log('Campaign status:', campaign?.status);
-  }, [campaign]);
+  // Campaign state is synced through props and store
 
   useEffect(() => {
     const loadCampaign = async () => {
@@ -61,57 +56,37 @@ const CampaignDetail: React.FC = () => {
         return;
       }
 
-      console.log('=== CampaignDetail: Loading campaign ===');
-      console.log('Campaign ID:', id);
-      console.log('Store initialized?', isInitialized);
-
       try {
         setIsLoading(true);
         setError(null);
 
         // Make sure store is initialized from IndexedDB
         if (!isInitialized) {
-          console.log('Initializing campaign store from IndexedDB...');
           await initializeCampaigns();
-          console.log('Store initialized');
         }
 
         // Try to get from store first (which now includes IndexedDB data)
         let campaignData = getCampaignById(id);
-        console.log('Campaign from store:', campaignData);
 
         // If not in store, try current campaign
         if (!campaignData && currentCampaign?.id === id) {
           campaignData = currentCampaign;
-          console.log('Campaign from current campaign:', campaignData);
         }
 
         // If still not found, try to fetch from API
         if (!campaignData) {
-          console.log('Fetching campaign from API...');
           const apiResponse = await campaignService.getCampaign(id);
-          console.log('Campaign from API:', apiResponse);
 
           // Check if API returned a valid campaign (not just a "not implemented" message)
           if (apiResponse && apiResponse.status && apiResponse.campaignPlan) {
             campaignData = apiResponse;
           } else {
-            console.warn('API returned incomplete campaign data:', apiResponse);
             // If API returns null or incomplete data, campaign not found
-            campaignData = null;
+            campaignData = undefined;
           }
         }
 
-        console.log('=== Final Campaign Data ===');
-        console.log('Campaign:', JSON.stringify(campaignData, null, 2));
-        console.log('Campaign Status:', campaignData?.status);
-        console.log('Campaign Status Type:', typeof campaignData?.status);
-        console.log('Campaign Plan:', campaignData?.campaignPlan);
-        console.log('Platform Campaign IDs:', campaignData?.platformCampaignIds);
-        console.log('Mapped Status to Enum:', mapCampaignStatusToEnum(campaignData?.status));
-
-        setCampaign(campaignData || null);
-        console.log('Campaign state has been set');
+        setCampaign(campaignData);
       } catch (error) {
         console.error('Error loading campaign:', error);
         setError(error instanceof Error ? error.message : 'Failed to load campaign');
@@ -318,13 +293,7 @@ const CampaignDetail: React.FC = () => {
             <CampaignActions
               campaign={campaign}
               onUpdate={(updatedCampaign) => {
-                console.log('=== CampaignDetail: onUpdate callback received ===');
-                console.log('Updated campaign:', updatedCampaign);
-                console.log('Old campaign status:', campaign.status);
-                console.log('New campaign status:', updatedCampaign.status);
-                console.log('Mapped enum status:', mapCampaignStatusToEnum(updatedCampaign.status));
                 setCampaign(updatedCampaign);
-                console.log('Campaign state updated in CampaignDetail');
               }}
             />
           </CardContent>

@@ -6,9 +6,7 @@ import {
 } from '../types/adgroup-generation.types';
 
 const API_BASE_URL =
-  typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE_URL
-    ? import.meta.env.VITE_API_BASE_URL
-    : 'http://localhost:3001/api';
+  import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
 
 /**
  * Hook for ad group generation

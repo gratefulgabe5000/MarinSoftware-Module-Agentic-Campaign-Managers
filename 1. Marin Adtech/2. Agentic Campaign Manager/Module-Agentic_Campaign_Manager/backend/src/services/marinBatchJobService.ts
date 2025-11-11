@@ -73,7 +73,22 @@ export class MarinBatchJobService {
 
   /**
    * Create a new batch job
-   * @returns Batch job ID
+   *
+   * Creates an empty batch job that operations can be added to. The job must be
+   * created before adding operations. Operations can be added in chunks of up to
+   * 1000 per request.
+   *
+   * @returns Promise<{ batchJobId: string }> Unique batch job ID for subsequent operations
+   *
+   * @example
+   * ```typescript
+   * const service = new MarinBatchJobService();
+   * const { batchJobId } = await service.createBatchJob();
+   * console.log('Created batch job:', batchJobId);
+   * // Then add operations and run the job
+   * ```
+   *
+   * @error Throws error if API returns non-201 status or if request fails
    */
   async createBatchJob(): Promise<{ batchJobId: string }> {
     const segment = AWSXRay.getSegment();
@@ -158,7 +173,24 @@ export class MarinBatchJobService {
 
   /**
    * Run a batch job (start execution)
-   * @param batchJobId - The batch job ID
+   *
+   * Starts the execution of a batch job. All operations must be added before
+   * calling this method. Once started, the job will process operations asynchronously.
+   * Use pollBatchJobStatus to monitor completion.
+   *
+   * @param batchJobId - The batch job ID to run (required)
+   * @returns Promise<void> Resolves when job execution has started
+   *
+   * @example
+   * ```typescript
+   * const batchJobId = '...';
+   * await service.runBatchJob(batchJobId);
+   * console.log('Batch job started, polling status...');
+   * const status = await service.pollBatchJobStatus(batchJobId);
+   * ```
+   *
+   * @error Throws error if batchJobId is empty or invalid
+   * @error Throws error if API request fails (network error, etc.)
    */
   async runBatchJob(batchJobId: string): Promise<void> {
     const segment = AWSXRay.getSegment();

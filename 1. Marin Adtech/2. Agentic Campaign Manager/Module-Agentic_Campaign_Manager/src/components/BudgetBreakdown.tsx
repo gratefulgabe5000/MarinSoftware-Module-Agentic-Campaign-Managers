@@ -1,4 +1,3 @@
-import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { CampaignPlan } from '../types/ai.types';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
@@ -19,7 +18,7 @@ const BudgetBreakdown: React.FC<BudgetBreakdownProps> = ({ campaignPlan }) => {
   const { budget, platforms } = campaignPlan;
 
   // Prepare data for pie chart (platform distribution)
-  const platformData = platforms.map((platform, index) => ({
+  const platformData = platforms.map((platform) => ({
     name: platform,
     value: Math.round(budget.total / platforms.length), // Even distribution for MVP
     color: getPlatformColor(platform),
@@ -58,8 +57,8 @@ const BudgetBreakdown: React.FC<BudgetBreakdownProps> = ({ campaignPlan }) => {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, percent }) =>
-                    `${name}: ${(percent * 100).toFixed(0)}%`
+                  label={(entry: any) =>
+                    `${entry.name}: ${Math.round((entry.value / platformData.reduce((sum, p) => sum + p.value, 0)) * 100)}%`
                   }
                   outerRadius={80}
                   fill="#8884d8"

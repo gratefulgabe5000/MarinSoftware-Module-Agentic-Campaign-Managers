@@ -8,7 +8,6 @@ import {
   HighPerformingKeyword,
   AdGroupStructures,
   AdCopyPatterns,
-  BiddingPatterns,
 } from '../types/campaign-patterns.types';
 import { ProductInput } from '../types/product.types';
 
@@ -29,8 +28,8 @@ function matchesProduct(text: string, product: ProductInput): boolean {
   // Check if any product term appears in the text
   return productTerms.some((term) => searchText.includes(term)) ||
     searchText.includes(productName) ||
-    (productCategory && searchText.includes(productCategory)) ||
-    (productDescription && productDescription.includes(searchText));
+    (productCategory.length > 0 && searchText.includes(productCategory)) ||
+    (productDescription.length > 0 && searchText.includes(productDescription));
 }
 
 /**

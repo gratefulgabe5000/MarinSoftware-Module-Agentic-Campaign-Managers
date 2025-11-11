@@ -1,9 +1,7 @@
 import React, { useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import ExamplePrompts from './ExamplePrompts';
-import CampaignPlanActions from './CampaignPlanActions';
 import { Message } from '../types/message.types';
 import { useConversationStore } from '../store/conversationStore';
 import { useCampaignStore } from '../store/campaignStore';
@@ -26,7 +24,6 @@ const ConversationalInterface: React.FC = () => {
   const clearConversation = useConversationStore((state) => state.clearConversation);
   const setMessages = useConversationStore((state) => state.setMessages);
   const setCampaignPlan = useCampaignStore((state) => state.setCampaignPlan);
-  const navigate = useNavigate();
 
   const [showExamples, setShowExamples] = React.useState(true);
 

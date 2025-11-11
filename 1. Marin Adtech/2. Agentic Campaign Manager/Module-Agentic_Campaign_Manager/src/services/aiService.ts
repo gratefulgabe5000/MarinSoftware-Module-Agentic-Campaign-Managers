@@ -2,7 +2,6 @@ import axios from 'axios';
 import {
   GoalUnderstandingRequest,
   GoalUnderstandingResponse,
-  CampaignPlan,
 } from '../types/ai.types';
 import { getApiBaseUrl } from '../config/environment';
 
@@ -101,42 +100,6 @@ class AIService {
     }
   }
 
-  /**
-   * Retry logic with exponential backoff
-   */
-  private async retryWithBackoff<T>(
-    fn: () => Promise<T>,
-    maxRetries: number = 3,
-    initialDelay: number = 1000
-  ): Promise<T> {
-    let lastError: Error | null = null;
-
-    for (let attempt = 0; attempt < maxRetries; attempt++) {
-      try {
-        return await fn();
-      } catch (error) {
-        lastError = error instanceof Error ? error : new Error('Unknown error');
-
-        // Don't retry on client errors (4xx)
-        if (
-          axios.isAxiosError(error) &&
-          error.response &&
-          error.response.status >= 400 &&
-          error.response.status < 500
-        ) {
-          throw error;
-        }
-
-        // Wait before retrying (exponential backoff)
-        if (attempt < maxRetries - 1) {
-          const delay = initialDelay * Math.pow(2, attempt);
-          await new Promise((resolve) => setTimeout(resolve, delay));
-        }
-      }
-    }
-
-    throw lastError || new Error('Max retries exceeded');
-  }
 }
 
 // Export singleton instance

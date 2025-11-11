@@ -70,7 +70,7 @@ describe('IndexedDB Performance Caching', () => {
     }) as any;
 
     // Mock indexedDB.open to return a promise-like request
-    (global.indexedDB.open as jest.Mock).mockImplementation((name, version) => {
+    (global.indexedDB.open as jest.Mock).mockImplementation((_name, _version) => {
       const request = {
         onsuccess: null as any,
         onerror: null as any,

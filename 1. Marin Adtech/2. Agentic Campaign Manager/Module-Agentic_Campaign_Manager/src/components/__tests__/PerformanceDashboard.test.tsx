@@ -1,9 +1,7 @@
-import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import PerformanceDashboard from '../PerformanceDashboard';
 import { performanceService } from '../../services/performanceService';
-import { syncQueue } from '../../utils/syncQueue';
 
 // Mock react-router-dom
 jest.mock('react-router-dom', () => ({
@@ -19,16 +17,9 @@ jest.mock('../../services/performanceService', () => ({
   },
 }));
 
-// Mock sync queue
-jest.mock('../../utils/syncQueue', () => ({
-  syncQueue: {
-    addConnectionListener: jest.fn(() => jest.fn()),
-  },
-}));
-
 // Mock child components
 jest.mock('../MetricsSummaryCards', () => {
-  return function MockMetricsSummaryCards(props: any) {
+  return function MockMetricsSummaryCards(_props: any) {
     return <div data-testid="metrics-summary-cards">Metrics Summary Cards</div>;
   };
 });
@@ -46,19 +37,19 @@ jest.mock('../TimeRangeSelector', () => {
 });
 
 jest.mock('../PerformanceCharts', () => {
-  return function MockPerformanceCharts(props: any) {
+  return function MockPerformanceCharts(_props: any) {
     return <div data-testid="performance-charts">Performance Charts</div>;
   };
 });
 
 jest.mock('../PerformanceVsGoals', () => {
-  return function MockPerformanceVsGoals(props: any) {
+  return function MockPerformanceVsGoals(_props: any) {
     return <div data-testid="performance-vs-goals">Performance vs Goals</div>;
   };
 });
 
 jest.mock('../ExportButton', () => {
-  return function MockExportButton(props: any) {
+  return function MockExportButton(_props: any) {
     return <div data-testid="export-button">Export Button</div>;
   };
 });

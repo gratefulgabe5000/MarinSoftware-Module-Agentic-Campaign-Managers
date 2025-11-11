@@ -25,7 +25,6 @@ const CampaignDashboard: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<CampaignStatus | 'all'>('all');
 
   const storeCampaigns = useCampaignStore((state) => state.campaigns);
-  const setCampaignsStore = useCampaignStore((state) => state.setCampaigns);
   const removeCampaign = useCampaignStore((state) => state.removeCampaign);
   const updateCampaignStore = useCampaignStore((state) => state.updateCampaign);
   const initializeCampaigns = useCampaignStore((state) => state.initializeCampaigns);
@@ -44,18 +43,13 @@ const CampaignDashboard: React.FC = () => {
 
   const loadCampaigns = async () => {
     try {
-      console.log('=== CampaignDashboard: Loading campaigns ===');
       setIsLoading(true);
       setError(null);
 
       // Initialize campaigns from IndexedDB if not already done
       if (!isInitialized) {
-        console.log('Initializing campaigns from IndexedDB...');
         await initializeCampaigns();
       }
-
-      console.log('Campaigns from store:', storeCampaigns);
-      console.log('Campaign count:', storeCampaigns.length);
 
       // Campaigns are now loaded from IndexedDB into the store
       // The useEffect above will sync them to local state
@@ -97,24 +91,18 @@ const CampaignDashboard: React.FC = () => {
    * Sync campaign statuses with backend
    */
   const syncCampaignStatuses = async () => {
-    console.log('=== Syncing campaign statuses ===');
     // Get all campaigns from store
     const campaignsToSync = storeCampaigns;
-    console.log('Campaigns to sync:', campaignsToSync.length);
 
     // Fetch status for each campaign
     for (const campaign of campaignsToSync) {
       try {
-        console.log(`Fetching status for campaign ${campaign.id} (${campaign.name})...`);
         const statusUpdate = await statusService.getCampaignStatus(campaign.id);
-        console.log(`Status update for ${campaign.id}:`, statusUpdate);
 
         const campaignStatus = mapStatusToCampaignStatus(statusUpdate.status);
-        console.log(`Current status: ${campaign.status}, New status: ${campaignStatus}`);
 
         // Only update if status has changed
         if (campaign.status !== campaignStatus) {
-          console.log(`Updating campaign ${campaign.id} status from ${campaign.status} to ${campaignStatus}`);
           updateCampaignStore(campaign.id, { status: campaignStatus });
         }
       } catch (error) {
@@ -122,7 +110,6 @@ const CampaignDashboard: React.FC = () => {
         // Continue with other campaigns even if one fails
       }
     }
-    console.log('=== Finished syncing campaign statuses ===');
   };
 
   const getStatusVariant = (status: string): 'default' | 'secondary' | 'destructive' | 'outline' => {

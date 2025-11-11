@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { CampaignPlan } from '../types/ai.types';
-import { useCampaignStore } from '../store/campaignStore';
 import { toastService } from '../utils/toastService';
 
 /**
@@ -305,11 +304,11 @@ const CampaignPlanEditor: React.FC<CampaignPlanEditorProps> = ({
               type="text"
               className="editor-input"
               value={
-                editedPlan.targetAudience.psychographics?.interests?.join(', ') || ''
+                editedPlan.targetAudience.demographics?.interests?.join(', ') || ''
               }
               onChange={(e) =>
                 updateNestedField(
-                  ['targetAudience', 'psychographics', 'interests'],
+                  ['targetAudience', 'demographics', 'interests'],
                   e.target.value
                     .split(',')
                     .map((s) => s.trim())

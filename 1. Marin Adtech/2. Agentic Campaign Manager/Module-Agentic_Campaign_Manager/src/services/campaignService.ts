@@ -5,7 +5,6 @@ import {
   Campaign,
   CampaignUpdateRequest,
 } from '../types/campaign.types';
-import { CampaignPlan } from '../types/ai.types';
 import { getApiBaseUrl } from '../config/environment';
 
 const API_BASE_URL = getApiBaseUrl();
@@ -60,22 +59,12 @@ class CampaignService {
    */
   async createCampaignWithProgress(
     request: CampaignCreationRequest,
-    onProgress?: (progress: any) => void
+    _onProgress?: (progress: any) => void
   ): Promise<CampaignCreationResponse> {
-    return new Promise((resolve, reject) => {
-      const eventSource = new EventSource(
-        `${this.baseURL}/campaigns/create-with-progress`,
-        {
-          // Note: EventSource doesn't support POST, so we'll use polling instead for MVP
-        }
-      );
-
-      // For MVP, use regular POST with timeout
-      // In production, implement WebSocket or SSE properly
-      this.createCampaign(request)
-        .then(resolve)
-        .catch(reject);
-    });
+    // For MVP, use regular POST with timeout
+    // In production, implement WebSocket or SSE properly
+    // Note: EventSource doesn't support POST, so we'll use polling instead for MVP
+    return this.createCampaign(request);
   }
 
   /**
