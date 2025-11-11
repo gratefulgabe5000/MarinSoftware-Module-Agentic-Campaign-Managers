@@ -2337,16 +2337,17 @@ This document provides a granular, step-by-step task list for implementing the M
   - Network timeout
 - [ ] Document test results
 
-#### Task 4.2.2: Test Campaign Query Operations
-**Assigned to**: VANES  
+#### Task 4.2.2: Test Campaign Query Operations ✅ COMPLETE
+**Assigned to**: VANES
 **Dependencies**: Task 4.2.1
+**Status**: ✅ All tests passing (15 tests)
 
-- [ ] Test `queryCampaigns()` method (if implemented)
-- [ ] Verify campaign list is returned
-- [ ] Test with limit parameter
-- [ ] Test with offset parameter
-- [ ] Test error scenarios
-- [ ] Document test results
+- [x] Test `queryCampaigns()` method (implemented)
+- [x] Verify campaign list is returned
+- [x] Test with limit parameter
+- [x] Test with offset parameter
+- [x] Test error scenarios (network, API, timeout, 404, 500)
+- [x] Document test results (15 tests passing)
 
 ### Subphase 4.3: Ad Structure Tests (1 hour)
 
