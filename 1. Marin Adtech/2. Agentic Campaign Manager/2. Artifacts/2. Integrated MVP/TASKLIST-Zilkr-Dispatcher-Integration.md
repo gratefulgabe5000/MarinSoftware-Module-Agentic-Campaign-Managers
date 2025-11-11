@@ -1,4 +1,4 @@
-# Task List: Marin Dispatcher Integration Implementation
+# Task List: Zilkr Dispatcher Integration Implementation
 
 **Document Version**: 3.1
 **Created**: 2025-11-09
@@ -6,7 +6,7 @@
 **Updated**: Phase 4 progress - Task 4.4.2: Batch Job Operations complete (55 tasks total, 309+ tests passing)
 **Rebranding**: 2025-11-11 - Complete rebranding from Marin to Zilkr across entire codebase  
 **Project Timeline**: 2-3 days for full implementation  
-**Target**: Complete Marin Dispatcher API integration into Agentic Campaign Manager  
+**Target**: Complete Zilkr Dispatcher API integration into Agentic Campaign Manager  
 **Framework**: TypeScript + Node.js + Express  
 **Integration**: Feature addition to Agentic Campaign Manager Module  
 **Collaborators**: GABE, VANES (working in parallel)
@@ -21,7 +21,7 @@
 - ✅ **Task 0.1.3**: Verify Project Structure
 - ✅ **Task 0.2.1**: Install Required Dependencies (Commit: eea4682)
 - ✅ **Task 0.2.2**: Setup Development Environment
-- ✅ **Task 1.1.1**: Create Marin Dispatcher Base Types (Commit: 5a1ca65)
+- ✅ **Task 1.1.1**: Create Zilkr Dispatcher Base Types (Commit: 5a1ca65)
 - ✅ **Task 1.1.2**: Create Ad Structure Type Definitions (Commit: 65147ea)
 - ✅ **Task 1.1.3**: Create Batch Job Type Definitions (Commit: 41fe9bf)
 - ✅ **Task 1.1.4**: Create Type Validation Utilities (Commit: f2cfb06, PR #16)
@@ -29,7 +29,7 @@
 - ✅ **Task 1.2.2**: Verify IPlatformAPI Interface
 - ✅ **Task 1.3.1**: Create Type Definition Tests (46 tests passing)
 - ✅ **Task 1.3.2**: Create Type Validator Tests (35 tests passing)
-- ✅ **Task 2.1.1**: Create MarinDispatcherService Class Structure (Commit: b471ed0)
+- ✅ **Task 2.1.1**: Create ZilkrDispatcherService Class Structure (Commit: b471ed0)
 - ✅ **Task 2.1.2**: Implement isAuthenticated Method (Commit: b471ed0)
 - ✅ **Task 2.2.1**: Implement createCampaign Method (Commit: pending)
 - ✅ **Task 2.2.2**: Implement updateCampaign Method (Commit: pending)
@@ -45,7 +45,7 @@
 - ✅ **Task 2B.3.1**: Implement createKeywords Method (Commit: d5a8f42)
 - ✅ **Task 2B.3.2**: Implement updateKeywords Method (Commit: d5a8f42)
 - ✅ **Task 2B.4.1**: Create Ad Structure Test File - All tests passing
-- ✅ **Task 2C.1.1**: Create MarinBatchJobService Class Structure (Commit: pending)
+- ✅ **Task 2C.1.1**: Create ZilkrBatchJobService Class Structure (Commit: pending)
 - ✅ **Task 2C.2.1**: Implement createBatchJob Method (Commit: pending)
 - ✅ **Task 2C.2.2**: Implement addOperationsToBatch Method (Commit: pending)
 - ✅ **Task 2C.2.3**: Implement runBatchJob Method (Commit: pending)
@@ -64,7 +64,7 @@
 - ✅ **Task 2D.3.2**: Create Lambda Package Configuration (GABE) - All tests passing
 - ✅ **Task 2D.4.1**: Create Lambda Client Tests (GABE) - Manual testing complete (33 verification tests passing)
 - ✅ **Task 2D.4.2**: Create Lambda Handler Tests (GABE) - Manual testing complete (combined with 2D.4.1)
-- ✅ **Task 3.1.1**: Register MarinDispatcherService in CampaignCreationService (GABE) - All tests passing (5 verification tests)
+- ✅ **Task 3.1.1**: Register ZilkrDispatcherService in CampaignCreationService (GABE) - All tests passing (5 verification tests)
 - ✅ **Task 3.1.2**: Verify Lambda Integration (GABE) - All tests passing (8 verification tests)
 - ✅ **Task 3.2.1**: Create Integration Test (GABE) - All tests passing (10 verification tests)
 - ✅ **Task 4.1.1**: Test API Connectivity (GABE) - All tests passing (22 connectivity tests)
@@ -73,7 +73,7 @@
 - ✅ **Task 4.2.2**: Test Campaign Query Operations (GABE) - All tests passing (15 query tests)
 - ✅ **Task 4.4.1**: Test Batch Job Creation (GABE) - All tests passing (18 creation tests)
 - ✅ **Task 4.4.2**: Test Batch Job Operations (GABE) - All tests passing (24 operation tests)
-- ✅ **Task 6.1.1**: Rebranding - Marin to Zilkr (GABE) - Complete (2025-11-11)
+- ✅ **Task 6.1.1**: Rebranding - Zilkr to Zilkr (GABE) - Complete (2025-11-11)
   - ✅ Backend services, types, controllers, routes
   - ✅ Frontend components and services
   - ✅ Lambda/example files
@@ -135,7 +135,7 @@
 - **Completed**: 57 tasks
 - **Total Tasks**: 100+ tasks
 - **Tests Passing**: 309+ tests (across all modules)
-- **Files Created**: 35 (.env.example, marinDispatcher.types.ts, marinTypeValidators.ts, marinDispatcherService.ts, marinBatchJobService.ts, lambda.types.ts, marinDispatcherClient.ts, marinBatchJobClient.ts, campaign-mgmt-handler.js, bulk-worker-handler.js, TEST-2.2-Manual-Instructions.md, TEST-2.3-AND-2C.4-Manual-Instructions.md, TEST-2D.4-Manual-Instructions.md, PHASE-2.2-TEST-RESULTS.md, PHASE-2C.1-TEST-RESULTS.md, PHASE-2C.2-TEST-RESULTS.md, PHASE-2C.3-TEST-RESULTS.md, PHASE-2.3-AND-2C.4-TEST-RESULTS.md, test-phase2d.4-verification.js, TEST-3.1.1-Manual-Instructions.md, test-3.1.1-service-registration.js, PHASE-3.1.1-TEST-RESULTS.md, test-3.1.2-lambda-integration.js, PHASE-3.1.2-TEST-RESULTS.md, test-3.2.1-integration.js, marinIntegration.test.ts, PHASE-3.2.1-TEST-RESULTS.md, marinDispatcherService.adStructure.test.ts, marinDispatcherService.connectivity.test.ts, test-marin-connectivity.ts, marin-dispatcher-connectivity.md, marinDispatcherService.crud.test.ts, PHASE-4.2.1-CAMPAIGN-CRUD-TEST-RESULTS.md, Lambda deployment structure files)
+- **Files Created**: 35 (.env.example, zilkrDispatcher.types.ts, zilkrTypeValidators.ts, zilkrDispatcherService.ts, zilkrBatchJobService.ts, lambda.types.ts, zilkrDispatcherClient.ts, zilkrBatchJobClient.ts, campaign-mgmt-handler.js, bulk-worker-handler.js, TEST-2.2-Manual-Instructions.md, TEST-2.3-AND-2C.4-Manual-Instructions.md, TEST-2D.4-Manual-Instructions.md, PHASE-2.2-TEST-RESULTS.md, PHASE-2C.1-TEST-RESULTS.md, PHASE-2C.2-TEST-RESULTS.md, PHASE-2C.3-TEST-RESULTS.md, PHASE-2.3-AND-2C.4-TEST-RESULTS.md, test-phase2d.4-verification.js, TEST-3.1.1-Manual-Instructions.md, test-3.1.1-service-registration.js, PHASE-3.1.1-TEST-RESULTS.md, test-3.1.2-lambda-integration.js, PHASE-3.1.2-TEST-RESULTS.md, test-3.2.1-integration.js, zilkrIntegration.test.ts, PHASE-3.2.1-TEST-RESULTS.md, zilkrDispatcherService.adStructure.test.ts, zilkrDispatcherService.connectivity.test.ts, test-zilkr-connectivity.ts, zilkr-dispatcher-connectivity.md, zilkrDispatcherService.crud.test.ts, PHASE-4.2.1-CAMPAIGN-CRUD-TEST-RESULTS.md, Lambda deployment structure files)
 - **Files Modified**: 6 (env.ts, package.json, campaign.types.ts, campaignCreationController.ts, campaignCreationService.ts, package.json)
 - **Lines of Code**: 7,500+ lines (38 config + 601 types + 376 validation utils + 800+ dispatcher service with ad structure methods + 365+ batch job service + 200+ lambda types + 300+ lambda clients + 400+ handler examples + 685 validator tests + 10 env vars + 8 interface updates + 800+ manual test instructions + 400+ combined test instructions + 500+ lambda integration tests + 400+ ad structure tests + 470+ connectivity tests + 350+ manual connectivity script + 250+ connectivity docs + 680+ CRUD tests + 200+ CRUD docs)
 - **Dependencies Installed**: aws-xray-sdk-core, axios (already present)
@@ -145,7 +145,7 @@
 
 ## Overview
 
-This document provides a granular, step-by-step task list for implementing the Marin Dispatcher API integration. Tasks are organized into phases matching the PRD structure. Each phase includes backend implementation, type definitions, integration, and testing tasks.
+This document provides a granular, step-by-step task list for implementing the Zilkr Dispatcher API integration. Tasks are organized into phases matching the PRD structure. Each phase includes backend implementation, type definitions, integration, and testing tasks.
 
 **Workflow Rules**:
 - Complete all tasks in a subphase before proceeding
@@ -182,15 +182,15 @@ This document provides a granular, step-by-step task list for implementing the M
 
 - [x] Navigate to `backend/` directory
 - [x] Open `.env` file (create if not exists)
-- [x] Add Marin Dispatcher configuration variables (for local development only):
+- [x] Add Zilkr Dispatcher configuration variables (for local development only):
   ```
-  # Marin Dispatcher Configuration (Local Development Only)
+  # Zilkr Dispatcher Configuration (Local Development Only)
   # In Lambda, DISPATCHER_URL is set by CloudFormation from MeridianDispatcherUrl-${Environment}
   # For local dev, you can set a local Dispatcher URL or use the actual ALB URL
-  MARIN_DISPATCHER_BASE_URL=http://localhost:3000  # Local dev only
-  MARIN_DISPATCHER_ACCOUNT_ID=5533110357
-  MARIN_DISPATCHER_PUBLISHER=google
-  MARIN_DISPATCHER_TIMEOUT=10000
+  ZILKR_DISPATCHER_BASE_URL=http://localhost:3000  # Local dev only
+  ZILKR_DISPATCHER_ACCOUNT_ID=5533110357
+  ZILKR_DISPATCHER_PUBLISHER=google
+  ZILKR_DISPATCHER_TIMEOUT=10000
 
   # Note: In Lambda deployment, DISPATCHER_URL is automatically set by template-service.yaml
   # DISPATCHER_URL is imported from CloudFormation export: MeridianDispatcherUrl-${Environment}
@@ -207,19 +207,19 @@ This document provides a granular, step-by-step task list for implementing the M
 
 - [x] Navigate to `backend/src/config/` directory
 - [x] Open `env.ts` file
-- [x] Add Marin Dispatcher configuration section:
+- [x] Add Zilkr Dispatcher configuration section:
   ```typescript
-  marinDispatcher: {
+  zilkrDispatcher: {
     // Use DISPATCHER_URL from environment (InfraDocs pattern - set by CloudFormation in Lambda)
-    // Fallback to MARIN_DISPATCHER_BASE_URL for local development
-    baseUrl: process.env.DISPATCHER_URL || process.env.MARIN_DISPATCHER_BASE_URL || '',
-    accountId: process.env.MARIN_DISPATCHER_ACCOUNT_ID || '',
-    publisher: process.env.MARIN_DISPATCHER_PUBLISHER || 'google',
-    timeout: parseInt(process.env.MARIN_DISPATCHER_TIMEOUT || '10000'),
+    // Fallback to ZILKR_DISPATCHER_BASE_URL for local development
+    baseUrl: process.env.DISPATCHER_URL || process.env.ZILKR_DISPATCHER_BASE_URL || '',
+    accountId: process.env.ZILKR_DISPATCHER_ACCOUNT_ID || '',
+    publisher: process.env.ZILKR_DISPATCHER_PUBLISHER || 'google',
+    timeout: parseInt(process.env.ZILKR_DISPATCHER_TIMEOUT || '10000'),
   },
   ```
-- [x] Export marinDispatcher config
-- [x] Add TypeScript types for config structure (MarinDispatcherConfig interface)
+- [x] Export zilkrDispatcher config
+- [x] Add TypeScript types for config structure (ZilkrDispatcherConfig interface)
 - [x] Add validation for required environment variables
 - [x] Add error handling for missing config
 - [x] **Note:** `DISPATCHER_URL` is set by CloudFormation in Lambda (from `MeridianDispatcherUrl-${Environment}`)
@@ -244,8 +244,8 @@ This document provides a granular, step-by-step task list for implementing the M
   - `backend/src/types/campaign.types.ts`
   - `backend/src/types/ai.types.ts`
 - [ ] Create directory structure for new files:
-  - `backend/src/services/` (for marinDispatcherService.ts, marinBatchJobService.ts)
-  - `backend/src/types/` (for marinDispatcher.types.ts)
+  - `backend/src/services/` (for zilkrDispatcherService.ts, zilkrBatchJobService.ts)
+  - `backend/src/types/` (for zilkrDispatcher.types.ts)
 - [ ] Verify `package.json` exists in `backend/` directory
 - [ ] Verify `tsconfig.json` exists in `backend/` directory
 
@@ -277,7 +277,7 @@ This document provides a granular, step-by-step task list for implementing the M
 - [ ] Check for any build errors
 - [ ] Verify test framework is configured: `npm test`
 - [ ] Create test data fixtures directory: `backend/src/__tests__/fixtures/`
-- [ ] Create mock Marin API responses in fixtures directory
+- [ ] Create mock Zilkr API responses in fixtures directory
 
 ---
 
@@ -285,19 +285,19 @@ This document provides a granular, step-by-step task list for implementing the M
 
 ### Subphase 1.1: Core Type Definitions (1.5 hours)
 
-#### Task 1.1.1: Create Marin Dispatcher Base Types ✅ COMPLETED
+#### Task 1.1.1: Create Zilkr Dispatcher Base Types ✅ COMPLETED
 **Assigned to**: VANES
 **Dependencies**: Subphase 0.1 complete
 **Status**: ✅ Completed - Commit 5a1ca65
 
-- [x] Create `backend/src/types/marinDispatcher.types.ts` file
+- [x] Create `backend/src/types/zilkrDispatcher.types.ts` file
 - [x] Add base request/response types:
   ```typescript
-  export interface MarinBaseRequest {
+  export interface ZilkrBaseRequest {
     accountId: string;
   }
 
-  export interface MarinBaseResponse {
+  export interface ZilkrBaseResponse {
     resourceId?: string;
     status: 'SUCCESS' | 'FAILURE';
     errors?: string[];
@@ -306,7 +306,7 @@ This document provides a granular, step-by-step task list for implementing the M
   ```
 - [x] Add campaign request/response types:
   ```typescript
-  export interface MarinCampaignRequest {
+  export interface ZilkrCampaignRequest {
     accountId: string;
     name: string;
     status: 'ENABLED' | 'PAUSED' | 'REMOVED';
@@ -318,7 +318,7 @@ This document provides a granular, step-by-step task list for implementing the M
     objective?: string;  // For Meta campaigns
   }
 
-  export interface MarinCampaignResponse extends MarinBaseResponse {
+  export interface ZilkrCampaignResponse extends ZilkrBaseResponse {
     id: string;
     accountId: string;
     name: string;
@@ -334,7 +334,7 @@ This document provides a granular, step-by-step task list for implementing the M
   ```
 - [x] Add campaign update types:
   ```typescript
-  export interface MarinCampaignUpdateRequest {
+  export interface ZilkrCampaignUpdateRequest {
     name?: string;
     status?: 'ENABLED' | 'PAUSED' | 'REMOVED';
     budget?: {
@@ -346,14 +346,14 @@ This document provides a granular, step-by-step task list for implementing the M
   ```
 - [x] Add campaign list/query types:
   ```typescript
-  export interface MarinCampaignListRequest {
+  export interface ZilkrCampaignListRequest {
     accountId: string;
     limit?: number;
     offset?: number;
   }
 
-  export interface MarinCampaignListResponse {
-    campaigns: MarinCampaignResponse[];
+  export interface ZilkrCampaignListResponse {
+    campaigns: ZilkrCampaignResponse[];
     total: number;
     limit: number;
     offset: number;
@@ -368,10 +368,10 @@ This document provides a granular, step-by-step task list for implementing the M
 **Dependencies**: Task 1.1.1
 **Status**: ✅ Completed - Commit 65147ea
 
-- [x] Open `backend/src/types/marinDispatcher.types.ts` file
+- [x] Open `backend/src/types/zilkrDispatcher.types.ts` file
 - [x] Add ad group types:
   ```typescript
-  export interface MarinAdGroupRequest {
+  export interface ZilkrAdGroupRequest {
     accountId: string;
     campaignId: string;
     name: string;
@@ -380,7 +380,7 @@ This document provides a granular, step-by-step task list for implementing the M
     cpmBid?: number;
   }
 
-  export interface MarinAdGroupResponse extends MarinBaseResponse {
+  export interface ZilkrAdGroupResponse extends ZilkrBaseResponse {
     id: string;
     accountId: string;
     campaignId: string;
@@ -390,7 +390,7 @@ This document provides a granular, step-by-step task list for implementing the M
     cpmBid?: number;
   }
 
-  export interface MarinAdGroupUpdateRequest {
+  export interface ZilkrAdGroupUpdateRequest {
     name?: string;
     status?: 'ENABLED' | 'PAUSED' | 'REMOVED';
     cpcBid?: number;
@@ -399,7 +399,7 @@ This document provides a granular, step-by-step task list for implementing the M
   ```
 - [x] Add ad types:
   ```typescript
-  export interface MarinAdRequest {
+  export interface ZilkrAdRequest {
     accountId: string;
     adGroupId: string;
     type: 'RESPONSIVE_SEARCH_AD';
@@ -415,7 +415,7 @@ This document provides a granular, step-by-step task list for implementing the M
     paths?: string[];
   }
 
-  export interface MarinAdResponse extends MarinBaseResponse {
+  export interface ZilkrAdResponse extends ZilkrBaseResponse {
     id: string;
     accountId: string;
     adGroupId: string;
@@ -427,7 +427,7 @@ This document provides a granular, step-by-step task list for implementing the M
     paths?: string[];
   }
 
-  export interface MarinAdUpdateRequest {
+  export interface ZilkrAdUpdateRequest {
     headlines?: { text: string; pinned?: boolean }[];
     descriptions?: { text: string }[];
     finalUrl?: string;
@@ -437,7 +437,7 @@ This document provides a granular, step-by-step task list for implementing the M
   ```
 - [x] Add keyword types:
   ```typescript
-  export interface MarinKeywordRequest {
+  export interface ZilkrKeywordRequest {
     accountId: string;
     adGroupId: string;
     text: string;
@@ -446,7 +446,7 @@ This document provides a granular, step-by-step task list for implementing the M
     status?: 'ENABLED' | 'PAUSED' | 'REMOVED';
   }
 
-  export interface MarinKeywordResponse extends MarinBaseResponse {
+  export interface ZilkrKeywordResponse extends ZilkrBaseResponse {
     id: string;
     accountId: string;
     adGroupId: string;
@@ -456,17 +456,17 @@ This document provides a granular, step-by-step task list for implementing the M
     status: string;
   }
 
-  export interface MarinKeywordUpdateRequest {
+  export interface ZilkrKeywordUpdateRequest {
     text?: string;
     matchType?: 'BROAD' | 'PHRASE' | 'EXACT';
     cpcBid?: number;
     status?: 'ENABLED' | 'PAUSED' | 'REMOVED';
   }
 
-  export interface MarinBulkKeywordRequest {
+  export interface ZilkrBulkKeywordRequest {
     accountId: string;
     adGroupId: string;
-    keywords: MarinKeywordRequest[];
+    keywords: ZilkrKeywordRequest[];
   }
   ```
 - [x] Export all ad structure types
@@ -478,7 +478,7 @@ This document provides a granular, step-by-step task list for implementing the M
 **Dependencies**: Task 1.1.1
 **Status**: ✅ Completed - Commit 41fe9bf
 
-- [x] Open `backend/src/types/marinDispatcher.types.ts` file
+- [x] Open `backend/src/types/zilkrDispatcher.types.ts` file
 - [x] Add batch operation types:
   ```typescript
   export type BatchOperationType = 'CREATE' | 'UPDATE';
@@ -488,7 +488,7 @@ This document provides a granular, step-by-step task list for implementing the M
     operationType: BatchOperationType;
     resourceType: BatchResourceType;
     resourceId?: string;  // Required for UPDATE operations
-    data: MarinCampaignRequest | MarinAdGroupRequest | MarinAdRequest | MarinKeywordRequest;
+    data: ZilkrCampaignRequest | ZilkrAdGroupRequest | ZilkrAdRequest | ZilkrKeywordRequest;
   }
 
   export interface BatchJobCreateRequest {
@@ -553,7 +553,7 @@ This document provides a granular, step-by-step task list for implementing the M
 **Dependencies**: Tasks 1.1.1, 1.1.2, 1.1.3
 **Status**: ✅ Completed - Commit f2cfb06 - PR #16
 
-- [x] Create `backend/src/utils/marinTypeValidators.ts` file
+- [x] Create `backend/src/utils/zilkrTypeValidators.ts` file
 - [x] Implement `validateCampaignRequest()` function:
   - Validate accountId is not empty
   - Validate name is not empty and max 255 characters
@@ -597,13 +597,13 @@ This document provides a granular, step-by-step task list for implementing the M
 - [x] Navigate to `backend/src/types/` directory
 - [x] Open `campaign.types.ts` file
 - [x] Locate `PlatformCampaignIds` interface
-- [x] Add `marin?` property:
+- [x] Add `zilkr?` property:
   ```typescript
   export interface PlatformCampaignIds {
     googleAds?: string;
     meta?: string;
     microsoft?: string;
-    marin?: string; // 🆕 Add this
+    zilkr?: string; // 🆕 Add this
     [platform: string]: string | undefined;
   }
   ```
@@ -640,21 +640,21 @@ This document provides a granular, step-by-step task list for implementing the M
 **Dependencies**: Tasks 1.1.1, 1.1.3
 **Status**: ✅ Completed - 46 tests passing
 
-- [x] Create `backend/src/__tests__/types/marinDispatcher.types.test.ts` file
+- [x] Create `backend/src/__tests__/types/zilkrDispatcher.types.test.ts` file
 - [x] Test campaign request type structure
 - [x] Test campaign response type structure
 - [x] Test batch operation type structure
 - [x] Test batch job status type structure
 - [x] Test batch job result type structure
 - [x] Test type exports
-- [x] Run tests: `npm test -- marinDispatcher.types` - ✅ All 46 tests passing
+- [x] Run tests: `npm test -- zilkrDispatcher.types` - ✅ All 46 tests passing
 
 #### Task 1.3.2: Create Type Validator Tests ✅ COMPLETED
 **Assigned to**: VANES
 **Dependencies**: Task 1.1.4
 **Status**: ✅ Completed - Commit f2cfb06 - PR #16 - 35 tests passing
 
-- [x] Create `backend/src/__tests__/utils/marinTypeValidators.test.ts` file
+- [x] Create `backend/src/__tests__/utils/zilkrTypeValidators.test.ts` file
 - [x] Test `validateCampaignRequest()` with valid data
 - [x] Test `validateCampaignRequest()` with invalid data
 - [x] Test `validateAdGroupRequest()` with valid data
@@ -665,7 +665,7 @@ This document provides a granular, step-by-step task list for implementing the M
 - [x] Test `validateKeywordRequest()` with invalid data
 - [x] Test `validateBatchOperation()` with valid data
 - [x] Test `validateBatchOperation()` with invalid data
-- [x] Run tests: `npm test -- marinTypeValidators`
+- [x] Run tests: `npm test -- zilkrTypeValidators`
 
 ---
 
@@ -673,12 +673,12 @@ This document provides a granular, step-by-step task list for implementing the M
 
 ### Subphase 2.1: Base Service Structure (30 minutes)
 
-#### Task 2.1.1: Create MarinDispatcherService Class Structure ✅ COMPLETED
+#### Task 2.1.1: Create ZilkrDispatcherService Class Structure ✅ COMPLETED
 **Assigned to**: GABE  
 **Dependencies**: Subphase 1.1 complete, Subphase 1.2 complete
 **Status**: ✅ Completed - Commit b471ed0
 
-- [x] Create `backend/src/services/marinDispatcherService.ts` file
+- [x] Create `backend/src/services/zilkrDispatcherService.ts` file
 - [x] Import required dependencies:
   ```typescript
   import axios, { AxiosInstance } from 'axios';
@@ -688,39 +688,39 @@ This document provides a granular, step-by-step task list for implementing the M
   import { PlatformAPIResponse } from '../types/campaign.types';
   import config from '../config/env';
   import {
-    MarinCampaignRequest,
-    MarinCampaignResponse,
-    MarinCampaignUpdateRequest,
-    MarinCampaignListRequest,
-    MarinCampaignListResponse
-  } from '../types/marinDispatcher.types';
+    ZilkrCampaignRequest,
+    ZilkrCampaignResponse,
+    ZilkrCampaignUpdateRequest,
+    ZilkrCampaignListRequest,
+    ZilkrCampaignListResponse
+  } from '../types/zilkrDispatcher.types';
   ```
 - [x] Create class structure:
   ```typescript
-  export class MarinDispatcherService extends BasePlatformAPI implements IPlatformAPI {
+  export class ZilkrDispatcherService extends BasePlatformAPI implements IPlatformAPI {
     private apiUrl: string;  // Full ALB URL (e.g., http://meridian-dispatcher-alb-dev-1234567890.us-east-1.elb.amazonaws.com)
     private accountId: string;
     private publisher: string;
     private httpClient: AxiosInstance;
 
     constructor(accountId?: string, publisher: string = 'google') {
-      super('Marin Dispatcher');
+      super('Zilkr Dispatcher');
       
       // Use DISPATCHER_URL from environment (InfraDocs pattern - set by CloudFormation)
       // Fallback to baseUrl for local development
-      const dispatcherUrl = process.env.DISPATCHER_URL || config.marinDispatcher.baseUrl;
+      const dispatcherUrl = process.env.DISPATCHER_URL || config.zilkrDispatcher.baseUrl;
       if (!dispatcherUrl) {
-        throw new Error('DISPATCHER_URL or MARIN_DISPATCHER_BASE_URL must be set');
+        throw new Error('DISPATCHER_URL or ZILKR_DISPATCHER_BASE_URL must be set');
       }
       
       this.apiUrl = dispatcherUrl;  // Full ALB URL, not base path
-      this.accountId = accountId || config.marinDispatcher.accountId;
+      this.accountId = accountId || config.zilkrDispatcher.accountId;
       this.publisher = publisher;
       
       // Create axios instance with timeout
       this.httpClient = axios.create({
         baseURL: this.apiUrl,  // Full URL including protocol
-        timeout: config.marinDispatcher.timeout,
+        timeout: config.zilkrDispatcher.timeout,
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
@@ -743,8 +743,8 @@ This document provides a granular, step-by-step task list for implementing the M
   ```
 - [x] Add helper methods:
   - `private buildApiPath(endpoint: string): string` - Build API path using InfraDocs format
-  - `private mapCampaignPlanToRequest(campaignPlan: CampaignPlan, name: string): MarinCampaignRequest`
-  - `private mapResponseToPlatformResponse(response: MarinCampaignResponse): PlatformAPIResponse`
+  - `private mapCampaignPlanToRequest(campaignPlan: CampaignPlan, name: string): ZilkrCampaignRequest`
+  - `private mapResponseToPlatformResponse(response: ZilkrCampaignResponse): PlatformAPIResponse`
 - [x] Add X-Ray tracing (imported and used in methods)
 - [x] Add error handling (via BasePlatformAPI.handleError())
 - [x] Verify TypeScript compilation
@@ -758,10 +758,10 @@ This document provides a granular, step-by-step task list for implementing the M
   ```typescript
   async isAuthenticated(): Promise<boolean> {
     const segment = AWSXRay.getSegment();
-    const subsegment = segment?.addNewSubsegment('MarinDispatcher.isAuthenticated');
+    const subsegment = segment?.addNewSubsegment('ZilkrDispatcher.isAuthenticated');
     
     try {
-      // For now, Marin Dispatcher doesn't require auth (internal network)
+      // For now, Zilkr Dispatcher doesn't require auth (internal network)
       // Just verify we can reach the API
       // Use InfraDocs path format: /dispatcher/${publisher}/campaigns
       const response = await this.httpClient.get(
@@ -775,7 +775,7 @@ This document provides a granular, step-by-step task list for implementing the M
       return response.status === 200;
     } catch (error) {
       subsegment?.close();
-      this.logger.error('Marin Dispatcher authentication check failed', error);
+      this.logger.error('Zilkr Dispatcher authentication check failed', error);
       return false;
     }
   }
@@ -799,8 +799,8 @@ This document provides a granular, step-by-step task list for implementing the M
     name: string
   ): Promise<PlatformAPIResponse> {
     try {
-      // Map CampaignPlan to MarinCampaignRequest
-      const request: MarinCampaignRequest = this.mapCampaignPlanToRequest(campaignPlan, name);
+      // Map CampaignPlan to ZilkrCampaignRequest
+      const request: ZilkrCampaignRequest = this.mapCampaignPlanToRequest(campaignPlan, name);
       
       // Validate request
       const validationErrors = validateCampaignRequest(request);
@@ -813,9 +813,9 @@ This document provides a granular, step-by-step task list for implementing the M
 
       // Make API call (using InfraDocs path format)
       const segment = AWSXRay.getSegment();
-      const subsegment = segment?.addNewSubsegment('MarinDispatcher.createCampaign');
+      const subsegment = segment?.addNewSubsegment('ZilkrDispatcher.createCampaign');
       
-      const response = await this.httpClient.post<MarinCampaignResponse>(
+      const response = await this.httpClient.post<ZilkrCampaignResponse>(
         this.buildApiPath('/campaigns'),  // InfraDocs format: /dispatcher/${publisher}/campaigns
         request
       );
@@ -855,8 +855,8 @@ This document provides a granular, step-by-step task list for implementing the M
     updates: Partial<CampaignPlan>
   ): Promise<PlatformAPIResponse> {
     try {
-      // Map updates to MarinCampaignUpdateRequest
-      const request: MarinCampaignUpdateRequest = {
+      // Map updates to ZilkrCampaignUpdateRequest
+      const request: ZilkrCampaignUpdateRequest = {
         name: updates.name,
         status: updates.status as any, // Map if needed
         budget: updates.budget ? {
@@ -873,9 +873,9 @@ This document provides a granular, step-by-step task list for implementing the M
 
       // Make API call (using InfraDocs path format)
       const segment = AWSXRay.getSegment();
-      const subsegment = segment?.addNewSubsegment('MarinDispatcher.updateCampaign');
+      const subsegment = segment?.addNewSubsegment('ZilkrDispatcher.updateCampaign');
       
-      const response = await this.httpClient.put<MarinCampaignResponse>(
+      const response = await this.httpClient.put<ZilkrCampaignResponse>(
         this.buildApiPath(`/campaigns/${campaignId}`),  // InfraDocs format: /dispatcher/${publisher}/campaigns/{id}
         request
       );
@@ -933,7 +933,7 @@ This document provides a granular, step-by-step task list for implementing the M
 - [x] Implement `deleteCampaign()` method:
   ```typescript
   async deleteCampaign(campaignId: string): Promise<PlatformAPIResponse> {
-    // Marin Dispatcher uses status update to REMOVED
+    // Zilkr Dispatcher uses status update to REMOVED
     return this.updateCampaign(campaignId, { status: 'REMOVED' as any });
   }
   ```
@@ -951,10 +951,10 @@ This document provides a granular, step-by-step task list for implementing the M
   ```typescript
   async getCampaignStatus(campaignId: string): Promise<PlatformAPIResponse> {
     const segment = AWSXRay.getSegment();
-    const subsegment = segment?.addNewSubsegment('MarinDispatcher.getCampaignStatus');
+    const subsegment = segment?.addNewSubsegment('ZilkrDispatcher.getCampaignStatus');
     
     try {
-      const response = await this.httpClient.get<MarinCampaignResponse>(
+      const response = await this.httpClient.get<ZilkrCampaignResponse>(
         this.buildApiPath(`/campaigns/${campaignId}`)  // InfraDocs format: /dispatcher/${publisher}/campaigns/{id}
       );
       
@@ -1002,15 +1002,15 @@ This document provides a granular, step-by-step task list for implementing the M
   ```typescript
   async queryCampaigns(accountId?: string): Promise<PlatformAPIResponse> {
     try {
-      const request: MarinCampaignListRequest = {
+      const request: ZilkrCampaignListRequest = {
         accountId: accountId || this.accountId,
         limit: 100
       };
 
       const segment = AWSXRay.getSegment();
-      const subsegment = segment?.addNewSubsegment('MarinDispatcher.queryCampaigns');
+      const subsegment = segment?.addNewSubsegment('ZilkrDispatcher.queryCampaigns');
       
-      const response = await this.httpClient.get<MarinCampaignListResponse>(
+      const response = await this.httpClient.get<ZilkrCampaignListResponse>(
         this.buildApiPath('/campaigns'),  // InfraDocs format: /dispatcher/${publisher}/campaigns
         { params: request }
       );
@@ -1070,16 +1070,16 @@ This document provides a granular, step-by-step task list for implementing the M
 **Dependencies**: Task 2.1.1, Task 1.1.2
 **Status**: ✅ Completed - Commit: d5a8f42
 
-- [x] Open `backend/src/services/marinDispatcherService.ts` file
+- [x] Open `backend/src/services/zilkrDispatcherService.ts` file
 - [x] Add ad group methods to class (outside IPlatformAPI interface)
 - [x] Implement `createAdGroup()` method:
   ```typescript
   async createAdGroup(
     campaignId: string,
-    adGroupData: MarinAdGroupRequest
+    adGroupData: ZilkrAdGroupRequest
   ): Promise<PlatformAPIResponse> {
     try {
-      const request: MarinAdGroupRequest = {
+      const request: ZilkrAdGroupRequest = {
         accountId: this.accountId,
         campaignId,
         ...adGroupData
@@ -1095,9 +1095,9 @@ This document provides a granular, step-by-step task list for implementing the M
       }
 
       const segment = AWSXRay.getSegment();
-      const subsegment = segment?.addNewSubsegment('MarinDispatcher.createAdGroup');
+      const subsegment = segment?.addNewSubsegment('ZilkrDispatcher.createAdGroup');
       
-      const response = await this.httpClient.post<MarinAdGroupResponse>(
+      const response = await this.httpClient.post<ZilkrAdGroupResponse>(
         this.buildApiPath('/adgroups'),  // InfraDocs format: /dispatcher/${publisher}/adgroups
         request
       );
@@ -1128,10 +1128,10 @@ This document provides a granular, step-by-step task list for implementing the M
   ```typescript
   async updateAdGroup(
     adGroupId: string,
-    updates: MarinAdGroupUpdateRequest
+    updates: ZilkrAdGroupUpdateRequest
   ): Promise<PlatformAPIResponse> {
     try {
-      const request: MarinAdGroupUpdateRequest = { ...updates };
+      const request: ZilkrAdGroupUpdateRequest = { ...updates };
 
       // Remove undefined fields
       Object.keys(request).forEach(key => 
@@ -1139,9 +1139,9 @@ This document provides a granular, step-by-step task list for implementing the M
       );
 
       const segment = AWSXRay.getSegment();
-      const subsegment = segment?.addNewSubsegment('MarinDispatcher.updateAdGroup');
+      const subsegment = segment?.addNewSubsegment('ZilkrDispatcher.updateAdGroup');
       
-      const response = await this.httpClient.put<MarinAdGroupResponse>(
+      const response = await this.httpClient.put<ZilkrAdGroupResponse>(
         this.buildApiPath(`/adgroups/${adGroupId}`),  // InfraDocs format: /dispatcher/${publisher}/adgroups/{id}
         request
       );
@@ -1174,10 +1174,10 @@ This document provides a granular, step-by-step task list for implementing the M
   ```typescript
   async createAd(
     adGroupId: string,
-    adData: MarinAdRequest
+    adData: ZilkrAdRequest
   ): Promise<PlatformAPIResponse> {
     try {
-      const request: MarinAdRequest = {
+      const request: ZilkrAdRequest = {
         accountId: this.accountId,
         adGroupId,
         type: 'RESPONSIVE_SEARCH_AD',
@@ -1194,9 +1194,9 @@ This document provides a granular, step-by-step task list for implementing the M
       }
 
       const segment = AWSXRay.getSegment();
-      const subsegment = segment?.addNewSubsegment('MarinDispatcher.createAd');
+      const subsegment = segment?.addNewSubsegment('ZilkrDispatcher.createAd');
       
-      const response = await this.httpClient.post<MarinAdResponse>(
+      const response = await this.httpClient.post<ZilkrAdResponse>(
         this.buildApiPath('/ads'),  // InfraDocs format: /dispatcher/${publisher}/ads
         request
       );
@@ -1229,10 +1229,10 @@ This document provides a granular, step-by-step task list for implementing the M
   ```typescript
   async updateAd(
     adId: string,
-    updates: MarinAdUpdateRequest
+    updates: ZilkrAdUpdateRequest
   ): Promise<PlatformAPIResponse> {
     try {
-      const request: MarinAdUpdateRequest = { ...updates };
+      const request: ZilkrAdUpdateRequest = { ...updates };
 
       // Remove undefined fields
       Object.keys(request).forEach(key => 
@@ -1240,9 +1240,9 @@ This document provides a granular, step-by-step task list for implementing the M
       );
 
       const segment = AWSXRay.getSegment();
-      const subsegment = segment?.addNewSubsegment('MarinDispatcher.updateAd');
+      const subsegment = segment?.addNewSubsegment('ZilkrDispatcher.updateAd');
       
-      const response = await this.httpClient.put<MarinAdResponse>(
+      const response = await this.httpClient.put<ZilkrAdResponse>(
         this.buildApiPath(`/ads/${adId}`),  // InfraDocs format: /dispatcher/${publisher}/ads/{id}
         request
       );
@@ -1275,10 +1275,10 @@ This document provides a granular, step-by-step task list for implementing the M
   ```typescript
   async createKeywords(
     adGroupId: string,
-    keywords: MarinKeywordRequest[]
+    keywords: ZilkrKeywordRequest[]
   ): Promise<PlatformAPIResponse> {
     try {
-      const request: MarinBulkKeywordRequest = {
+      const request: ZilkrBulkKeywordRequest = {
         accountId: this.accountId,
         adGroupId,
         keywords: keywords.map(kw => ({
@@ -1305,9 +1305,9 @@ This document provides a granular, step-by-step task list for implementing the M
       }
 
       const segment = AWSXRay.getSegment();
-      const subsegment = segment?.addNewSubsegment('MarinDispatcher.createKeywords');
+      const subsegment = segment?.addNewSubsegment('ZilkrDispatcher.createKeywords');
       
-      const response = await this.httpClient.post<{ keywords: MarinKeywordResponse[] }>(
+      const response = await this.httpClient.post<{ keywords: ZilkrKeywordResponse[] }>(
         this.buildApiPath('/keywords'),  // InfraDocs format: /dispatcher/${publisher}/keywords
         request
       );
@@ -1340,10 +1340,10 @@ This document provides a granular, step-by-step task list for implementing the M
   ```typescript
   async updateKeywords(
     keywordId: string,
-    updates: MarinKeywordUpdateRequest
+    updates: ZilkrKeywordUpdateRequest
   ): Promise<PlatformAPIResponse> {
     try {
-      const request: MarinKeywordUpdateRequest = { ...updates };
+      const request: ZilkrKeywordUpdateRequest = { ...updates };
 
       // Remove undefined fields
       Object.keys(request).forEach(key => 
@@ -1351,9 +1351,9 @@ This document provides a granular, step-by-step task list for implementing the M
       );
 
       const segment = AWSXRay.getSegment();
-      const subsegment = segment?.addNewSubsegment('MarinDispatcher.updateKeywords');
+      const subsegment = segment?.addNewSubsegment('ZilkrDispatcher.updateKeywords');
       
-      const response = await this.httpClient.put<MarinKeywordResponse>(
+      const response = await this.httpClient.put<ZilkrKeywordResponse>(
         this.buildApiPath(`/keywords/${keywordId}`),  // InfraDocs format: /dispatcher/${publisher}/keywords/{id}
         request
       );
@@ -1392,7 +1392,7 @@ This document provides a granular, step-by-step task list for implementing the M
 **Dependencies**: Subphase 2B.3 complete
 **Status**: ✅ Completed - All tests passing
 
-- [x] Create `backend/src/__tests__/services/marinDispatcherService.adStructure.test.ts` file
+- [x] Create `backend/src/__tests__/services/zilkrDispatcherService.adStructure.test.ts` file
 - [x] Setup test fixtures with mock ad structure data
 - [x] Mock axios HTTP client
 - [x] Test `createAdGroup()` method:
@@ -1414,7 +1414,7 @@ This document provides a granular, step-by-step task list for implementing the M
   - Test bulk keyword creation
   - Test API errors
 - [x] Test `updateKeywords()` method
-- [x] Run all tests: `npm test -- marinDispatcherService.adStructure.test.ts` (All tests passing)
+- [x] Run all tests: `npm test -- zilkrDispatcherService.adStructure.test.ts` (All tests passing)
 
 ---
 
@@ -1422,12 +1422,12 @@ This document provides a granular, step-by-step task list for implementing the M
 
 ### Subphase 2C.1: Batch Job Service Structure (30 minutes)
 
-#### Task 2C.1.1: Create MarinBatchJobService Class Structure ✅ COMPLETED
+#### Task 2C.1.1: Create ZilkrBatchJobService Class Structure ✅ COMPLETED
 **Assigned to**: GABE  
 **Dependencies**: Task 1.1.3
 **Status**: ✅ Completed - All tests passing
 
-- [x] Create `backend/src/services/marinBatchJobService.ts` file
+- [x] Create `backend/src/services/zilkrBatchJobService.ts` file
 - [x] Import required dependencies:
   ```typescript
   import axios, { AxiosInstance } from 'axios';
@@ -1442,11 +1442,11 @@ This document provides a granular, step-by-step task list for implementing the M
     AddOperationsResponse,
     BulkCreateResponse,
     BatchJobResult
-  } from '../types/marinDispatcher.types';
+  } from '../types/zilkrDispatcher.types';
   ```
 - [x] Create class structure:
   ```typescript
-  export class MarinBatchJobService {
+  export class ZilkrBatchJobService {
     private apiUrl: string;
     private accountId: string;
     private publisher: string;
@@ -1455,18 +1455,18 @@ This document provides a granular, step-by-step task list for implementing the M
     constructor(accountId?: string, publisher: string = 'google') {
       // Use DISPATCHER_URL from environment (InfraDocs pattern - set by CloudFormation)
       // Fallback to baseUrl for local development
-      const dispatcherUrl = process.env.DISPATCHER_URL || config.marinDispatcher.baseUrl;
+      const dispatcherUrl = process.env.DISPATCHER_URL || config.zilkrDispatcher.baseUrl;
       if (!dispatcherUrl) {
-        throw new Error('DISPATCHER_URL or MARIN_DISPATCHER_BASE_URL must be set');
+        throw new Error('DISPATCHER_URL or ZILKR_DISPATCHER_BASE_URL must be set');
       }
       
       this.apiUrl = dispatcherUrl;  // Full ALB URL, not base path
-      this.accountId = accountId || config.marinDispatcher.accountId;
+      this.accountId = accountId || config.zilkrDispatcher.accountId;
       this.publisher = publisher;
       
       this.httpClient = axios.create({
         baseURL: this.apiUrl,  // Full URL including protocol
-        timeout: config.marinDispatcher.timeout,
+        timeout: config.zilkrDispatcher.timeout,
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
@@ -1507,7 +1507,7 @@ This document provides a granular, step-by-step task list for implementing the M
       };
 
       const segment = AWSXRay.getSegment();
-      const subsegment = segment?.addNewSubsegment('MarinBatchJobService.createBatchJob');
+      const subsegment = segment?.addNewSubsegment('ZilkrBatchJobService.createBatchJob');
       
       const response = await this.httpClient.post<BatchJobCreateResponse>(
         this.buildApiPath('/batch-jobs'),  // InfraDocs format: /dispatcher/${publisher}/batch-jobs
@@ -1550,7 +1550,7 @@ This document provides a granular, step-by-step task list for implementing the M
       }
 
       const segment = AWSXRay.getSegment();
-      const subsegment = segment?.addNewSubsegment('MarinBatchJobService.addOperationsToBatch');
+      const subsegment = segment?.addNewSubsegment('ZilkrBatchJobService.addOperationsToBatch');
       
       const response = await this.httpClient.post<AddOperationsResponse>(
         this.buildApiPath(`/batch-jobs/${batchJobId}/operations`),  // InfraDocs format
@@ -1584,7 +1584,7 @@ This document provides a granular, step-by-step task list for implementing the M
   async runBatchJob(batchJobId: string): Promise<void> {
     try {
       const segment = AWSXRay.getSegment();
-      const subsegment = segment?.addNewSubsegment('MarinBatchJobService.runBatchJob');
+      const subsegment = segment?.addNewSubsegment('ZilkrBatchJobService.runBatchJob');
       
       await this.httpClient.post(
         this.buildApiPath(`/batch-jobs/${batchJobId}/run`)  // InfraDocs format
@@ -1616,7 +1616,7 @@ This document provides a granular, step-by-step task list for implementing the M
     for (let i = 0; i < maxAttempts; i++) {
       try {
         const segment = AWSXRay.getSegment();
-        const subsegment = segment?.addNewSubsegment('MarinBatchJobService.pollBatchJobStatus');
+        const subsegment = segment?.addNewSubsegment('ZilkrBatchJobService.pollBatchJobStatus');
         
         const response = await this.httpClient.get<BatchJobStatus>(
           this.buildApiPath(`/batch-jobs/${batchJobId}`)  // InfraDocs format
@@ -1662,7 +1662,7 @@ This document provides a granular, step-by-step task list for implementing the M
   async getBatchJobResults(batchJobId: string): Promise<BulkCreateResponse> {
     try {
       const segment = AWSXRay.getSegment();
-      const subsegment = segment?.addNewSubsegment('MarinBatchJobService.getBatchJobResults');
+      const subsegment = segment?.addNewSubsegment('ZilkrBatchJobService.getBatchJobResults');
       
       const response = await this.httpClient.get<BulkCreateResponse>(
         this.buildApiPath(`/batch-jobs/${batchJobId}/results`)  // InfraDocs format
@@ -1691,13 +1691,13 @@ This document provides a granular, step-by-step task list for implementing the M
 - [x] Implement `bulkCreateCampaigns()` high-level method:
   ```typescript
   async bulkCreateCampaigns(
-    campaigns: MarinCampaignRequest[]
+    campaigns: ZilkrCampaignRequest[]
   ): Promise<BulkCreateResponse> {
     try {
       // 1. Create batch job
       const { batchJobId } = await this.createBatchJob();
 
-      // 2. Add operations in chunks of 1000 (Marin format)
+      // 2. Add operations in chunks of 1000 (Zilkr format)
       const operations: BatchOperation[] = campaigns.map(campaign => ({
         operationType: 'CREATE',
         resourceType: 'CAMPAIGN',
@@ -1902,18 +1902,18 @@ This document provides a granular, step-by-step task list for implementing the M
 **Dependencies**: Task 2D.1.2, Subphase 2C.3 complete
 **Status**: ✅ Completed - All tests passing
 
-- [x] Create `backend/src/lib/marinBatchJobClient.ts` file
+- [x] Create `backend/src/lib/zilkrBatchJobClient.ts` file
 - [x] Create batch job client wrapper for Lambda functions:
   ```typescript
-  import { MarinBatchJobService } from '../services/marinBatchJobService';
+  import { ZilkrBatchJobService } from '../services/zilkrBatchJobService';
   import { LambdaEvent, LambdaResponse } from '../types/lambda.types';
   import AWSXRay from 'aws-xray-sdk-core';
 
-  export class MarinBatchJobClient {
-    private service: MarinBatchJobService;
+  export class ZilkrBatchJobClient {
+    private service: ZilkrBatchJobService;
     
     constructor(accountId?: string, publisher: string = 'google') {
-      this.service = new MarinBatchJobService(accountId, publisher);
+      this.service = new ZilkrBatchJobService(accountId, publisher);
     }
     
     /**
@@ -1922,7 +1922,7 @@ This document provides a granular, step-by-step task list for implementing the M
      */
     async handleSqsEvent(event: any): Promise<LambdaResponse> {
       const segment = AWSXRay.getSegment();
-      const subsegment = segment?.addNewSubsegment('MarinBatchJobClient.handleSqsEvent');
+      const subsegment = segment?.addNewSubsegment('ZilkrBatchJobClient.handleSqsEvent');
       
       try {
         // Process SQS records
@@ -2020,10 +2020,10 @@ This document provides a granular, step-by-step task list for implementing the M
           if (dispatcherResult.success) {
             // Update with external ID
             await client.query(
-              'UPDATE campaigns SET marin_id = $1 WHERE id = $2',
+              'UPDATE campaigns SET zilkr_id = $1 WHERE id = $2',
               [dispatcherResult.result.campaignId, campaign.id]
             );
-            campaign.marin_id = dispatcherResult.result.campaignId;
+            campaign.zilkr_id = dispatcherResult.result.campaignId;
           }
           
           await client.query('COMMIT');
@@ -2068,12 +2068,12 @@ This document provides a granular, step-by-step task list for implementing the M
 - [x] Create `backend/src/examples/bulk-worker-handler.js` file
 - [x] Show how BulkWorkerFunction uses batch job service:
   ```javascript
-  const { MarinBatchJobClient } = require('./lib/marinBatchJobClient');
+  const { ZilkrBatchJobClient } = require('./lib/zilkrBatchJobClient');
   const AWSXRay = require('aws-xray-sdk-core');
   const AWS = require('aws-sdk');
   const dynamodb = new AWS.DynamoDB.DocumentClient();
 
-  const batchJobClient = new MarinBatchJobClient();
+  const batchJobClient = new ZilkrBatchJobClient();
 
   exports.handler = async (event) => {
     const segment = AWSXRay.getSegment();
@@ -2270,7 +2270,7 @@ This document provides a granular, step-by-step task list for implementing the M
 
 ### Subphase 3.1: Service Registration (15 minutes)
 
-#### Task 3.1.1: Register MarinDispatcherService in CampaignCreationService (Optional) ✅ COMPLETED
+#### Task 3.1.1: Register ZilkrDispatcherService in CampaignCreationService (Optional) ✅ COMPLETED
 **Assigned to**: GABE  
 **Dependencies**: Subphase 2.2 complete
 **Status**: ✅ Completed - All tests passing (5 verification tests)
@@ -2315,7 +2315,7 @@ This document provides a granular, step-by-step task list for implementing the M
 - [x] Test X-Ray tracing in integration context
 - [x] Test error handling in Lambda context
 - [x] **Optional:** Test service registration in CampaignCreationService (verified)
-- [x] **Optional:** Test multi-platform creation (Marin + Google Ads) via orchestrator (deferred)
+- [x] **Optional:** Test multi-platform creation (Zilkr + Google Ads) via orchestrator (deferred)
 - [x] Create manual verification test script (10 tests passing)
 
 ---
@@ -2355,7 +2355,7 @@ This document provides a granular, step-by-step task list for implementing the M
 **Status**: ✅ All tests passing (28 comprehensive CRUD tests)
 
 - [x] Test `createCampaign()` with valid data:
-  - Verify campaign is created in Marin system ✅
+  - Verify campaign is created in Zilkr system ✅
   - Verify response includes campaign ID ✅
   - Verify budget is NOT converted to micros ✅
   - Verify status is ENABLED ✅
@@ -2407,7 +2407,7 @@ This document provides a granular, step-by-step task list for implementing the M
 - [x] Document test results
 
 **Test Results**:
-- **File**: `backend/src/__tests__/services/marinDispatcherService.adStructure.test.ts`
+- **File**: `backend/src/__tests__/services/zilkrDispatcherService.adStructure.test.ts`
 - **Total Tests**: 45 tests (including Ad Group, Ad, and Keyword tests)
 - **Ad Group Tests**: 17 tests
 - **Status**: ✅ ALL PASSED
@@ -2468,7 +2468,7 @@ This document provides a granular, step-by-step task list for implementing the M
 - ✅ Document test results
 
 **Test Results Summary**:
-- **File**: `backend/src/__tests__/services/marinDispatcherService.adStructure.test.ts`
+- **File**: `backend/src/__tests__/services/zilkrDispatcherService.adStructure.test.ts`
 - **Total Tests**: 46 (all passing)
 - **Test Categories**:
   - Ad Group Creation Tests: 10 tests
@@ -2506,7 +2506,7 @@ This document provides a granular, step-by-step task list for implementing the M
 - ✅ Document test results
 
 **Test Results Summary**:
-- **File**: `backend/src/__tests__/services/marinDispatcherService.test.ts`
+- **File**: `backend/src/__tests__/services/zilkrDispatcherService.test.ts`
 - **Total Tests**: 18 (all passing)
 - **Test Categories**:
   - createKeywords Tests: 10 tests
@@ -2550,7 +2550,7 @@ This document provides a granular, step-by-step task list for implementing the M
 - **Total Tests**: 18 tests
 - **Passed**: 18 tests (100%)
 - **Failed**: 0 tests
-- **Test File**: `backend/src/__tests__/services/marinBatchJobService.test.ts`
+- **Test File**: `backend/src/__tests__/services/zilkrBatchJobService.test.ts`
 
 **Test Coverage:**
 1. ✅ Successfully create batch job and return batch job ID
@@ -2575,7 +2575,7 @@ This document provides a granular, step-by-step task list for implementing the M
 #### Task 4.4.2: Test Batch Job Operations ✅ COMPLETE
 **Assigned to**: GABE
 **Dependencies**: Subphase 2C.2 complete
-**Test File**: `backend/src/__tests__/services/marinBatchJobService.test.ts`
+**Test File**: `backend/src/__tests__/services/zilkrBatchJobService.test.ts`
 
 - [x] Test `addOperationsToBatch()` method:
   - ✅ Test with 10 operations
@@ -2660,7 +2660,7 @@ This document provides a granular, step-by-step task list for implementing the M
 - **Total Tests**: 41 tests
 - **Passed**: 41 tests (100%)
 - **Failed**: 0 tests
-- **Test File**: `backend/src/__tests__/services/marinBatchJobService.test.ts`
+- **Test File**: `backend/src/__tests__/services/zilkrBatchJobService.test.ts`
 - **Test Lines**: 1290-2713
 
 **Test Coverage:**
@@ -2691,15 +2691,15 @@ This document provides a granular, step-by-step task list for implementing the M
 **Results**: All 29 tests passed (see `REST_API_TEST_RESULTS.md`)
 
 - [x] Test campaign creation via REST API:
-  - POST `/api/campaigns` with `platforms: ["marin"]`
+  - POST `/api/campaigns` with `platforms: ["zilkr"]`
   - Verify campaign is created
-  - Verify response includes Marin campaign ID
+  - Verify response includes Zilkr campaign ID
 - [x] Test multi-platform creation:
-  - POST `/api/campaigns` with `platforms: ["marin", "googleAds"]`
+  - POST `/api/campaigns` with `platforms: ["zilkr", "googleAds"]`
   - Verify campaigns are created on both platforms
   - Verify response includes both platform IDs
 - [x] Test campaign update via REST API:
-  - PUT `/api/campaigns/:id` with Marin platform
+  - PUT `/api/campaigns/:id` with Zilkr platform
   - Verify campaign is updated
 - [x] Test campaign pause/resume via REST API
 - [x] Test campaign delete via REST API
@@ -2718,7 +2718,7 @@ This document provides a granular, step-by-step task list for implementing the M
   2. Create ad group
   3. Create ad
   4. Create keywords
-  5. Verify full structure in Marin system
+  5. Verify full structure in Zilkr system
 - [x] Test bulk campaign creation workflow:
   1. Create 10 campaigns via batch job
   2. Verify all campaigns are created
@@ -2741,11 +2741,11 @@ This document provides a granular, step-by-step task list for implementing the M
 **Dependencies**: All implementation phases complete
 **Status**: ✅ COMPLETE
 
-- [x] Add JSDoc comments to all public methods in `marinDispatcherService.ts`
-- [x] Add JSDoc comments to all public methods in `marinBatchJobService.ts`
-- [x] Add JSDoc comments to all public methods in `marinDispatcherClient.ts`
-- [x] Add JSDoc comments to all public methods in `marinBatchJobClient.ts`
-- [x] Add JSDoc comments to all type definitions in `marinDispatcher.types.ts`
+- [x] Add JSDoc comments to all public methods in `zilkrDispatcherService.ts`
+- [x] Add JSDoc comments to all public methods in `zilkrBatchJobService.ts`
+- [x] Add JSDoc comments to all public methods in `zilkrDispatcherClient.ts`
+- [x] Add JSDoc comments to all public methods in `zilkrBatchJobClient.ts`
+- [x] Add JSDoc comments to all type definitions in `zilkrDispatcher.types.ts`
 - [x] Add JSDoc comments to Lambda types in `lambda.types.ts`
 - [x] Include parameter descriptions
 - [x] Include return type descriptions
@@ -2761,9 +2761,9 @@ This document provides a granular, step-by-step task list for implementing the M
 **Assigned to**: VANES
 **Dependencies**: All implementation phases complete
 **Status**: ✅ COMPLETE - 2025-11-11
-**File**: `backend/docs/marin-dispatcher-integration.md` (1,714 lines, 43 KB)
+**File**: `backend/docs/zilkr-dispatcher-integration.md` (1,714 lines, 43 KB)
 
-- [x] Create `backend/docs/marin-dispatcher-integration.md` file ✅
+- [x] Create `backend/docs/zilkr-dispatcher-integration.md` file ✅
 - [x] Document API endpoints (InfraDocs path format: `/dispatcher/${publisher}/...`) ✅
 - [x] Document request/response formats ✅
 - [x] Document error codes ✅
@@ -2802,7 +2802,7 @@ This document provides a granular, step-by-step task list for implementing the M
 - [ ] Run all unit tests: `npm test`
 - [ ] Run all integration tests
 - [ ] Verify all tests pass
-- [ ] Test with actual Marin Dispatcher API (if available)
+- [ ] Test with actual Zilkr Dispatcher API (if available)
 - [ ] Verify no TypeScript errors
 - [ ] Verify no linting errors
 - [ ] Create final test report
@@ -2852,7 +2852,7 @@ This document provides a granular, step-by-step task list for implementing the M
 
 ## Notes
 
-- **Rebranding**: ✅ **COMPLETE** (2025-11-11) - All references updated from Marin to Zilkr across entire codebase
+- **Rebranding**: ✅ **COMPLETE** (2025-11-11) - All references updated from Zilkr to Zilkr across entire codebase
 - **Budget Handling**: ⚠️ **CRITICAL** - Zilkr uses `budget.amount` in dollars, NOT micros. No conversion needed.
 - **Budget Endpoint**: ⏳ **PENDING** - Zilkr Dispatcher team needs to implement `POST /api/v2/dispatcher/google/campaign-budgets` endpoint (see ZILKR_DISPATCHER_CR.md)
 - **Field Names**: Use camelCase (deliveryMethod, biddingStrategy) not snake_case
@@ -2920,10 +2920,10 @@ This document provides a granular, step-by-step task list for implementing the M
 **Document Version**: 3.1
 **Created**: 2025-11-09
 **Last Updated**: 2025-11-11
-**Project**: Zilkr Dispatcher Integration (formerly Marin Dispatcher)
+**Project**: Zilkr Dispatcher Integration (formerly Zilkr Dispatcher)
 **Integration**: Agentic Campaign Manager Module
 **Architecture Alignment**: InfraDocs (source of truth) - Lambda integration, X-Ray tracing, DISPATCHER_URL pattern
 **Status**: Phase 5.1.2 Complete - API Documentation (60/100+ tasks, ~60% complete)
-**Rebranding**: Complete - All references updated from Marin to Zilkr (2025-11-11)
+**Rebranding**: Complete - All references updated from Zilkr to Zilkr (2025-11-11)
 **Pending**: Zilkr Dispatcher endpoint implementation (`POST /api/v2/dispatcher/google/campaign-budgets`)
 

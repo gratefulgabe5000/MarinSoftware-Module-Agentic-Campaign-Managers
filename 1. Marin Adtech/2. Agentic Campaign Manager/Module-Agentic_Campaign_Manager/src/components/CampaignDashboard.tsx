@@ -484,241 +484,256 @@ const CampaignDashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="mx-auto max-w-7xl space-y-8">
-        {/* Header */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Campaign Dashboard</h1>
-            <p className="text-muted-foreground mt-1">
-              Manage and monitor your advertising campaigns
-            </p>
+    <div className="min-h-screen bg-background">
+      {/* Header and Filter Section - Fixed (below navigation bar) - Combined to eliminate gap */}
+      <div className="fixed top-16 left-0 right-0 z-10 bg-background border-b shadow-sm">
+        <div className="mx-auto max-w-7xl px-8">
+          {/* Header Section */}
+          <div className="py-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h1 className="text-3xl font-bold tracking-tight">Campaign Dashboard</h1>
+                <p className="text-muted-foreground mt-1">
+                  Manage and monitor your advertising campaigns
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handleSyncCampaigns}
+                  disabled={isSyncing}
+                  type="button"
+                >
+                  {isSyncing ? (
+                    <Loader2Icon className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <RefreshCwIcon className="h-4 w-4" />
+                  )}
+                  {isSyncing ? 'Syncing...' : 'Sync from Zilkr'}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => navigate('/campaigns/csv-upload')}
+                  type="button"
+                >
+                  <UploadIcon className="h-4 w-4" />
+                  Bulk Generate
+                </Button>
+                <Button
+                  onClick={() => navigate('/create')}
+                  type="button"
+                >
+                  <PlusIcon className="h-4 w-4" />
+                  Create Campaign
+                </Button>
+              </div>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={handleSyncCampaigns}
-              disabled={isSyncing}
-              type="button"
-            >
-              {isSyncing ? (
-                <Loader2Icon className="h-4 w-4 animate-spin" />
-              ) : (
-                <RefreshCwIcon className="h-4 w-4" />
-              )}
-              {isSyncing ? 'Syncing...' : 'Sync from Zilkr'}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => navigate('/campaigns/csv-upload')}
-              type="button"
-            >
-              <UploadIcon className="h-4 w-4" />
-              Bulk Generate
-            </Button>
-            <Button
-              onClick={() => navigate('/create')}
-              type="button"
-            >
-              <PlusIcon className="h-4 w-4" />
-              Create Campaign
-            </Button>
-          </div>
-        </div>
 
-        {/* Error Alert */}
-        {error && (
-          <Alert variant="destructive">
-            <AlertCircleIcon className="h-4 w-4" />
-            <AlertDescription className="flex items-center justify-between">
-              <span>{error}</span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={loadCampaigns}
-                type="button"
-              >
-                Retry
-              </Button>
-            </AlertDescription>
-          </Alert>
-        )}
+          {/* Filter Section - Compact 2-line layout */}
+          {campaigns.length > 0 && (
+            <div className="py-2 border-t">
+            {/* Row 1: Status, Category, and Tag filters */}
+            <div className="flex items-center gap-4 flex-wrap py-1">
+              {/* Status Filter */}
+              <div className="flex items-center gap-1.5">
+                <FilterIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-xs font-medium text-muted-foreground">Status:</span>
+                <div className="flex gap-1">
+                  <Button
+                    variant={statusFilter === 'all' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setStatusFilter('all')}
+                    type="button"
+                    className="h-7 px-2 text-xs"
+                  >
+                    All ({getStatusCount('all')})
+                  </Button>
+                  <Button
+                    variant={statusFilter === 'draft' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setStatusFilter('draft')}
+                    type="button"
+                    className="h-7 px-2 text-xs"
+                  >
+                    Draft ({getStatusCount('draft')})
+                  </Button>
+                  <Button
+                    variant={statusFilter === 'active' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setStatusFilter('active')}
+                    type="button"
+                    className="h-7 px-2 text-xs"
+                  >
+                    Active ({getStatusCount('active')})
+                  </Button>
+                </div>
+              </div>
 
-        {/* Sync Error Alert */}
-        {syncError && (
-          <Alert variant="destructive">
-            <AlertCircleIcon className="h-4 w-4" />
-            <AlertDescription className="flex items-center justify-between">
-              <span>Sync Error: {syncError}</span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setSyncError(null)}
-                type="button"
-              >
-                Dismiss
-              </Button>
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {/* Enhanced Filter Section */}
-        {campaigns.length > 0 && (
-          <Card className="sticky top-0 z-10 bg-background">
-            <CardContent className="pt-6">
-              <div className="space-y-4">
-                {/* Status Filter */}
-                <div className="flex items-center gap-2 flex-wrap">
-                  <FilterIcon className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-muted-foreground">Filter by status:</span>
-                  <div className="flex gap-2 flex-wrap">
+              {/* Category Filter */}
+              {allCategories.length > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <FolderIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-xs font-medium text-muted-foreground">Category:</span>
+                  <div className="flex gap-1">
                     <Button
-                      variant={statusFilter === 'all' ? 'default' : 'outline'}
+                      variant={categoryFilter === 'all' ? 'default' : 'outline'}
                       size="sm"
-                      onClick={() => setStatusFilter('all')}
+                      onClick={() => setCategoryFilter('all')}
                       type="button"
+                      className="h-7 px-2 text-xs"
                     >
-                      All ({getStatusCount('all')})
+                      All ({getCategoryCount('all')})
                     </Button>
-                    <Button
-                      variant={statusFilter === 'draft' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setStatusFilter('draft')}
-                      type="button"
-                    >
-                      Draft ({getStatusCount('draft')})
-                    </Button>
-                    <Button
-                      variant={statusFilter === 'active' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setStatusFilter('active')}
-                      type="button"
-                    >
-                      Active ({getStatusCount('active')})
-                    </Button>
+                    {allCategories.map(category => (
+                      <Button
+                        key={category}
+                        variant={categoryFilter === category ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setCategoryFilter(category)}
+                        type="button"
+                        className="h-7 px-2 text-xs"
+                      >
+                        {category} ({getCategoryCount(category)})
+                      </Button>
+                    ))}
                   </div>
                 </div>
+              )}
 
-                {/* Category Filter */}
-                {allCategories.length > 0 && (
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <FolderIcon className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium text-muted-foreground">Filter by category:</span>
-                    <div className="flex gap-2 flex-wrap">
-                      <Button
-                        variant={categoryFilter === 'all' ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => setCategoryFilter('all')}
-                        type="button"
-                      >
-                        All ({getCategoryCount('all')})
-                      </Button>
-                      {allCategories.map(category => (
-                        <Button
-                          key={category}
-                          variant={categoryFilter === category ? 'default' : 'outline'}
-                          size="sm"
-                          onClick={() => setCategoryFilter(category)}
-                          type="button"
-                        >
-                          {category} ({getCategoryCount(category)})
-                        </Button>
+              {/* Tag Filter */}
+              {allTags.length > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <HashIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-xs font-medium text-muted-foreground">Tags:</span>
+                  <Select
+                    value={selectedTags.join(',')}
+                    onValueChange={(value) => {
+                      if (value) {
+                        const tags = value.split(',').filter(Boolean);
+                        setSelectedTags(tags);
+                      } else {
+                        setSelectedTags([]);
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="h-7 w-[200px] text-xs">
+                      <SelectValue placeholder="Select tags..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {allTags.map(tag => {
+                        const isSelected = selectedTags.includes(tag);
+                        const count = campaigns.filter(c => c.metadata?.tags?.includes(tag)).length;
+                        return (
+                          <SelectItem
+                            key={tag}
+                            value={isSelected ? selectedTags.join(',') : [...selectedTags, tag].join(',')}
+                          >
+                            {tag} ({count})
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
+                  {selectedTags.length > 0 && (
+                    <div className="flex gap-1 items-center">
+                      {selectedTags.map(tag => (
+                        <Badge key={tag} variant="secondary" className="h-5 px-1.5 text-xs gap-0.5">
+                          {tag}
+                          <button
+                            onClick={() => setSelectedTags(prev => prev.filter(t => t !== tag))}
+                            className="hover:bg-destructive/20 rounded-full p-0.5 -mr-0.5"
+                            type="button"
+                          >
+                            <XIcon className="h-2.5 w-2.5" />
+                          </button>
+                        </Badge>
                       ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Tag Filter */}
-                {allTags.length > 0 && (
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <HashIcon className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium text-muted-foreground">Filter by tags:</span>
-                    <Select
-                      value={selectedTags.join(',')}
-                      onValueChange={(value) => {
-                        if (value) {
-                          const tags = value.split(',').filter(Boolean);
-                          setSelectedTags(tags);
-                        } else {
-                          setSelectedTags([]);
-                        }
-                      }}
-                    >
-                      <SelectTrigger className="w-[250px]">
-                        <SelectValue placeholder="Select tags..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {allTags.map(tag => {
-                          const isSelected = selectedTags.includes(tag);
-                          const count = campaigns.filter(c => c.metadata?.tags?.includes(tag)).length;
-                          return (
-                            <SelectItem
-                              key={tag}
-                              value={isSelected ? selectedTags.join(',') : [...selectedTags, tag].join(',')}
-                            >
-                              {tag} ({count})
-                            </SelectItem>
-                          );
-                        })}
-                      </SelectContent>
-                    </Select>
-                    {selectedTags.length > 0 && (
-                      <div className="flex gap-1 flex-wrap">
-                        {selectedTags.map(tag => (
-                          <Badge key={tag} variant="secondary" className="gap-1">
-                            {tag}
-                            <button
-                              onClick={() => setSelectedTags(prev => prev.filter(t => t !== tag))}
-                              className="ml-1 hover:bg-destructive/20 rounded-full p-0.5"
-                              type="button"
-                            >
-                              <XIcon className="h-3 w-3" />
-                            </button>
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
-                    {selectedTags.length > 0 && (
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => setSelectedTags([])}
                         type="button"
+                        className="h-6 px-2 text-xs"
                       >
-                        Clear tags
+                        Clear
                       </Button>
-                    )}
-                  </div>
-                )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
-                {/* Batch Actions */}
-                {filteredCampaigns.length > 0 && (
-                  <div className="flex items-center gap-2 flex-wrap border-t pt-4">
-                    <span className="text-sm font-medium text-muted-foreground">
-                      Batch actions ({filteredCampaigns.length} campaign{filteredCampaigns.length !== 1 ? 's' : ''}):
-                    </span>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => setShowBatchDeleteConfirm(true)}
-                      disabled={deletingCampaignId === 'batch'}
-                      type="button"
-                    >
-                      {deletingCampaignId === 'batch' ? (
-                        <Loader2Icon className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <TrashIcon className="h-4 w-4" />
-                      )}
-                      Delete All Filtered
-                    </Button>
-                  </div>
-                )}
+            {/* Row 2: Batch Actions */}
+            {filteredCampaigns.length > 0 && (
+              <div className="flex items-center gap-2 py-1 border-t">
+                <span className="text-xs font-medium text-muted-foreground">
+                  Batch: {filteredCampaigns.length} campaign{filteredCampaigns.length !== 1 ? 's' : ''}
+                </span>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setShowBatchDeleteConfirm(true)}
+                  disabled={deletingCampaignId === 'batch'}
+                  type="button"
+                  className="h-7 px-3 text-xs"
+                >
+                  {deletingCampaignId === 'batch' ? (
+                    <Loader2Icon className="h-3 w-3 animate-spin" />
+                  ) : (
+                    <TrashIcon className="h-3 w-3" />
+                  )}
+                  Delete All
+                </Button>
               </div>
-            </CardContent>
-          </Card>
-        )}
+            )}
+          </div>
+          )}
+        </div>
+      </div>
 
-        {/* Empty State */}
+      {/* Content - with top padding to account for fixed header(s) */}
+      {/* When filter exists: 64px nav + ~196px header + ~80px compact filter = ~340px */}
+      {/* When no filter: 64px nav + ~196px header = ~260px */}
+      <div className={campaigns.length > 0 ? "pt-[340px] pb-8" : "pt-[260px] pb-8"}>
+        <div className="mx-auto max-w-7xl px-8 space-y-8">
+          {/* Error Alert */}
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircleIcon className="h-4 w-4" />
+              <AlertDescription className="flex items-center justify-between">
+                <span>{error}</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={loadCampaigns}
+                  type="button"
+                >
+                  Retry
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Sync Error Alert */}
+          {syncError && (
+            <Alert variant="destructive">
+              <AlertCircleIcon className="h-4 w-4" />
+              <AlertDescription className="flex items-center justify-between">
+                <span>Sync Error: {syncError}</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSyncError(null)}
+                  type="button"
+                >
+                  Dismiss
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Empty State */}
         {campaigns.length === 0 ? (
           <Card className="py-12">
             <CardContent className="flex flex-col items-center justify-center gap-4 text-center">
@@ -994,6 +1009,7 @@ const CampaignDashboard: React.FC = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
     </div>
   );

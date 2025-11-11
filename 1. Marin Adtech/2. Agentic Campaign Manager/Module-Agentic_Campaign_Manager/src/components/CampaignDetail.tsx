@@ -175,31 +175,38 @@ const CampaignDetail: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="mx-auto max-w-7xl space-y-6">
-        {/* Header */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="space-y-2">
-            <Button
-              onClick={() => navigate('/campaigns')}
-              variant="ghost"
-              size="sm"
-              className="mb-2"
-            >
-              <ArrowLeftIcon className="h-4 w-4" />
-              Back
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">{campaign.name}</h1>
-              <div className="flex items-center gap-2 mt-2">
-                <span className="text-sm text-muted-foreground">Status:</span>
-                <Badge variant={getStatusVariant(campaign.status)}>
-                  {getStatusLabel(campaign.status)}
-                </Badge>
+    <div className="min-h-screen bg-background">
+      {/* Header - Fixed (below navigation bar) */}
+      <div className="fixed top-16 left-0 right-0 z-10 bg-background border-b shadow-sm">
+        <div className="mx-auto max-w-7xl px-8 py-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="space-y-2">
+              <Button
+                onClick={() => navigate('/campaigns')}
+                variant="ghost"
+                size="sm"
+                className="mb-2"
+              >
+                <ArrowLeftIcon className="h-4 w-4" />
+                Back
+              </Button>
+              <div>
+                <h1 className="text-3xl font-bold tracking-tight">{campaign.name}</h1>
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="text-sm text-muted-foreground">Status:</span>
+                  <Badge variant={getStatusVariant(campaign.status)}>
+                    {getStatusLabel(campaign.status)}
+                  </Badge>
+                </div>
               </div>
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Content - with top padding to account for fixed header (64px nav + ~140px header) */}
+      <div className="pt-52 pb-8">
+        <div className="mx-auto max-w-7xl px-8 space-y-6">
 
         {/* Campaign Overview */}
         {campaign.campaignPlan && (
@@ -298,6 +305,7 @@ const CampaignDetail: React.FC = () => {
             />
           </CardContent>
         </Card>
+        </div>
       </div>
     </div>
   );

@@ -9,6 +9,7 @@ import { Textarea } from '../ui/textarea';
 import { Button } from '../ui/button';
 import { Label } from '../ui/label';
 import { Badge } from '../ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { TrashIcon, PlusIcon } from 'lucide-react';
 
 /**
@@ -154,46 +155,73 @@ const AdCopyEditor: React.FC<AdCopyEditorProps> = ({ ad, adGroupId, onUpdate }) 
             )}
           </div>
         </CardHeader>
-        <CardContent className="space-y-3">
-          {ad.headlines.map((headline, index) => (
-            <div key={index} className="space-y-2">
-              <div className="flex items-start gap-2">
-                <div className="flex-1 space-y-1">
-                  <Input
-                    type="text"
-                    value={headline.text}
-                    maxLength={30}
-                    onChange={(e) => handleHeadlineChange(index, e.target.value)}
-                    className={headlineErrors[index] ? 'border-destructive' : ''}
-                    placeholder={`Headline ${index + 1}`}
-                  />
-                  {headlineErrors[index] && (
-                    <p className="text-sm text-destructive">{headlineErrors[index]}</p>
-                  )}
-                </div>
-                <div className="flex items-center gap-2 pt-2">
-                  <Badge
-                    variant={headline.text.length > 30 ? 'destructive' : 'secondary'}
-                    className="font-mono text-xs"
-                  >
-                    {headline.text.length}/30
-                  </Badge>
-                  {ad.headlines.length > 3 && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeleteHeadline(index)}
-                      type="button"
-                      title="Delete headline"
-                      className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-12">#</TableHead>
+                <TableHead>Headline</TableHead>
+                <TableHead className="w-24 text-center">Length</TableHead>
+                <TableHead className="w-16 text-center">Status</TableHead>
+                <TableHead className="w-16 text-center">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {ad.headlines.map((headline, index) => (
+                <TableRow key={index}>
+                  <TableCell className="text-muted-foreground font-mono text-xs">
+                    {index + 1}
+                  </TableCell>
+                  <TableCell>
+                    <div className="space-y-1">
+                      <Input
+                        type="text"
+                        value={headline.text}
+                        maxLength={30}
+                        onChange={(e) => handleHeadlineChange(index, e.target.value)}
+                        className={headlineErrors[index] ? 'border-destructive' : ''}
+                        placeholder={`Headline ${index + 1}`}
+                      />
+                      {headlineErrors[index] && (
+                        <p className="text-sm text-destructive">{headlineErrors[index]}</p>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Badge
+                      variant={headline.text.length > 30 ? 'destructive' : 'secondary'}
+                      className="font-mono text-xs"
                     >
-                      <TrashIcon className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
+                      {headline.text.length}/30
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {headline.text.length === 0 ? (
+                      <Badge variant="outline" className="text-xs">Empty</Badge>
+                    ) : headline.text.length > 30 ? (
+                      <Badge variant="destructive" className="text-xs">Too Long</Badge>
+                    ) : (
+                      <Badge variant="default" className="text-xs">Valid</Badge>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {ad.headlines.length > 3 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteHeadline(index)}
+                        type="button"
+                        title="Delete headline"
+                        className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
 

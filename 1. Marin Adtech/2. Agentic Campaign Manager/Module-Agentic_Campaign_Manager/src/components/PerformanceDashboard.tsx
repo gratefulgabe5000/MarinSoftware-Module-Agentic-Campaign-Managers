@@ -183,83 +183,90 @@ const PerformanceDashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="mx-auto max-w-7xl space-y-6">
-        {/* Header */}
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <h1 className="text-3xl font-bold tracking-tight">Performance Dashboard</h1>
-          <div className="flex flex-wrap items-center gap-3">
-            <TimeRangeSelector
-              selectedRange={timeRange}
-              onRangeChange={handleTimeRangeChange}
-              showCustom={false}
-            />
-            <ExportButton
-              metrics={metrics}
-              timeSeries={timeSeries || undefined}
-              campaignId={id}
-            />
+    <div className="min-h-screen bg-background">
+      {/* Header - Fixed (below navigation bar) */}
+      <div className="fixed top-16 left-0 right-0 z-10 bg-background border-b shadow-sm">
+        <div className="mx-auto max-w-7xl px-8 py-4">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <h1 className="text-3xl font-bold tracking-tight">Performance Dashboard</h1>
+            <div className="flex flex-wrap items-center gap-3">
+              <TimeRangeSelector
+                selectedRange={timeRange}
+                onRangeChange={handleTimeRangeChange}
+                showCustom={false}
+              />
+              <ExportButton
+                metrics={metrics}
+                timeSeries={timeSeries || undefined}
+                campaignId={id}
+              />
+            </div>
           </div>
-        </div>
 
-        {/* Status Indicators */}
-        <div className="flex flex-wrap items-center gap-3">
-          {isOffline && (
-            <Badge variant="destructive" className="flex items-center gap-1.5">
-              <WifiOffIcon className="h-3 w-3" />
-              Offline
-            </Badge>
-          )}
-          {isCachedData && !isOffline && (
-            <Badge variant="secondary" className="flex items-center gap-1.5">
-              <HardDriveIcon className="h-3 w-3" />
-              Cached Data
-            </Badge>
-          )}
-          {lastUpdated && (
-            <span className="text-sm text-muted-foreground">
-              Last updated: {lastUpdated.toLocaleTimeString()}
-            </span>
-          )}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setPollingEnabled(!pollingEnabled)}
-            type="button"
-            title={pollingEnabled ? 'Disable auto-refresh' : 'Enable auto-refresh'}
-          >
-            {pollingEnabled ? (
-              <PauseIcon className="h-4 w-4" />
-            ) : (
-              <PlayIcon className="h-4 w-4" />
+          {/* Status Indicators */}
+          <div className="flex flex-wrap items-center gap-3 mt-3">
+            {isOffline && (
+              <Badge variant="destructive" className="flex items-center gap-1.5">
+                <WifiOffIcon className="h-3 w-3" />
+                Offline
+              </Badge>
             )}
-          </Button>
-        </div>
-
-        {/* Metrics Summary Cards */}
-        <section>
-          <MetricsSummaryCards metrics={metrics} />
-        </section>
-
-        {/* Performance Charts */}
-        {timeSeries && (
-          <section>
-            <PerformanceCharts timeSeries={timeSeries} />
-          </section>
-        )}
-
-        {/* Performance vs Goals */}
-        <section>
-          <PerformanceVsGoals metrics={metrics} goals={goals} />
-        </section>
-
-        {/* Refreshing Indicator */}
-        {isLoading && metrics && (
-          <div className="fixed bottom-4 right-4 flex items-center gap-2 rounded-md border bg-background p-3 shadow-lg">
-            <Loader2Icon className="h-4 w-4 animate-spin" />
-            <span className="text-sm">Refreshing data...</span>
+            {isCachedData && !isOffline && (
+              <Badge variant="secondary" className="flex items-center gap-1.5">
+                <HardDriveIcon className="h-3 w-3" />
+                Cached Data
+              </Badge>
+            )}
+            {lastUpdated && (
+              <span className="text-sm text-muted-foreground">
+                Last updated: {lastUpdated.toLocaleTimeString()}
+              </span>
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setPollingEnabled(!pollingEnabled)}
+              type="button"
+              title={pollingEnabled ? 'Disable auto-refresh' : 'Enable auto-refresh'}
+            >
+              {pollingEnabled ? (
+                <PauseIcon className="h-4 w-4" />
+              ) : (
+                <PlayIcon className="h-4 w-4" />
+              )}
+            </Button>
           </div>
-        )}
+        </div>
+      </div>
+
+      {/* Content - with top padding to account for fixed header (64px nav + ~160px header) */}
+      <div className="pt-60 pb-8">
+        <div className="mx-auto max-w-7xl px-8 space-y-6">
+          {/* Metrics Summary Cards */}
+          <section>
+            <MetricsSummaryCards metrics={metrics} />
+          </section>
+
+          {/* Performance Charts */}
+          {timeSeries && (
+            <section>
+              <PerformanceCharts timeSeries={timeSeries} />
+            </section>
+          )}
+
+          {/* Performance vs Goals */}
+          <section>
+            <PerformanceVsGoals metrics={metrics} goals={goals} />
+          </section>
+
+          {/* Refreshing Indicator */}
+          {isLoading && metrics && (
+            <div className="fixed bottom-4 right-4 flex items-center gap-2 rounded-md border bg-background p-3 shadow-lg">
+              <Loader2Icon className="h-4 w-4 animate-spin" />
+              <span className="text-sm">Refreshing data...</span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
