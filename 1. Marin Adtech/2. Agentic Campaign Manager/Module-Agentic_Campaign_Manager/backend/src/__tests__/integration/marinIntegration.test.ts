@@ -7,6 +7,11 @@
  * @module marinIntegration.test
  */
 
+// Set test environment variables before importing modules
+process.env.NODE_ENV = 'test';
+process.env.MARIN_DISPATCHER_BASE_URL = 'http://localhost:3000';
+process.env.MARIN_DISPATCHER_ACCOUNT_ID = 'test-account-123';
+
 // Mock MarinDispatcherService before importing clients
 jest.mock('../../services/marinDispatcherService', () => ({
   MarinDispatcherService: jest.fn().mockImplementation(() => ({

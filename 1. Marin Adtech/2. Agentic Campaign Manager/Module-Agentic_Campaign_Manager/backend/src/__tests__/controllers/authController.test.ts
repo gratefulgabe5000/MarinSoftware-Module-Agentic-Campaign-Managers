@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { AuthController } from '../../controllers/authController';
-import { oauthService } from '../../services/oauthService';
+import * as oauthServiceModule from '../../services/oauthService';
 
 jest.mock('../../services/oauthService', () => ({
   oauthService: {
@@ -17,6 +17,8 @@ jest.mock('../../services/oauthService', () => ({
     removeToken: jest.fn(),
   },
 }));
+
+const { oauthService } = oauthServiceModule;
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -54,10 +56,48 @@ describe('AuthController', () => {
         })
       );
     });
+  });
+
+  describe('callbackGoogle', () => {
+    it('should handle OAuth callback', async () => {
+      mockRequest.query = {
+        code: 'auth-code-123',
+        state: 'state-123',
+      };
+
+      // This method redirects, so we need to mock redirect
+      mockResponse.redirect = jest.fn().mockReturnThis();
+
+      await controller.callbackGoogle(
+        mockRequest as Request,
+        mockResponse as Response
+      );
+
+      expect(mockResponse.redirect).toHaveBeenCalled();
+    });
 
     it('should handle errors', async () => {
+      // Simulate an error in exchangeGoogleCode
+      (oauthService.exchangeGoogleCode as jest.Mock).mockRejectedValueOnce(new Error('OAuth error'));
+
+      mockRequest.query = {
+        code: 'auth-code-123',
+        state: 'state-123',
+      };
+
+      await controller.callbackGoogle(
+        mockRequest as Request,
+        mockResponse as Response
+      );
+
+      expect(mockResponse.redirect).toHaveBeenCalled();
+    });
+  });
+
+  describe('authorizeGoogle error handling', () => {
+    it('should handle errors when generating authorization URL', async () => {
       (oauthService.generateGoogleAuthUrl as jest.Mock).mockImplementationOnce(() => {
-        throw new Error('OAuth error');
+        throw new Error('Authorization error');
       });
 
       await controller.authorizeGoogle(
@@ -112,12 +152,30 @@ describe('AuthController', () => {
         mockRequest as Request,
         mockResponse as Response
       );
-
       expect(mockResponse.json).toHaveBeenCalledWith(
         expect.objectContaining({
           platform: 'google',
           connected: false,
           hasToken: false,
+        })
+      );
+    });
+
+    it('should return Google status when token is present', async () => {
+      const expiryTime = Date.now() + 3600000; // 1 hour from now
+      (oauthService.getToken as jest.Mock).mockReturnValueOnce({ accessToken: 'token-123', expiresAt: expiryTime });
+      (oauthService.isTokenExpired as jest.Mock).mockReturnValueOnce(false);
+
+      await controller.getGoogleStatus(
+        mockRequest as Request,
+        mockResponse as Response
+      );
+
+      expect(mockResponse.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          platform: 'google',
+          connected: true,
+          hasToken: true,
         })
       );
     });

@@ -9,7 +9,7 @@
       "Bash(npm test)",
       "Bash(gh pr create:*)",
       "Bash(npm test:*)",
-      "Bash(tee:*)"
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []
