@@ -6,6 +6,7 @@ import {
   CampaignUpdateRequest,
 } from '../types/campaign.types';
 import { getApiBaseUrl } from '../config/environment';
+import { getApiMode } from '../utils/apiModeHelper';
 
 const API_BASE_URL = getApiBaseUrl();
 
@@ -21,6 +22,20 @@ class CampaignService {
   }
 
   /**
+   * Get headers with API mode
+   * @param additionalHeaders - Additional headers to include
+   * @returns Headers object with X-API-Mode header
+   */
+  private getHeaders(additionalHeaders: Record<string, string> = {}): Record<string, string> {
+    const apiMode = getApiMode();
+    return {
+      'Content-Type': 'application/json',
+      'X-API-Mode': apiMode,
+      ...additionalHeaders,
+    };
+  }
+
+  /**
    * Create a campaign
    */
   async createCampaign(
@@ -31,9 +46,7 @@ class CampaignService {
         `${this.baseURL}/campaigns/create`,
         request,
         {
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: this.getHeaders(),
           timeout: 60000, // 60 seconds timeout for campaign creation
         }
       );
@@ -75,6 +88,7 @@ class CampaignService {
       const response = await axios.get<Campaign>(
         `${this.baseURL}/campaigns/${id}`,
         {
+          headers: this.getHeaders(),
           timeout: 30000,
         }
       );
@@ -96,6 +110,44 @@ class CampaignService {
   }
 
   /**
+   * Get detailed campaign information from Google Ads API
+   */
+  async getCampaignDetails(
+    id: string,
+    googleAdsResourceName?: string
+  ): Promise<any> {
+    try {
+      const params: any = {};
+      if (googleAdsResourceName) {
+        params.googleAdsResourceName = googleAdsResourceName;
+      }
+
+      const response = await axios.get(
+        `${this.baseURL}/campaigns/${id}/details`,
+        {
+          headers: this.getHeaders(),
+          params,
+          timeout: 30000,
+        }
+      );
+
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response) {
+          throw new Error(
+            error.response.data?.error?.message ||
+              `Server error: ${error.response.status}`
+          );
+        } else if (error.request) {
+          throw new Error('Network error: Could not connect to server');
+        }
+      }
+      throw new Error('Failed to get campaign details');
+    }
+  }
+
+  /**
    * Get all campaigns
    */
   async getAllCampaigns(): Promise<Campaign[]> {
@@ -103,6 +155,7 @@ class CampaignService {
       const response = await axios.get<{ campaigns: Campaign[] }>(
         `${this.baseURL}/campaigns`,
         {
+          headers: this.getHeaders(),
           timeout: 30000,
         }
       );
@@ -128,16 +181,21 @@ class CampaignService {
    */
   async updateCampaign(
     id: string,
-    updates: CampaignUpdateRequest
+    updates: CampaignUpdateRequest,
+    googleAdsResourceName?: string
   ): Promise<Campaign> {
     try {
+      const params: any = {};
+      if (googleAdsResourceName) {
+        params.googleAdsResourceName = googleAdsResourceName;
+      }
+
       const response = await axios.put<Campaign>(
         `${this.baseURL}/campaigns/${id}`,
         updates,
         {
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: this.getHeaders(),
+          params,
           timeout: 30000,
         }
       );
@@ -161,11 +219,18 @@ class CampaignService {
   /**
    * Delete campaign
    */
-  async deleteCampaign(id: string): Promise<void> {
+  async deleteCampaign(id: string, googleAdsResourceName?: string): Promise<void> {
     try {
-      await axios.delete(`${this.baseURL}/campaigns/${id}`, {
-        timeout: 30000,
-      });
+      await axios.delete(
+        `${this.baseURL}/campaigns/${id}`,
+        {
+          data: {
+            googleAdsResourceName: googleAdsResourceName || id,
+          },
+          headers: this.getHeaders(),
+          timeout: 30000,
+        }
+      );
     } catch (error) {
       if (axios.isAxiosError(error)) {
         if (error.response) {
@@ -184,15 +249,15 @@ class CampaignService {
   /**
    * Pause campaign
    */
-  async pauseCampaign(id: string): Promise<void> {
+  async pauseCampaign(id: string, googleAdsResourceName?: string): Promise<void> {
     try {
       await axios.post(
         `${this.baseURL}/campaigns/${id}/pause`,
-        {},
         {
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          googleAdsResourceName: googleAdsResourceName || id,
+        },
+        {
+          headers: this.getHeaders(),
           timeout: 30000,
         }
       );
@@ -214,15 +279,15 @@ class CampaignService {
   /**
    * Resume campaign
    */
-  async resumeCampaign(id: string): Promise<void> {
+  async resumeCampaign(id: string, googleAdsResourceName?: string): Promise<void> {
     try {
       await axios.post(
         `${this.baseURL}/campaigns/${id}/resume`,
-        {},
         {
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          googleAdsResourceName: googleAdsResourceName || id,
+        },
+        {
+          headers: this.getHeaders(),
           timeout: 30000,
         }
       );
@@ -260,9 +325,7 @@ class CampaignService {
         {},
         {
           params,
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: this.getHeaders(),
           timeout: 60000, // Longer timeout for sync operation
         }
       );

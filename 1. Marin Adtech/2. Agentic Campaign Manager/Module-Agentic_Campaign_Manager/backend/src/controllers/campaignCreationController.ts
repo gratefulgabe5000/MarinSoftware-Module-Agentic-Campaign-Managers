@@ -88,13 +88,21 @@ export class CampaignCreationController {
       // Get status from request body (for draft creation)
       const status = req.body.status; // 'paused' for drafts, undefined for active campaigns
       
+      // Get API mode from request header (X-API-Mode: 'zilkr' or 'direct')
+      // Defaults to 'direct' if not provided
+      const apiMode = (req.headers['x-api-mode'] as string) || 'direct';
+      
+      // Log API mode for verification
+      console.log(`[API Mode] Campaign creation request received with API mode: ${apiMode}`);
+      
       const request: CampaignCreationRequest = {
         campaignPlan,
         name,
         description,
         metadata,
         ...(status && { status }), // Include status if provided
-      } as any; // Type assertion needed since status is not in CampaignCreationRequest interface
+        apiMode, // Include API mode for service routing
+      } as any; // Type assertion needed since status and apiMode are not in CampaignCreationRequest interface
 
       // Create campaign
       const response = await campaignCreationService.createCampaign(request);
@@ -132,12 +140,17 @@ export class CampaignCreationController {
         return;
       }
 
+      // Get API mode from request header (X-API-Mode: 'zilkr' or 'direct')
+      // Defaults to 'direct' if not provided
+      const apiMode = (req.headers['x-api-mode'] as string) || 'direct';
+      
       const request: CampaignCreationRequest = {
         campaignPlan,
         name,
         description,
         metadata,
-      };
+        apiMode, // Include API mode for service routing
+      } as any; // Type assertion needed since apiMode is not in CampaignCreationRequest interface
 
       // Set up Server-Sent Events for progress updates
       res.setHeader('Content-Type', 'text/event-stream');

@@ -13,6 +13,7 @@ import { Badge } from '../ui/badge';
 import { Alert, AlertDescription } from '../ui/alert';
 import { CheckCircle2Icon, Loader2Icon, ClockIcon, SparklesIcon, ArrowLeftIcon, EyeIcon, HomeIcon, AlertCircleIcon } from 'lucide-react';
 import { Progress } from '../ui/progress';
+import ApiModeToggle from '../ApiModeToggle';
 
 /**
  * Campaign Generation Screen Component
@@ -415,11 +416,16 @@ const CampaignGenerationScreen: React.FC = () => {
   return (
     <div className="min-h-screen bg-background p-8">
       <div className="mx-auto max-w-4xl space-y-8">
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">Generating Campaigns</h1>
-          <p className="text-muted-foreground">
-            Please wait while we generate your campaigns...
-          </p>
+        <div className="space-y-4">
+          <div className="text-center space-y-2">
+            <h1 className="text-3xl font-bold tracking-tight">Generating Campaigns</h1>
+            <p className="text-muted-foreground">
+              Please wait while we generate your campaigns...
+            </p>
+          </div>
+          <div className="flex justify-center">
+            <ApiModeToggle />
+          </div>
         </div>
 
         <Card>

@@ -73,6 +73,7 @@ export interface Campaign {
   updatedAt: Date;
   createdBy?: string;
   metadata?: CampaignMetadata;
+  isMock?: boolean; // Flag to indicate if this campaign was created/retrieved using mock data
 
   /**
    * Customer Profile Container reference

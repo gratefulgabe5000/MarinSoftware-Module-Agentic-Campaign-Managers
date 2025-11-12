@@ -11,9 +11,10 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Badge } from './ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './ui/dialog';
 import { Alert, AlertDescription } from './ui/alert';
-import { PlusIcon, UploadIcon, Loader2Icon, TrashIcon, BarChart3Icon, EyeIcon, AlertCircleIcon, FilterIcon, XIcon, HashIcon, FolderIcon, RefreshCwIcon } from 'lucide-react';
+import { PlusIcon, UploadIcon, Loader2Icon, TrashIcon, BarChart3Icon, EyeIcon, AlertCircleIcon, FilterIcon, XIcon, HashIcon, FolderIcon, RefreshCwIcon, PauseCircleIcon, PlayCircleIcon } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Input } from './ui/input';
+import ApiModeToggle from './ApiModeToggle';
 
 /**
  * Campaign Dashboard Component
@@ -41,6 +42,8 @@ const CampaignDashboard: React.FC = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
+  const [pausingCampaignId, setPausingCampaignId] = useState<string | null>(null);
+  const [resumingCampaignId, setResumingCampaignId] = useState<string | null>(null);
 
   useEffect(() => {
     loadCampaigns();
@@ -194,8 +197,12 @@ const CampaignDashboard: React.FC = () => {
       setDeletingCampaignId(campaignId);
       setShowDeleteConfirm(null);
 
+      // Get the Google Ads resource name from the campaign
+      const campaign = campaigns.find(c => c.id === campaignId);
+      const googleAdsResourceName = campaign?.platformCampaignIds?.googleAds || campaignId;
+
       // Delete campaign via API
-      await campaignService.deleteCampaign(campaignId);
+      await campaignService.deleteCampaign(campaignId, googleAdsResourceName);
 
       // Remove from store
       removeCampaign(campaignId);
@@ -220,6 +227,88 @@ const CampaignDashboard: React.FC = () => {
    */
   const handleCancelDelete = () => {
     setShowDeleteConfirm(null);
+  };
+
+  /**
+   * Handle pause campaign
+   */
+  const handlePauseCampaign = async (campaignId: string) => {
+    try {
+      setPausingCampaignId(campaignId);
+      const campaign = campaigns.find(c => c.id === campaignId);
+      const googleAdsResourceName = campaign?.platformCampaignIds?.googleAds || campaignId;
+      await campaignService.pauseCampaign(campaignId, googleAdsResourceName);
+      
+      // Update campaign in store
+      updateCampaignStore(campaignId, {
+        status: 'paused' as CampaignStatus,
+        updatedAt: new Date().toISOString(),
+      });
+      
+      // Update local state
+      setCampaigns(campaigns.map(c => 
+        c.id === campaignId 
+          ? { ...c, status: 'paused' as CampaignStatus, updatedAt: new Date().toISOString() }
+          : c
+      ));
+      
+      toastService.success('Campaign paused successfully');
+    } catch (error) {
+      console.error('Error pausing campaign:', error);
+      toastService.error(
+        error instanceof Error ? error.message : 'Failed to pause campaign'
+      );
+    } finally {
+      setPausingCampaignId(null);
+    }
+  };
+
+  /**
+   * Handle resume campaign
+   */
+  const handleResumeCampaign = async (campaignId: string) => {
+    try {
+      setResumingCampaignId(campaignId);
+      const campaign = campaigns.find(c => c.id === campaignId);
+      const googleAdsResourceName = campaign?.platformCampaignIds?.googleAds || campaignId;
+      await campaignService.resumeCampaign(campaignId, googleAdsResourceName);
+      
+      // Update campaign in store
+      updateCampaignStore(campaignId, {
+        status: 'active' as CampaignStatus,
+        updatedAt: new Date().toISOString(),
+      });
+      
+      // Update local state
+      setCampaigns(campaigns.map(c => 
+        c.id === campaignId 
+          ? { ...c, status: 'active' as CampaignStatus, updatedAt: new Date().toISOString() }
+          : c
+      ));
+      
+      toastService.success('Campaign resumed successfully');
+    } catch (error) {
+      console.error('Error resuming campaign:', error);
+      toastService.error(
+        error instanceof Error ? error.message : 'Failed to resume campaign'
+      );
+    } finally {
+      setResumingCampaignId(null);
+    }
+  };
+
+  /**
+   * Check if campaign can be paused
+   */
+  const canPause = (campaign: Campaign): boolean => {
+    return campaign.status === 'active' || campaign.status === 'creating';
+  };
+
+  /**
+   * Check if campaign can be resumed
+   */
+  const canResume = (campaign: Campaign): boolean => {
+    return campaign.status === 'paused';
   };
 
   /**
@@ -491,11 +580,14 @@ const CampaignDashboard: React.FC = () => {
           {/* Header Section */}
           <div className="py-4">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h1 className="text-3xl font-bold tracking-tight">Campaign Dashboard</h1>
-                <p className="text-muted-foreground mt-1">
-                  Manage and monitor your advertising campaigns
-                </p>
+              <div className="flex items-center gap-4">
+                <div>
+                  <h1 className="text-3xl font-bold tracking-tight">Campaign Dashboard</h1>
+                  <p className="text-muted-foreground mt-1">
+                    Manage and monitor your advertising campaigns
+                  </p>
+                </div>
+                <ApiModeToggle />
               </div>
               <div className="flex gap-2">
                 <Button
@@ -792,6 +884,15 @@ const CampaignDashboard: React.FC = () => {
                       <div className="flex items-start justify-between gap-4">
                         <CardTitle className="line-clamp-1">{campaign.name}</CardTitle>
                         <div className="flex gap-2 flex-wrap">
+                          {campaign.isMock && (
+                            <Badge 
+                              variant="outline" 
+                              className="bg-yellow-50 text-yellow-700 border-yellow-300 hover:bg-yellow-100"
+                              title="This campaign was created/retrieved using mock/test data"
+                            >
+                              MOCK
+                            </Badge>
+                          )}
                           <Badge 
                             variant="secondary" 
                             className="cursor-pointer hover:bg-secondary/80"
@@ -919,12 +1020,49 @@ const CampaignDashboard: React.FC = () => {
                         Performance
                       </Link>
                     </Button>
+                    {canPause(campaign) && (
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => handlePauseCampaign(campaign.id)}
+                        disabled={pausingCampaignId === campaign.id}
+                        type="button"
+                        className="flex-1"
+                        title="Pause campaign"
+                      >
+                        {pausingCampaignId === campaign.id ? (
+                          <Loader2Icon className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <PauseCircleIcon className="h-4 w-4" />
+                        )}
+                        Pause
+                      </Button>
+                    )}
+                    {canResume(campaign) && (
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => handleResumeCampaign(campaign.id)}
+                        disabled={resumingCampaignId === campaign.id}
+                        type="button"
+                        className="flex-1"
+                        title="Resume campaign"
+                      >
+                        {resumingCampaignId === campaign.id ? (
+                          <Loader2Icon className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <PlayCircleIcon className="h-4 w-4" />
+                        )}
+                        Resume
+                      </Button>
+                    )}
                     <Button
                       variant="destructive"
                       size="sm"
                       onClick={() => handleDeleteClick(campaign.id)}
                       disabled={deletingCampaignId === campaign.id}
                       type="button"
+                      title="Delete campaign"
                     >
                       {deletingCampaignId === campaign.id ? (
                         <Loader2Icon className="h-4 w-4 animate-spin" />

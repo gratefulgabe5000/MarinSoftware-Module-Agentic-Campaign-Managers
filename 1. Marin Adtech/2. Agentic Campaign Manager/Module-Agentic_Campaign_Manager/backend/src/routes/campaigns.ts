@@ -48,6 +48,7 @@ router.get('/:id/performance', performanceController.getCampaignPerformance);
 
 // Campaign CRUD operations (continued)
 router.get('/:id', campaignController.getCampaignById);
+router.get('/:id/details', campaignController.getCampaignDetails);
 router.post('/', campaignController.createCampaign);
 router.put('/:id', campaignController.updateCampaign);
 router.delete('/:id', campaignController.deleteCampaign);
