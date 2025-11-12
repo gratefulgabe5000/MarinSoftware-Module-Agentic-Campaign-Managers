@@ -1,15 +1,15 @@
 /**
- * Unit tests for MarinDispatcherService Campaign Query Operations (Task 4.2.2)
+ * Unit tests for ZilkrDispatcherService Campaign Query Operations (Task 4.2.2)
  *
  * @module marinDispatcherService.campaignQuery.test
  */
 
-import { MarinDispatcherService } from '../../services/marinDispatcherService';
+import { ZilkrDispatcherService } from '../../services/zilkrDispatcherService';
 import axios from 'axios';
 import * as AWSXRay from 'aws-xray-sdk-core';
 import {
-  MarinCampaignResponse,
-  MarinCampaignListResponse,
+  ZilkrCampaignResponse,
+  ZilkrCampaignListResponse,
 } from '../../types/marinDispatcher.types';
 
 // Mock dependencies
@@ -17,7 +17,7 @@ jest.mock('axios');
 jest.mock('aws-xray-sdk-core');
 jest.mock('../../config/env', () => {
   const mockConfig = {
-    marinDispatcher: {
+    zilkrDispatcher: {
       baseUrl: 'http://test-dispatcher.example.com',
       accountId: 'test-account-123',
       publisher: 'google',
@@ -33,12 +33,12 @@ jest.mock('../../config/env', () => {
 
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
-describe('MarinDispatcherService - Campaign Query Operations (Task 4.2.2)', () => {
-  let service: MarinDispatcherService;
+describe('ZilkrDispatcherService - Campaign Query Operations (Task 4.2.2)', () => {
+  let service: ZilkrDispatcherService;
   let mockHttpClient: any;
 
   // Helper function to create mock campaigns
-  const createMockCampaign = (id: string, name: string): MarinCampaignResponse => ({
+  const createMockCampaign = (id: string, name: string): ZilkrCampaignResponse => ({
     id,
     accountId: 'test-account-123',
     name,
@@ -75,7 +75,7 @@ describe('MarinDispatcherService - Campaign Query Operations (Task 4.2.2)', () =
     mockedAxios.create.mockReturnValue(mockHttpClient as any);
 
     // Initialize service
-    service = new MarinDispatcherService('test-account-123', 'google');
+    service = new ZilkrDispatcherService('test-account-123', 'google');
   });
 
   // ========================================================================
@@ -91,7 +91,7 @@ describe('MarinDispatcherService - Campaign Query Operations (Task 4.2.2)', () =
         createMockCampaign('campaign-3', 'Spring Collection'),
       ];
 
-      const mockResponse: MarinCampaignListResponse = {
+      const mockResponse: ZilkrCampaignListResponse = {
         campaigns: mockCampaigns,
         total: 3,
         limit: 10,
@@ -108,7 +108,7 @@ describe('MarinDispatcherService - Campaign Query Operations (Task 4.2.2)', () =
       expect(result.campaigns).toHaveLength(3);
       expect(result.total).toBe(3);
       expect(mockHttpClient.get).toHaveBeenCalledWith(
-        '/dispatcher/google/campaigns',
+        '/api/v2/dispatcher/google/campaigns',
         {
           params: {
             accountId: 'test-account-123',
@@ -124,7 +124,7 @@ describe('MarinDispatcherService - Campaign Query Operations (Task 4.2.2)', () =
         createMockCampaign('campaign-2', 'Campaign 2'),
       ];
 
-      const mockResponse: MarinCampaignListResponse = {
+      const mockResponse: ZilkrCampaignListResponse = {
         campaigns: mockCampaigns,
         total: 10,
         limit: 2,
@@ -142,7 +142,7 @@ describe('MarinDispatcherService - Campaign Query Operations (Task 4.2.2)', () =
       expect(result.limit).toBe(2);
       expect(result.total).toBe(10);
       expect(mockHttpClient.get).toHaveBeenCalledWith(
-        '/dispatcher/google/campaigns',
+        '/api/v2/dispatcher/google/campaigns',
         {
           params: {
             accountId: 'test-account-123',
@@ -159,7 +159,7 @@ describe('MarinDispatcherService - Campaign Query Operations (Task 4.2.2)', () =
         createMockCampaign('campaign-12', 'Campaign 12'),
       ];
 
-      const mockResponse: MarinCampaignListResponse = {
+      const mockResponse: ZilkrCampaignListResponse = {
         campaigns: mockCampaigns,
         total: 20,
         limit: 10,
@@ -177,7 +177,7 @@ describe('MarinDispatcherService - Campaign Query Operations (Task 4.2.2)', () =
       expect(result.offset).toBe(10);
       expect(result.total).toBe(20);
       expect(mockHttpClient.get).toHaveBeenCalledWith(
-        '/dispatcher/google/campaigns',
+        '/api/v2/dispatcher/google/campaigns',
         {
           params: {
             accountId: 'test-account-123',
@@ -195,7 +195,7 @@ describe('MarinDispatcherService - Campaign Query Operations (Task 4.2.2)', () =
         createMockCampaign('campaign-8', 'Campaign 8'),
       ];
 
-      const mockResponse: MarinCampaignListResponse = {
+      const mockResponse: ZilkrCampaignListResponse = {
         campaigns: mockCampaigns,
         total: 25,
         limit: 5,
@@ -214,7 +214,7 @@ describe('MarinDispatcherService - Campaign Query Operations (Task 4.2.2)', () =
       expect(result.offset).toBe(5);
       expect(result.total).toBe(25);
       expect(mockHttpClient.get).toHaveBeenCalledWith(
-        '/dispatcher/google/campaigns',
+        '/api/v2/dispatcher/google/campaigns',
         {
           params: {
             accountId: 'test-account-123',
@@ -226,7 +226,7 @@ describe('MarinDispatcherService - Campaign Query Operations (Task 4.2.2)', () =
     });
 
     it('should return empty list when no campaigns exist', async () => {
-      const mockResponse: MarinCampaignListResponse = {
+      const mockResponse: ZilkrCampaignListResponse = {
         campaigns: [],
         total: 0,
         limit: 10,
@@ -253,7 +253,7 @@ describe('MarinDispatcherService - Campaign Query Operations (Task 4.2.2)', () =
 
       // Verify error was logged
       expect(mockHttpClient.get).toHaveBeenCalledWith(
-        '/dispatcher/google/campaigns',
+        '/api/v2/dispatcher/google/campaigns',
         {
           params: {
             accountId: 'test-account-123',
@@ -330,7 +330,7 @@ describe('MarinDispatcherService - Campaign Query Operations (Task 4.2.2)', () =
     });
 
     it('should query with limit of 0 (edge case)', async () => {
-      const mockResponse: MarinCampaignListResponse = {
+      const mockResponse: ZilkrCampaignListResponse = {
         campaigns: [],
         total: 100,
         limit: 0,
@@ -346,7 +346,7 @@ describe('MarinDispatcherService - Campaign Query Operations (Task 4.2.2)', () =
       expect(result.campaigns).toHaveLength(0);
       expect(result.limit).toBe(0);
       expect(mockHttpClient.get).toHaveBeenCalledWith(
-        '/dispatcher/google/campaigns',
+        '/api/v2/dispatcher/google/campaigns',
         {
           params: {
             accountId: 'test-account-123',
@@ -361,7 +361,7 @@ describe('MarinDispatcherService - Campaign Query Operations (Task 4.2.2)', () =
         createMockCampaign(`campaign-${i + 1}`, `Campaign ${i + 1}`)
       );
 
-      const mockResponse: MarinCampaignListResponse = {
+      const mockResponse: ZilkrCampaignListResponse = {
         campaigns: mockCampaigns,
         total: 500,
         limit: 100,
@@ -385,7 +385,7 @@ describe('MarinDispatcherService - Campaign Query Operations (Task 4.2.2)', () =
         createMockCampaign('campaign-992', 'Campaign 992'),
       ];
 
-      const mockResponse: MarinCampaignListResponse = {
+      const mockResponse: ZilkrCampaignListResponse = {
         campaigns: mockCampaigns,
         total: 1000,
         limit: 10,
@@ -404,7 +404,7 @@ describe('MarinDispatcherService - Campaign Query Operations (Task 4.2.2)', () =
     });
 
     it('should verify X-Ray tracing is called', async () => {
-      const mockResponse: MarinCampaignListResponse = {
+      const mockResponse: ZilkrCampaignListResponse = {
         campaigns: [],
         total: 0,
         limit: 10,
@@ -428,7 +428,7 @@ describe('MarinDispatcherService - Campaign Query Operations (Task 4.2.2)', () =
 
       // Verify X-Ray tracing
       expect(AWSXRay.getSegment).toHaveBeenCalled();
-      expect(mockSegment.addNewSubsegment).toHaveBeenCalledWith('MarinDispatcher.queryCampaigns');
+      expect(mockSegment.addNewSubsegment).toHaveBeenCalledWith('ZilkrDispatcher.queryCampaigns');
       expect(mockSubsegment.close).toHaveBeenCalled();
     });
   });

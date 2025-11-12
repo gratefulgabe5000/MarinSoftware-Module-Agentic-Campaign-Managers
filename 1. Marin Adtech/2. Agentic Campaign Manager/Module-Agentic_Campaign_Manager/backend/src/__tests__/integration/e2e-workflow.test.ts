@@ -14,23 +14,23 @@ process.env.MARIN_DISPATCHER_ACCOUNT_ID = 'test-account-123';
 import request from 'supertest';
 import express, { Application } from 'express';
 import apiRoutes from '../../routes/api';
-import { MarinDispatcherService } from '../../services/marinDispatcherService';
-import { MarinBatchJobService } from '../../services/marinBatchJobService';
+import { ZilkrDispatcherService } from '../../services/zilkrDispatcherService';
+import { ZilkrBatchJobService } from '../../services/zilkrBatchJobService';
 import { CampaignPlan } from '../../types/ai.types';
 import { campaignCreationService } from '../../services/campaignCreationService';
 
 // Mock services
 jest.mock('../../services/campaignCreationService');
-jest.mock('../../services/marinDispatcherService');
-jest.mock('../../services/marinBatchJobService');
+jest.mock('../../services/zilkrDispatcherService');
+jest.mock('../../services/zilkrBatchJobService');
 jest.mock('../../services/googleAdsService');
 jest.mock('../../services/metaAdsService');
 jest.mock('../../services/microsoftAdsService');
 
 describe('E2E Workflow Tests - Marin Dispatcher Integration', () => {
   let app: Application;
-  let marinService: MarinDispatcherService;
-  let batchJobService: MarinBatchJobService;
+  let marinService: ZilkrDispatcherService;
+  let batchJobService: ZilkrBatchJobService;
 
   // Mock campaign plan
   const mockCampaignPlan: CampaignPlan = {
@@ -67,8 +67,8 @@ describe('E2E Workflow Tests - Marin Dispatcher Integration', () => {
     app.use('/api', apiRoutes);
 
     // Initialize services
-    marinService = new MarinDispatcherService('test-account-123', 'google');
-    batchJobService = new MarinBatchJobService();
+    marinService = new ZilkrDispatcherService('test-account-123', 'google');
+    batchJobService = new ZilkrBatchJobService();
   });
 
   beforeEach(() => {
@@ -341,10 +341,7 @@ describe('E2E Workflow Tests - Marin Dispatcher Integration', () => {
         name: `Bulk Campaign ${i + 1}`,
         accountId: 'test-account-123',
         status: 'ENABLED' as const,
-        budget: {
-          amount: 1000 + (i * 100),
-          deliveryMethod: 'STANDARD' as const,
-        },
+        campaignBudget: `budget-${i + 1}`,
         biddingStrategy: 'MANUAL_CPC' as const,
       }));
 
@@ -387,7 +384,7 @@ describe('E2E Workflow Tests - Marin Dispatcher Integration', () => {
         name: `Verification Campaign ${i + 1}`,
         accountId: 'test-account-123',
         status: 'ENABLED' as const,
-        budget: { amount: 1000, deliveryMethod: 'STANDARD' as const },
+        campaignBudget: 'budget-123',
         biddingStrategy: 'MANUAL_CPC' as const,
       }));
 
@@ -408,7 +405,7 @@ describe('E2E Workflow Tests - Marin Dispatcher Integration', () => {
           resource: {
             name: campaign.name,
             status: campaign.status,
-            budget: campaign.budget,
+            campaignBudget: campaign.campaignBudget,
             biddingStrategy: campaign.biddingStrategy,
           },
         })),
@@ -423,7 +420,7 @@ describe('E2E Workflow Tests - Marin Dispatcher Integration', () => {
       result.results.forEach((res: any, index: number) => {
         expect(res.resource.name).toBe(mockCampaigns[index].name);
         expect(res.resource.status).toBe(mockCampaigns[index].status);
-        expect(res.resource.budget).toEqual(mockCampaigns[index].budget);
+        expect(res.resource.campaignBudget).toEqual(mockCampaigns[index].campaignBudget);
         expect(res.resource.biddingStrategy).toBe(mockCampaigns[index].biddingStrategy);
       });
     });
@@ -433,7 +430,7 @@ describe('E2E Workflow Tests - Marin Dispatcher Integration', () => {
         name: `Partial Campaign ${i + 1}`,
         accountId: 'test-account-123',
         status: 'ENABLED' as const,
-        budget: { amount: 1000, deliveryMethod: 'STANDARD' as const },
+        campaignBudget: 'budget-123',
         biddingStrategy: 'MANUAL_CPC' as const,
       }));
 

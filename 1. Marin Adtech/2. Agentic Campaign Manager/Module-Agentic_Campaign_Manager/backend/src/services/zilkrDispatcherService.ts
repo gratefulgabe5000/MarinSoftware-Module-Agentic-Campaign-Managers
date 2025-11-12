@@ -162,26 +162,26 @@ export class ZilkrDispatcherService extends BasePlatformAPI implements IPlatform
     const segment = AWSXRay.getSegment();
     const subsegment = segment?.addNewSubsegment('ZilkrDispatcher.createBudget');
 
-    try {
-      const request: ZilkrBudgetRequest = {
-        accountId: this.accountId,
-        amount,
-        deliveryMethod,
-      };
+    const budgetRequest: ZilkrBudgetRequest = {
+      accountId: this.accountId,
+      amount,
+      deliveryMethod,
+    };
 
+    try {
       // Create budget resource via Zilkr Dispatcher
       // Note: This endpoint may need to be added by Zilkr Dispatcher team
       // Expected endpoint: POST /api/v2/dispatcher/google/campaign-budgets
       const response = await this.httpClient.post<ZilkrBudgetResponse>(
         this.buildApiPath('/campaign-budgets'),
-        request
+        budgetRequest
       );
 
       subsegment?.close();
       return response.data;
     } catch (error: any) {
       subsegment?.close();
-      
+
       // If this is a 404 error, provide a clear message that the endpoint needs to be implemented
       if (error.response?.status === 404) {
         const endpoint = this.buildApiPath('/campaign-budgets');
@@ -189,13 +189,13 @@ export class ZilkrDispatcherService extends BasePlatformAPI implements IPlatform
           `Zilkr Dispatcher endpoint not found (404): ${endpoint}. ` +
           `This endpoint needs to be implemented by the Zilkr Dispatcher team. ` +
           `The Agentic Campaign Manager requires this endpoint to create campaign budgets before creating campaigns. ` +
-          `Request body: ${JSON.stringify(request)}`
+          `Request body: ${JSON.stringify(budgetRequest)}`
         );
         (enhancedError as any).response = error.response;
         (enhancedError as any).request = error.request;
         throw enhancedError;
       }
-      
+
       throw error; // Re-throw to be handled by caller
     }
   }
