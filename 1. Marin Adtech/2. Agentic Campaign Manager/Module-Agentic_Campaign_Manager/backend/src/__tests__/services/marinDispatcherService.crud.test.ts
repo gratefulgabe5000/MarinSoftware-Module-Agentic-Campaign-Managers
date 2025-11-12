@@ -1,5 +1,5 @@
 /**
- * Campaign CRUD Operations Tests for MarinDispatcherService (Task 4.2.1)
+ * Campaign CRUD Operations Tests for ZilkrDispatcherService (Task 4.2.1)
  *
  * Tests all campaign CRUD operations: create, read, update, pause, resume, delete
  * Includes validation tests and error scenario tests
@@ -7,23 +7,38 @@
  * @module marinDispatcherService.crud.test
  */
 
-import { MarinDispatcherService } from '../../services/marinDispatcherService';
+import { ZilkrDispatcherService } from '../../services/zilkrDispatcherService';
 import { CampaignPlan } from '../../types/ai.types';
 import axios from 'axios';
 import * as AWSXRay from 'aws-xray-sdk-core';
 import {
-  MarinCampaignResponse,
-  MarinCampaignRequest,
+  ZilkrCampaignResponse,
+  ZilkrCampaignRequest,
 } from '../../types/marinDispatcher.types';
 
 // Mock dependencies
 jest.mock('axios');
 jest.mock('aws-xray-sdk-core');
+jest.mock('../../config/env', () => {
+  const mockConfig = {
+    zilkrDispatcher: {
+      baseUrl: 'http://test-dispatcher.example.com',
+      accountId: 'test-account-123',
+      publisher: 'google',
+      timeout: 30000,
+    },
+  };
+  return {
+    __esModule: true,
+    default: mockConfig,
+    config: mockConfig,
+  };
+});
 
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
-describe('MarinDispatcherService - Campaign CRUD Tests (Task 4.2.1)', () => {
-  let service: MarinDispatcherService;
+describe('ZilkrDispatcherService - Campaign CRUD Tests (Task 4.2.1)', () => {
+  let service: ZilkrDispatcherService;
   let mockHttpClient: any;
   let mockSegment: any;
   let mockSubsegment: any;
@@ -82,7 +97,7 @@ describe('MarinDispatcherService - Campaign CRUD Tests (Task 4.2.1)', () => {
     mockedAxios.create.mockReturnValue(mockHttpClient as any);
 
     // Initialize service
-    service = new MarinDispatcherService('test-account-123', 'google');
+    service = new ZilkrDispatcherService('test-account-123', 'google');
   });
 
   // ========================================================================
@@ -91,7 +106,7 @@ describe('MarinDispatcherService - Campaign CRUD Tests (Task 4.2.1)', () => {
 
   describe('createCampaign() - Valid Data', () => {
     it('should create campaign with valid data and return campaign ID', async () => {
-      const mockResponse: MarinCampaignResponse = {
+      const mockResponse: ZilkrCampaignResponse = {
         id: 'marin-campaign-123',
         resourceId: 'google-campaign-456',
         accountId: 'test-account-123',
@@ -119,7 +134,15 @@ describe('MarinDispatcherService - Campaign CRUD Tests (Task 4.2.1)', () => {
     });
 
     it('should verify budget is NOT converted to micros', async () => {
-      const mockResponse: MarinCampaignResponse = {
+      const mockBudgetResponse = {
+        status: 'SUCCESS',
+        budgetId: 'budget-123',
+        resourceName: 'customers/test/campaignBudgets/budget-123',
+        amount: 1000,
+        deliveryMethod: 'STANDARD',
+      };
+
+      const mockCampaignResponse: ZilkrCampaignResponse = {
         id: 'marin-campaign-123',
         resourceId: 'google-campaign-456',
         accountId: 'test-account-123',
@@ -127,29 +150,40 @@ describe('MarinDispatcherService - Campaign CRUD Tests (Task 4.2.1)', () => {
         campaignStatus: 'ENABLED',
         status: 'SUCCESS',
         budget: {
-          amount: 1000, // Should be in dollars, not micros
+          amount: 1000,
           deliveryMethod: 'STANDARD',
         },
         biddingStrategy: 'MANUAL_CPC',
       };
 
-      mockHttpClient.post.mockResolvedValue({ data: mockResponse });
+      mockHttpClient.post
+        .mockResolvedValueOnce({ data: mockBudgetResponse })
+        .mockResolvedValueOnce({ data: mockCampaignResponse });
 
       await service.createCampaign(sampleCampaignPlan, 'Budget Test Campaign');
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        '/dispatcher/google/campaigns',
+      // Verify budget creation call (first call)
+      expect(mockHttpClient.post).toHaveBeenNthCalledWith(
+        1,
+        '/api/v2/dispatcher/google/campaign-budgets',
         expect.objectContaining({
-          budget: {
-            amount: 1000, // Verify NO micros conversion (NOT 1000000000)
-            deliveryMethod: 'STANDARD',
-          },
+          amount: 1000, // Verify NO micros conversion
+          deliveryMethod: 'STANDARD',
+        })
+      );
+
+      // Verify campaign creation call (second call) with budget reference
+      expect(mockHttpClient.post).toHaveBeenNthCalledWith(
+        2,
+        '/api/v2/dispatcher/google/campaigns',
+        expect.objectContaining({
+          campaignBudget: 'customers/test/campaignBudgets/budget-123',
         })
       );
     });
 
     it('should verify status is ENABLED by default', async () => {
-      const mockResponse: MarinCampaignResponse = {
+      const mockResponse: ZilkrCampaignResponse = {
         id: 'marin-campaign-123',
         resourceId: 'google-campaign-456',
         accountId: 'test-account-123',
@@ -165,7 +199,7 @@ describe('MarinDispatcherService - Campaign CRUD Tests (Task 4.2.1)', () => {
       await service.createCampaign(sampleCampaignPlan, 'Status Test Campaign');
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
-        '/dispatcher/google/campaigns',
+        '/api/v2/dispatcher/google/campaigns',
         expect.objectContaining({
           status: 'ENABLED', // Default status should be ENABLED
         })
@@ -173,7 +207,15 @@ describe('MarinDispatcherService - Campaign CRUD Tests (Task 4.2.1)', () => {
     });
 
     it('should include objective in campaign request', async () => {
-      const mockResponse: MarinCampaignResponse = {
+      const mockBudgetResponse = {
+        status: 'SUCCESS',
+        budgetId: 'budget-123',
+        resourceName: 'customers/test/campaignBudgets/budget-123',
+        amount: 1000,
+        deliveryMethod: 'STANDARD',
+      };
+
+      const mockCampaignResponse: ZilkrCampaignResponse = {
         id: 'marin-campaign-123',
         resourceId: 'google-campaign-456',
         accountId: 'test-account-123',
@@ -184,12 +226,15 @@ describe('MarinDispatcherService - Campaign CRUD Tests (Task 4.2.1)', () => {
         biddingStrategy: 'MANUAL_CPC',
       };
 
-      mockHttpClient.post.mockResolvedValue({ data: mockResponse });
+      mockHttpClient.post
+        .mockResolvedValueOnce({ data: mockBudgetResponse })
+        .mockResolvedValueOnce({ data: mockCampaignResponse });
 
       await service.createCampaign(sampleCampaignPlan, 'Objective Test Campaign');
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        '/dispatcher/google/campaigns',
+      expect(mockHttpClient.post).toHaveBeenNthCalledWith(
+        2,
+        '/api/v2/dispatcher/google/campaigns',
         expect.objectContaining({
           objective: 'MAXIMIZE_CONVERSIONS',
         })
@@ -206,7 +251,15 @@ describe('MarinDispatcherService - Campaign CRUD Tests (Task 4.2.1)', () => {
         },
       };
 
-      const mockResponse: MarinCampaignResponse = {
+      const mockBudgetResponse = {
+        status: 'SUCCESS',
+        budgetId: 'budget-daily',
+        resourceName: 'customers/test/campaignBudgets/budget-daily',
+        amount: 50,
+        deliveryMethod: 'STANDARD',
+      };
+
+      const mockCampaignResponse: ZilkrCampaignResponse = {
         id: 'marin-campaign-123',
         resourceId: 'google-campaign-456',
         accountId: 'test-account-123',
@@ -217,17 +270,19 @@ describe('MarinDispatcherService - Campaign CRUD Tests (Task 4.2.1)', () => {
         biddingStrategy: 'MANUAL_CPC',
       };
 
-      mockHttpClient.post.mockResolvedValue({ data: mockResponse });
+      mockHttpClient.post
+        .mockResolvedValueOnce({ data: mockBudgetResponse })
+        .mockResolvedValueOnce({ data: mockCampaignResponse });
 
       await service.createCampaign(planWithDailyOnly, 'Daily Budget Campaign');
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(
-        '/dispatcher/google/campaigns',
+      // Verify budget creation uses daily amount
+      expect(mockHttpClient.post).toHaveBeenNthCalledWith(
+        1,
+        '/api/v2/dispatcher/google/campaign-budgets',
         expect.objectContaining({
-          budget: {
-            amount: 50, // Should use daily budget when total is not provided
-            deliveryMethod: 'STANDARD',
-          },
+          amount: 50, // Should use daily budget when total is not provided
+          deliveryMethod: 'STANDARD',
         })
       );
     });
@@ -239,7 +294,7 @@ describe('MarinDispatcherService - Campaign CRUD Tests (Task 4.2.1)', () => {
 
   describe('getCampaignStatus()', () => {
     it('should retrieve campaign status with valid campaign ID', async () => {
-      const mockResponse: MarinCampaignResponse = {
+      const mockResponse: ZilkrCampaignResponse = {
         id: 'marin-campaign-123',
         resourceId: 'google-campaign-456',
         accountId: 'test-account-123',
@@ -260,12 +315,12 @@ describe('MarinDispatcherService - Campaign CRUD Tests (Task 4.2.1)', () => {
       expect(result.campaignId).toBe('google-campaign-456');
       expect(result.details?.status).toBe('ENABLED');
       expect(mockHttpClient.get).toHaveBeenCalledWith(
-        '/dispatcher/google/campaigns/google-campaign-456'
+        '/api/v2/dispatcher/google/campaigns/google-campaign-456'
       );
     });
 
     it('should return campaign details including budget and status', async () => {
-      const mockResponse: MarinCampaignResponse = {
+      const mockResponse: ZilkrCampaignResponse = {
         id: 'marin-campaign-123',
         resourceId: 'google-campaign-456',
         accountId: 'test-account-123',
@@ -305,7 +360,7 @@ describe('MarinDispatcherService - Campaign CRUD Tests (Task 4.2.1)', () => {
         },
       };
 
-      const mockResponse: MarinCampaignResponse = {
+      const mockResponse: ZilkrCampaignResponse = {
         id: 'marin-campaign-123',
         resourceId: 'google-campaign-456',
         accountId: 'test-account-123',
@@ -323,7 +378,7 @@ describe('MarinDispatcherService - Campaign CRUD Tests (Task 4.2.1)', () => {
       expect(result.success).toBe(true);
       expect(result.details?.budget?.amount).toBe(2000);
       expect(mockHttpClient.put).toHaveBeenCalledWith(
-        '/dispatcher/google/campaigns/google-campaign-456',
+        '/api/v2/dispatcher/google/campaigns/google-campaign-456',
         expect.objectContaining({
           budget: {
             amount: 2000,
@@ -341,7 +396,7 @@ describe('MarinDispatcherService - Campaign CRUD Tests (Task 4.2.1)', () => {
         },
       };
 
-      const mockResponse: MarinCampaignResponse = {
+      const mockResponse: ZilkrCampaignResponse = {
         id: 'marin-campaign-123',
         resourceId: 'google-campaign-456',
         accountId: 'test-account-123',
@@ -357,7 +412,7 @@ describe('MarinDispatcherService - Campaign CRUD Tests (Task 4.2.1)', () => {
       await service.updateCampaign('google-campaign-456', updates);
 
       expect(mockHttpClient.put).toHaveBeenCalledWith(
-        '/dispatcher/google/campaigns/google-campaign-456',
+        '/api/v2/dispatcher/google/campaigns/google-campaign-456',
         expect.objectContaining({
           budget: {
             amount: 1500, // Verify NO micros conversion
@@ -390,7 +445,7 @@ describe('MarinDispatcherService - Campaign CRUD Tests (Task 4.2.1)', () => {
 
   describe('pauseCampaign()', () => {
     it('should pause campaign by setting status to PAUSED', async () => {
-      const mockResponse: MarinCampaignResponse = {
+      const mockResponse: ZilkrCampaignResponse = {
         id: 'marin-campaign-123',
         resourceId: 'google-campaign-456',
         accountId: 'test-account-123',
@@ -408,7 +463,7 @@ describe('MarinDispatcherService - Campaign CRUD Tests (Task 4.2.1)', () => {
       expect(result.success).toBe(true);
       expect(result.details?.status).toBe('PAUSED');
       expect(mockHttpClient.put).toHaveBeenCalledWith(
-        '/dispatcher/google/campaigns/google-campaign-456',
+        '/api/v2/dispatcher/google/campaigns/google-campaign-456',
         { status: 'PAUSED' }
       );
     });
@@ -428,7 +483,7 @@ describe('MarinDispatcherService - Campaign CRUD Tests (Task 4.2.1)', () => {
 
   describe('resumeCampaign()', () => {
     it('should resume campaign by setting status to ENABLED', async () => {
-      const mockResponse: MarinCampaignResponse = {
+      const mockResponse: ZilkrCampaignResponse = {
         id: 'marin-campaign-123',
         resourceId: 'google-campaign-456',
         accountId: 'test-account-123',
@@ -446,7 +501,7 @@ describe('MarinDispatcherService - Campaign CRUD Tests (Task 4.2.1)', () => {
       expect(result.success).toBe(true);
       expect(result.details?.status).toBe('ENABLED');
       expect(mockHttpClient.put).toHaveBeenCalledWith(
-        '/dispatcher/google/campaigns/google-campaign-456',
+        '/api/v2/dispatcher/google/campaigns/google-campaign-456',
         { status: 'ENABLED' }
       );
     });
@@ -466,7 +521,7 @@ describe('MarinDispatcherService - Campaign CRUD Tests (Task 4.2.1)', () => {
 
   describe('deleteCampaign()', () => {
     it('should delete campaign by setting status to REMOVED', async () => {
-      const mockResponse: MarinCampaignResponse = {
+      const mockResponse: ZilkrCampaignResponse = {
         id: 'marin-campaign-123',
         resourceId: 'google-campaign-456',
         accountId: 'test-account-123',
@@ -484,7 +539,7 @@ describe('MarinDispatcherService - Campaign CRUD Tests (Task 4.2.1)', () => {
       expect(result.success).toBe(true);
       expect(result.details?.status).toBe('REMOVED');
       expect(mockHttpClient.put).toHaveBeenCalledWith(
-        '/dispatcher/google/campaigns/google-campaign-456',
+        '/api/v2/dispatcher/google/campaigns/google-campaign-456',
         { status: 'REMOVED' }
       );
     });
@@ -644,7 +699,7 @@ describe('MarinDispatcherService - Campaign CRUD Tests (Task 4.2.1)', () => {
 
   describe('X-Ray Tracing', () => {
     it('should create subsegment for createCampaign', async () => {
-      const mockResponse: MarinCampaignResponse = {
+      const mockResponse: ZilkrCampaignResponse = {
         id: 'marin-campaign-123',
         resourceId: 'google-campaign-456',
         accountId: 'test-account-123',
@@ -660,7 +715,7 @@ describe('MarinDispatcherService - Campaign CRUD Tests (Task 4.2.1)', () => {
       await service.createCampaign(sampleCampaignPlan, 'Test Campaign');
 
       expect(mockSegment.addNewSubsegment).toHaveBeenCalledWith(
-        'MarinDispatcher.createCampaign'
+        'ZilkrDispatcher.createCampaign'
       );
       expect(mockSubsegment.close).toHaveBeenCalled();
     });

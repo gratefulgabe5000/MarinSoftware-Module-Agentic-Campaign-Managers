@@ -16,8 +16,8 @@ jest.mock('../../services/metaAdsService', () => ({
 jest.mock('../../services/microsoftAdsService', () => ({
   MicrosoftAdsService: jest.fn().mockImplementation(() => ({})),
 }));
-jest.mock('../../services/marinDispatcherService', () => ({
-  MarinDispatcherService: jest.fn().mockImplementation(() => ({})),
+jest.mock('../../services/zilkrDispatcherService', () => ({
+  ZilkrDispatcherService: jest.fn().mockImplementation(() => ({})),
 }));
 
 // Mock campaign creation service

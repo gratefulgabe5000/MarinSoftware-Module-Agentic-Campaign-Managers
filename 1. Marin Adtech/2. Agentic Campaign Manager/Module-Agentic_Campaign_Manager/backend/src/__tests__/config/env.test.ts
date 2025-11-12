@@ -10,6 +10,11 @@
  * @module env.test
  */
 
+// Mock dotenv to prevent loading .env file during tests
+jest.mock('dotenv', () => ({
+  config: jest.fn(),
+}));
+
 describe('Environment Configuration', () => {
   let originalEnv: NodeJS.ProcessEnv;
   let consoleWarnSpy: jest.SpyInstance;
@@ -17,6 +22,9 @@ describe('Environment Configuration', () => {
   beforeEach(() => {
     // Save original environment
     originalEnv = { ...process.env };
+
+    // Clear all environment variables to start fresh
+    process.env = {};
 
     // Clear Jest module cache to force re-import of config
     jest.resetModules();
@@ -53,9 +61,9 @@ describe('Environment Configuration', () => {
       process.env.MICROSOFT_ADS_CLIENT_ID = 'test-microsoft-client-id';
       process.env.MICROSOFT_ADS_CLIENT_SECRET = 'test-microsoft-secret';
       process.env.DISPATCHER_URL = 'https://test-dispatcher.example.com';
-      process.env.MARIN_DISPATCHER_ACCOUNT_ID = 'test-account-123';
-      process.env.MARIN_DISPATCHER_PUBLISHER = 'google';
-      process.env.MARIN_DISPATCHER_TIMEOUT = '15000';
+      process.env.ZILKR_DISPATCHER_ACCOUNT_ID = 'test-account-123';
+      process.env.ZILKR_DISPATCHER_PUBLISHER = 'google';
+      process.env.ZILKR_DISPATCHER_TIMEOUT = '15000';
 
       // Import config after setting environment variables
       const { config } = await import('../../config/env');
@@ -74,10 +82,10 @@ describe('Environment Configuration', () => {
       expect(config.metaAppSecret).toBe('test-meta-secret');
       expect(config.microsoftAdsClientId).toBe('test-microsoft-client-id');
       expect(config.microsoftAdsClientSecret).toBe('test-microsoft-secret');
-      expect(config.marinDispatcher.baseUrl).toBe('https://test-dispatcher.example.com');
-      expect(config.marinDispatcher.accountId).toBe('test-account-123');
-      expect(config.marinDispatcher.publisher).toBe('google');
-      expect(config.marinDispatcher.timeout).toBe(15000);
+      expect(config.zilkrDispatcher.baseUrl).toBe('https://test-dispatcher.example.com');
+      expect(config.zilkrDispatcher.accountId).toBe('test-account-123');
+      expect(config.zilkrDispatcher.publisher).toBe('google');
+      expect(config.zilkrDispatcher.timeout).toBe(15000);
     });
 
     it('should use default values when optional variables are not set', async () => {
@@ -92,35 +100,35 @@ describe('Environment Configuration', () => {
       expect(config.corsOrigin).toBe('http://localhost:5173');
       expect(config.openaiApiKey).toBe('');
       expect(config.anthropicApiKey).toBe('');
-      expect(config.marinDispatcher.publisher).toBe('google');
-      expect(config.marinDispatcher.timeout).toBe(10000);
+      expect(config.zilkrDispatcher.publisher).toBe('google');
+      expect(config.zilkrDispatcher.timeout).toBe(10000);
     });
 
-    it('should prioritize DISPATCHER_URL over MARIN_DISPATCHER_BASE_URL', async () => {
+    it('should prioritize DISPATCHER_URL over ZILKR_DISPATCHER_BASE_URL', async () => {
       process.env.DISPATCHER_URL = 'https://prod-dispatcher.example.com';
-      process.env.MARIN_DISPATCHER_BASE_URL = 'http://localhost:3000';
+      process.env.ZILKR_DISPATCHER_BASE_URL = 'http://localhost:3000';
 
       const { config } = await import('../../config/env');
 
-      expect(config.marinDispatcher.baseUrl).toBe('https://prod-dispatcher.example.com');
+      expect(config.zilkrDispatcher.baseUrl).toBe('https://prod-dispatcher.example.com');
     });
 
-    it('should fallback to MARIN_DISPATCHER_BASE_URL when DISPATCHER_URL is not set', async () => {
+    it('should fallback to ZILKR_DISPATCHER_BASE_URL when DISPATCHER_URL is not set', async () => {
       delete process.env.DISPATCHER_URL;
-      process.env.MARIN_DISPATCHER_BASE_URL = 'http://localhost:3000';
+      process.env.ZILKR_DISPATCHER_BASE_URL = 'http://localhost:3000';
 
       const { config } = await import('../../config/env');
 
-      expect(config.marinDispatcher.baseUrl).toBe('http://localhost:3000');
+      expect(config.zilkrDispatcher.baseUrl).toBe('http://localhost:3000');
     });
 
     it('should parse timeout as integer', async () => {
-      process.env.MARIN_DISPATCHER_TIMEOUT = '25000';
+      process.env.ZILKR_DISPATCHER_TIMEOUT = '25000';
 
       const { config } = await import('../../config/env');
 
-      expect(config.marinDispatcher.timeout).toBe(25000);
-      expect(typeof config.marinDispatcher.timeout).toBe('number');
+      expect(config.zilkrDispatcher.timeout).toBe(25000);
+      expect(typeof config.zilkrDispatcher.timeout).toBe('number');
     });
   });
 
@@ -151,19 +159,19 @@ describe('Environment Configuration', () => {
     it('should warn about missing DISPATCHER_URL in production', async () => {
       process.env.NODE_ENV = 'production';
       delete process.env.DISPATCHER_URL;
-      delete process.env.MARIN_DISPATCHER_BASE_URL;
+      delete process.env.ZILKR_DISPATCHER_BASE_URL;
 
       await import('../../config/env');
 
       expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringContaining('DISPATCHER_URL or MARIN_DISPATCHER_BASE_URL must be set')
+        expect.stringContaining('DISPATCHER_URL or ZILKR_DISPATCHER_BASE_URL must be set')
       );
     });
 
     it('should not warn about missing DISPATCHER_URL in development', async () => {
       process.env.NODE_ENV = 'development';
       delete process.env.DISPATCHER_URL;
-      delete process.env.MARIN_DISPATCHER_BASE_URL;
+      delete process.env.ZILKR_DISPATCHER_BASE_URL;
 
       await import('../../config/env');
 
@@ -184,8 +192,8 @@ describe('Environment Configuration', () => {
       expect(config.port).toBe(3001);
       expect(config.corsOrigin).toBe('http://localhost:5173');
       expect(config.openaiApiKey).toBe('');
-      expect(config.marinDispatcher.baseUrl).toBe('');
-      expect(config.marinDispatcher.timeout).toBe(10000);
+      expect(config.zilkrDispatcher.baseUrl).toBe('');
+      expect(config.zilkrDispatcher.timeout).toBe(10000);
     });
   });
 
@@ -203,31 +211,31 @@ describe('Environment Configuration', () => {
     });
 
     it('should handle invalid timeout value gracefully', async () => {
-      process.env.MARIN_DISPATCHER_TIMEOUT = 'invalid-timeout';
+      process.env.ZILKR_DISPATCHER_TIMEOUT = 'invalid-timeout';
 
       const { config } = await import('../../config/env');
 
       // parseInt will return NaN for invalid strings
-      expect(isNaN(config.marinDispatcher.timeout)).toBe(true);
+      expect(isNaN(config.zilkrDispatcher.timeout)).toBe(true);
     });
 
     it('should handle timeout value that parses to valid number', async () => {
-      process.env.MARIN_DISPATCHER_TIMEOUT = '5000abc'; // parseInt will parse to 5000
+      process.env.ZILKR_DISPATCHER_TIMEOUT = '5000abc'; // parseInt will parse to 5000
 
       const { config } = await import('../../config/env');
 
-      expect(config.marinDispatcher.timeout).toBe(5000);
+      expect(config.zilkrDispatcher.timeout).toBe(5000);
     });
 
     it('should handle empty string values', async () => {
       process.env.OPENAI_API_KEY = '';
-      process.env.MARIN_DISPATCHER_BASE_URL = '';
+      process.env.ZILKR_DISPATCHER_BASE_URL = '';
       delete process.env.DISPATCHER_URL;
 
       const { config } = await import('../../config/env');
 
       expect(config.openaiApiKey).toBe('');
-      expect(config.marinDispatcher.baseUrl).toBe('');
+      expect(config.zilkrDispatcher.baseUrl).toBe('');
     });
 
     it('should handle whitespace in string values', async () => {
@@ -241,29 +249,29 @@ describe('Environment Configuration', () => {
 
     it('should handle special characters in string values', async () => {
       process.env.OPENAI_API_KEY = 'key-with-$pecial-ch@rs!';
-      process.env.MARIN_DISPATCHER_BASE_URL = 'https://api.example.com/v1?key=value&foo=bar';
+      process.env.ZILKR_DISPATCHER_BASE_URL = 'https://api.example.com/v1?key=value&foo=bar';
       delete process.env.DISPATCHER_URL;
 
       const { config } = await import('../../config/env');
 
       expect(config.openaiApiKey).toBe('key-with-$pecial-ch@rs!');
-      expect(config.marinDispatcher.baseUrl).toBe('https://api.example.com/v1?key=value&foo=bar');
+      expect(config.zilkrDispatcher.baseUrl).toBe('https://api.example.com/v1?key=value&foo=bar');
     });
 
     it('should handle timeout of 0', async () => {
-      process.env.MARIN_DISPATCHER_TIMEOUT = '0';
+      process.env.ZILKR_DISPATCHER_TIMEOUT = '0';
 
       const { config } = await import('../../config/env');
 
-      expect(config.marinDispatcher.timeout).toBe(0);
+      expect(config.zilkrDispatcher.timeout).toBe(0);
     });
 
     it('should handle negative timeout value', async () => {
-      process.env.MARIN_DISPATCHER_TIMEOUT = '-5000';
+      process.env.ZILKR_DISPATCHER_TIMEOUT = '-5000';
 
       const { config } = await import('../../config/env');
 
-      expect(config.marinDispatcher.timeout).toBe(-5000);
+      expect(config.zilkrDispatcher.timeout).toBe(-5000);
     });
   });
 
@@ -285,12 +293,12 @@ describe('Environment Configuration', () => {
     it('should provide clear warning message for missing Dispatcher URL', async () => {
       process.env.NODE_ENV = 'production';
       delete process.env.DISPATCHER_URL;
-      delete process.env.MARIN_DISPATCHER_BASE_URL;
+      delete process.env.ZILKR_DISPATCHER_BASE_URL;
 
       await import('../../config/env');
 
       expect(consoleWarnSpy).toHaveBeenCalledWith(
-        'Warning: DISPATCHER_URL or MARIN_DISPATCHER_BASE_URL must be set for Marin Dispatcher integration'
+        'Warning: DISPATCHER_URL or ZILKR_DISPATCHER_BASE_URL must be set for Zilkr Dispatcher integration'
       );
     });
 
@@ -320,13 +328,13 @@ describe('Environment Configuration', () => {
       expect(config).toHaveProperty('corsOrigin');
       expect(config).toHaveProperty('openaiApiKey');
       expect(config).toHaveProperty('anthropicApiKey');
-      expect(config).toHaveProperty('marinDispatcher');
+      expect(config).toHaveProperty('zilkrDispatcher');
 
       // Verify marinDispatcher has correct structure
-      expect(config.marinDispatcher).toHaveProperty('baseUrl');
-      expect(config.marinDispatcher).toHaveProperty('accountId');
-      expect(config.marinDispatcher).toHaveProperty('publisher');
-      expect(config.marinDispatcher).toHaveProperty('timeout');
+      expect(config.zilkrDispatcher).toHaveProperty('baseUrl');
+      expect(config.zilkrDispatcher).toHaveProperty('accountId');
+      expect(config.zilkrDispatcher).toHaveProperty('publisher');
+      expect(config.zilkrDispatcher).toHaveProperty('timeout');
     });
 
     it('should export MarinDispatcherConfig interface', async () => {
@@ -343,11 +351,11 @@ describe('Environment Configuration', () => {
   // ========================================================================
   describe('Edge Cases', () => {
     it('should handle maximum timeout value', async () => {
-      process.env.MARIN_DISPATCHER_TIMEOUT = '2147483647'; // Max 32-bit integer
+      process.env.ZILKR_DISPATCHER_TIMEOUT = '2147483647'; // Max 32-bit integer
 
       const { config } = await import('../../config/env');
 
-      expect(config.marinDispatcher.timeout).toBe(2147483647);
+      expect(config.zilkrDispatcher.timeout).toBe(2147483647);
     });
 
     it('should handle very long string values', async () => {
@@ -373,7 +381,7 @@ describe('Environment Configuration', () => {
         process.env.DISPATCHER_URL = url;
 
         const { config } = await import('../../config/env');
-        expect(config.marinDispatcher.baseUrl).toBe(url);
+        expect(config.zilkrDispatcher.baseUrl).toBe(url);
       }
     });
 
@@ -382,10 +390,10 @@ describe('Environment Configuration', () => {
 
       for (const publisher of publishers) {
         jest.resetModules();
-        process.env.MARIN_DISPATCHER_PUBLISHER = publisher;
+        process.env.ZILKR_DISPATCHER_PUBLISHER = publisher;
 
         const { config } = await import('../../config/env');
-        expect(config.marinDispatcher.publisher).toBe(publisher);
+        expect(config.zilkrDispatcher.publisher).toBe(publisher);
       }
     });
 

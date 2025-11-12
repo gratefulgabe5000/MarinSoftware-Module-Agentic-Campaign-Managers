@@ -10,12 +10,12 @@ import {
   validateAdRequest,
   validateKeywordRequest,
   validateBatchOperation,
-} from '../../utils/marinTypeValidators';
+} from '../../utils/zilkrTypeValidators';
 import {
-  MarinCampaignRequest,
-  MarinAdGroupRequest,
-  MarinAdRequest,
-  MarinKeywordRequest,
+  ZilkrCampaignRequest,
+  ZilkrAdGroupRequest,
+  ZilkrAdRequest,
+  ZilkrKeywordRequest,
   BatchOperation,
 } from '../../types/marinDispatcher.types';
 
@@ -26,14 +26,11 @@ describe('marinTypeValidators', () => {
 
   describe('validateCampaignRequest', () => {
     it('should validate a valid campaign request', () => {
-      const validRequest: MarinCampaignRequest = {
+      const validRequest: ZilkrCampaignRequest = {
         accountId: '5533110357',
         name: 'Test Campaign',
         status: 'ENABLED',
-        budget: {
-          amount: 1000,
-          deliveryMethod: 'STANDARD',
-        },
+        campaignBudget: 'budget-123',
         biddingStrategy: 'TARGET_CPA',
         objective: 'CONVERSIONS',
       };
@@ -48,10 +45,7 @@ describe('marinTypeValidators', () => {
       const invalidRequest: any = {
         name: 'Test Campaign',
         status: 'ENABLED',
-        budget: {
-          amount: 1000,
-          deliveryMethod: 'STANDARD',
-        },
+        campaignBudget: 'budget-123',
         biddingStrategy: 'TARGET_CPA',
       };
 
@@ -62,14 +56,11 @@ describe('marinTypeValidators', () => {
     });
 
     it('should reject campaign request with empty name', () => {
-      const invalidRequest: MarinCampaignRequest = {
+      const invalidRequest: ZilkrCampaignRequest = {
         accountId: '5533110357',
         name: '',
         status: 'ENABLED',
-        budget: {
-          amount: 1000,
-          deliveryMethod: 'STANDARD',
-        },
+        campaignBudget: 'budget-123',
         biddingStrategy: 'TARGET_CPA',
       };
 
@@ -81,14 +72,11 @@ describe('marinTypeValidators', () => {
 
     it('should reject campaign request with name exceeding 255 characters', () => {
       const longName = 'a'.repeat(256);
-      const invalidRequest: MarinCampaignRequest = {
+      const invalidRequest: ZilkrCampaignRequest = {
         accountId: '5533110357',
         name: longName,
         status: 'ENABLED',
-        budget: {
-          amount: 1000,
-          deliveryMethod: 'STANDARD',
-        },
+        campaignBudget: 'budget-123',
         biddingStrategy: 'TARGET_CPA',
       };
 
@@ -103,10 +91,7 @@ describe('marinTypeValidators', () => {
         accountId: '5533110357',
         name: 'Test Campaign',
         status: 'INVALID_STATUS',
-        budget: {
-          amount: 1000,
-          deliveryMethod: 'STANDARD',
-        },
+        campaignBudget: 'budget-123',
         biddingStrategy: 'TARGET_CPA',
       };
 
@@ -116,40 +101,33 @@ describe('marinTypeValidators', () => {
       expect(result.errors).toContain('status must be one of: ENABLED, PAUSED, REMOVED');
     });
 
-    it('should reject campaign request with negative budget amount', () => {
-      const invalidRequest: MarinCampaignRequest = {
-        accountId: '5533110357',
-        name: 'Test Campaign',
-        status: 'ENABLED',
-        budget: {
-          amount: -100,
-          deliveryMethod: 'STANDARD',
-        },
-        biddingStrategy: 'TARGET_CPA',
-      };
-
-      const result = validateCampaignRequest(invalidRequest);
-
-      expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('budget.amount must be a positive number');
-    });
-
-    it('should reject campaign request with invalid delivery method', () => {
+    it('should reject campaign request with missing campaignBudget', () => {
       const invalidRequest: any = {
         accountId: '5533110357',
         name: 'Test Campaign',
         status: 'ENABLED',
-        budget: {
-          amount: 1000,
-          deliveryMethod: 'INVALID_METHOD',
-        },
         biddingStrategy: 'TARGET_CPA',
       };
 
       const result = validateCampaignRequest(invalidRequest);
 
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('budget.deliveryMethod must be one of: STANDARD, ACCELERATED');
+      expect(result.errors).toContain('campaignBudget is required and must be a non-empty string (resource reference)');
+    });
+
+    it('should reject campaign request with empty campaignBudget', () => {
+      const invalidRequest: ZilkrCampaignRequest = {
+        accountId: '5533110357',
+        name: 'Test Campaign',
+        status: 'ENABLED',
+        campaignBudget: '',
+        biddingStrategy: 'TARGET_CPA',
+      };
+
+      const result = validateCampaignRequest(invalidRequest);
+
+      expect(result.isValid).toBe(false);
+      expect(result.errors).toContain('campaignBudget is required and must be a non-empty string (resource reference)');
     });
 
     it('should reject campaign request with missing biddingStrategy', () => {
@@ -157,10 +135,7 @@ describe('marinTypeValidators', () => {
         accountId: '5533110357',
         name: 'Test Campaign',
         status: 'ENABLED',
-        budget: {
-          amount: 1000,
-          deliveryMethod: 'STANDARD',
-        },
+        campaignBudget: 'budget-123',
       };
 
       const result = validateCampaignRequest(invalidRequest);
@@ -176,7 +151,7 @@ describe('marinTypeValidators', () => {
 
   describe('validateAdGroupRequest', () => {
     it('should validate a valid ad group request', () => {
-      const validRequest: MarinAdGroupRequest = {
+      const validRequest: ZilkrAdGroupRequest = {
         accountId: '5533110357',
         campaignId: 'campaign-123',
         name: 'Test Ad Group',
@@ -192,7 +167,7 @@ describe('marinTypeValidators', () => {
     });
 
     it('should validate ad group request without optional fields', () => {
-      const validRequest: MarinAdGroupRequest = {
+      const validRequest: ZilkrAdGroupRequest = {
         accountId: '5533110357',
         campaignId: 'campaign-123',
         name: 'Test Ad Group',
@@ -243,7 +218,7 @@ describe('marinTypeValidators', () => {
     });
 
     it('should reject ad group request with negative cpcBid', () => {
-      const invalidRequest: MarinAdGroupRequest = {
+      const invalidRequest: ZilkrAdGroupRequest = {
         accountId: '5533110357',
         campaignId: 'campaign-123',
         name: 'Test Ad Group',
@@ -263,7 +238,7 @@ describe('marinTypeValidators', () => {
 
   describe('validateAdRequest', () => {
     it('should validate a valid ad request', () => {
-      const validRequest: MarinAdRequest = {
+      const validRequest: ZilkrAdRequest = {
         accountId: '5533110357',
         adGroupId: 'adgroup-123',
         type: 'RESPONSIVE_SEARCH_AD',
@@ -333,7 +308,7 @@ describe('marinTypeValidators', () => {
     });
 
     it('should reject ad request with too few headlines', () => {
-      const invalidRequest: MarinAdRequest = {
+      const invalidRequest: ZilkrAdRequest = {
         accountId: '5533110357',
         adGroupId: 'adgroup-123',
         type: 'RESPONSIVE_SEARCH_AD',
@@ -355,7 +330,7 @@ describe('marinTypeValidators', () => {
     });
 
     it('should reject ad request with too many headlines', () => {
-      const invalidRequest: MarinAdRequest = {
+      const invalidRequest: ZilkrAdRequest = {
         accountId: '5533110357',
         adGroupId: 'adgroup-123',
         type: 'RESPONSIVE_SEARCH_AD',
@@ -374,7 +349,7 @@ describe('marinTypeValidators', () => {
     });
 
     it('should reject ad request with headline exceeding 30 characters', () => {
-      const invalidRequest: MarinAdRequest = {
+      const invalidRequest: ZilkrAdRequest = {
         accountId: '5533110357',
         adGroupId: 'adgroup-123',
         type: 'RESPONSIVE_SEARCH_AD',
@@ -397,7 +372,7 @@ describe('marinTypeValidators', () => {
     });
 
     it('should reject ad request with too few descriptions', () => {
-      const invalidRequest: MarinAdRequest = {
+      const invalidRequest: ZilkrAdRequest = {
         accountId: '5533110357',
         adGroupId: 'adgroup-123',
         type: 'RESPONSIVE_SEARCH_AD',
@@ -420,7 +395,7 @@ describe('marinTypeValidators', () => {
 
     it('should reject ad request with description exceeding 90 characters', () => {
       const longDescription = 'This is a very long description that exceeds the ninety character limit for ad descriptions';
-      const invalidRequest: MarinAdRequest = {
+      const invalidRequest: ZilkrAdRequest = {
         accountId: '5533110357',
         adGroupId: 'adgroup-123',
         type: 'RESPONSIVE_SEARCH_AD',
@@ -443,7 +418,7 @@ describe('marinTypeValidators', () => {
     });
 
     it('should reject ad request with invalid finalUrl', () => {
-      const invalidRequest: MarinAdRequest = {
+      const invalidRequest: ZilkrAdRequest = {
         accountId: '5533110357',
         adGroupId: 'adgroup-123',
         type: 'RESPONSIVE_SEARCH_AD',
@@ -472,7 +447,7 @@ describe('marinTypeValidators', () => {
 
   describe('validateKeywordRequest', () => {
     it('should validate a valid keyword request', () => {
-      const validRequest: MarinKeywordRequest = {
+      const validRequest: ZilkrKeywordRequest = {
         accountId: '5533110357',
         adGroupId: 'adgroup-123',
         text: 'test keyword',
@@ -488,7 +463,7 @@ describe('marinTypeValidators', () => {
     });
 
     it('should validate keyword request without optional fields', () => {
-      const validRequest: MarinKeywordRequest = {
+      const validRequest: ZilkrKeywordRequest = {
         accountId: '5533110357',
         adGroupId: 'adgroup-123',
         text: 'test keyword',
@@ -516,7 +491,7 @@ describe('marinTypeValidators', () => {
 
     it('should reject keyword request with text exceeding 80 characters', () => {
       const longText = 'a'.repeat(81);
-      const invalidRequest: MarinKeywordRequest = {
+      const invalidRequest: ZilkrKeywordRequest = {
         accountId: '5533110357',
         adGroupId: 'adgroup-123',
         text: longText,
@@ -544,7 +519,7 @@ describe('marinTypeValidators', () => {
     });
 
     it('should reject keyword request with negative cpcBid', () => {
-      const invalidRequest: MarinKeywordRequest = {
+      const invalidRequest: ZilkrKeywordRequest = {
         accountId: '5533110357',
         adGroupId: 'adgroup-123',
         text: 'test keyword',
@@ -572,10 +547,7 @@ describe('marinTypeValidators', () => {
           accountId: '5533110357',
           name: 'Test Campaign',
           status: 'ENABLED',
-          budget: {
-            amount: 1000,
-            deliveryMethod: 'STANDARD',
-          },
+          campaignBudget: 'budget-1000',
           biddingStrategy: 'TARGET_CPA',
         },
         operationId: 'op-123',
@@ -612,10 +584,7 @@ describe('marinTypeValidators', () => {
           accountId: '5533110357',
           name: 'Test Campaign',
           status: 'ENABLED',
-          budget: {
-            amount: 1000,
-            deliveryMethod: 'STANDARD',
-          },
+          campaignBudget: 'budget-123',
           biddingStrategy: 'TARGET_CPA',
         },
       };
@@ -650,12 +619,9 @@ describe('marinTypeValidators', () => {
           accountId: '5533110357',
           name: '',  // Invalid: empty name
           status: 'ENABLED',
-          budget: {
-            amount: 1000,
-            deliveryMethod: 'STANDARD',
-          },
+          campaignBudget: 'budget-123',
           biddingStrategy: 'TARGET_CPA',
-        } as MarinCampaignRequest,
+        } as ZilkrCampaignRequest,
       };
 
       const result = validateBatchOperation(invalidOperation);

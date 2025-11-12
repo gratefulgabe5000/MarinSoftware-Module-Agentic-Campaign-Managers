@@ -16,12 +16,12 @@ import apiRoutes from '../../routes/api';
 import { CampaignPlan } from '../../types/ai.types';
 import { CampaignCreationResponse } from '../../types/campaign.types';
 import { campaignCreationService } from '../../services/campaignCreationService';
-import { MarinDispatcherService } from '../../services/marinDispatcherService';
+import { ZilkrDispatcherService } from '../../services/zilkrDispatcherService';
 import { GoogleAdsService } from '../../services/googleAdsService';
 
 // Mock services
 jest.mock('../../services/campaignCreationService');
-jest.mock('../../services/marinDispatcherService');
+jest.mock('../../services/zilkrDispatcherService');
 jest.mock('../../services/googleAdsService');
 jest.mock('../../services/metaAdsService');
 jest.mock('../../services/microsoftAdsService');
