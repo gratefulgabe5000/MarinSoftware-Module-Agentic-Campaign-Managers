@@ -95,6 +95,7 @@ export interface Campaign {
     tags?: string[];
     notes?: string;
   };
+  isMock?: boolean; // Flag to indicate if this campaign was created/retrieved using mock data
 }
 
 /**
@@ -109,6 +110,7 @@ export interface PlatformAPIResponse {
   keywords?: any[]; // For bulk keyword creation
   error?: string;
   details?: any;
+  isMock?: boolean; // Flag to indicate if this is mock/test data
 }
 
 /**

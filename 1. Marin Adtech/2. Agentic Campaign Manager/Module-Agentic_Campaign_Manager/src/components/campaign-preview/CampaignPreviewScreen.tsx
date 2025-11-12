@@ -11,6 +11,7 @@ import { Badge } from '../ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';
 import { ArrowLeftIcon, SparklesIcon, CheckCircle2Icon, AlertCircleIcon, AlertTriangleIcon, SaveIcon, Loader2Icon } from 'lucide-react';
+import ApiModeToggle from '../ApiModeToggle';
 
 /**
  * Campaign Preview Screen
@@ -177,16 +178,19 @@ const CampaignPreviewScreen: React.FC = () => {
       <div className="fixed top-16 left-0 right-0 z-10 bg-background border-b shadow-sm">
         <div className="mx-auto max-w-7xl px-8 py-4">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <div className="flex items-center gap-3 mb-1">
-                <h1 className="text-3xl font-bold tracking-tight">Campaign Preview & Edit</h1>
-                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-300 text-sm px-3 py-1">
-                  PREVIEW
-                </Badge>
+            <div className="flex items-center gap-4">
+              <div>
+                <div className="flex items-center gap-3 mb-1">
+                  <h1 className="text-3xl font-bold tracking-tight">Campaign Preview & Edit</h1>
+                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-300 text-sm px-3 py-1">
+                    PREVIEW
+                  </Badge>
+                </div>
+                <p className="text-muted-foreground mt-1">
+                  Review and edit your generated campaigns before exporting
+                </p>
               </div>
-              <p className="text-muted-foreground mt-1">
-                Review and edit your generated campaigns before exporting
-              </p>
+              <ApiModeToggle />
             </div>
             <div className="flex gap-2">
               <Button variant="outline" onClick={handleBackToDashboard} type="button">
@@ -217,7 +221,18 @@ const CampaignPreviewScreen: React.FC = () => {
                           value={index.toString()}
                           className="whitespace-nowrap"
                         >
-                          {campaign.name}
+                          <span className="flex items-center gap-2">
+                            {campaign.name}
+                            {campaign.isMock && (
+                              <Badge 
+                                variant="outline" 
+                                className="bg-yellow-50 text-yellow-700 border-yellow-300 text-xs px-1.5 py-0"
+                                title="This campaign was created/retrieved using mock/test data"
+                              >
+                                MOCK
+                              </Badge>
+                            )}
+                          </span>
                         </TabsTrigger>
                       ))}
                     </TabsList>

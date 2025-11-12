@@ -176,9 +176,11 @@ Module-Agentic_Campaign_Manager/
 ### Campaign Endpoints
 - `GET /api/campaigns` - Get all campaigns
 - `GET /api/campaigns/:id` - Get campaign by ID
+- `GET /api/campaigns/:id/details` - Get detailed campaign information from Google Ads API (budget, ad groups, keywords, etc.)
 - `POST /api/campaigns` - Create new campaign
-- `PUT /api/campaigns/:id` - Update campaign
+- `PUT /api/campaigns/:id` - Update campaign (name, budget, dates, bidding strategy)
 - `DELETE /api/campaigns/:id` - Delete campaign
+- `POST /api/campaigns/sync` - Sync campaigns from Google Ads
 - `POST /api/campaigns/:id/launch` - Launch campaign
 - `POST /api/campaigns/:id/pause` - Pause campaign
 - `POST /api/campaigns/:id/resume` - Resume campaign
@@ -262,9 +264,13 @@ Module-Agentic_Campaign_Manager/
 - **Edit Plan**: Modify campaign plans before creation using the editor
 - **Edit Preview**: Edit generated campaigns using the spreadsheet-like preview interface
 - **View**: View campaign details and performance metrics
-- **Pause**: Temporarily stop a campaign
-- **Resume**: Restart a paused campaign
-- **Delete**: Remove a campaign from the dashboard (with confirmation)
+- **View Details**: View comprehensive campaign details from Google Ads API (budget, ad groups, keywords, bidding strategy, network settings)
+- **Edit Details**: Edit campaign settings (name, budget, dates, Enhanced CPC) directly from the details page
+- **Sync**: Sync campaigns from Google Ads to update local campaign list
+- **Pause**: Temporarily stop a campaign (updates Google Ads)
+- **Resume**: Restart a paused campaign (updates Google Ads)
+- **Delete**: Remove a campaign from the dashboard and Google Ads (with confirmation)
+- **API Mode Toggle**: Switch between Direct Google Ads API and Zilkr Dispatcher modes
 
 ### CSV/URL Campaign Generation Workflow
 
@@ -299,11 +305,18 @@ Create a `.env` file in the root directory:
 VITE_API_URL=http://localhost:3001
 VITE_OPENAI_API_KEY=your_openai_api_key
 
-# Marin Dispatcher Configuration (Backend)
+# Marin/Zilkr Dispatcher Configuration (Backend)
 MARIN_DISPATCHER_BASE_URL=http://your-dispatcher-url
 MARIN_DISPATCHER_ACCOUNT_ID=your_account_id
 MARIN_DISPATCHER_PUBLISHER=google
 MARIN_DISPATCHER_TIMEOUT=10000
+
+# Google Ads API Configuration (Backend - Direct API Mode)
+GOOGLE_ADS_CLIENT_ID=your_google_ads_client_id
+GOOGLE_ADS_CLIENT_SECRET=your_google_ads_client_secret
+GOOGLE_ADS_REFRESH_TOKEN=your_google_ads_refresh_token
+GOOGLE_ADS_DEVELOPER_TOKEN=your_google_ads_developer_token
+GOOGLE_ADS_CUSTOMER_ID=your_google_ads_customer_id
 ```
 
 ### Module Configuration
@@ -411,8 +424,8 @@ ISC
 ## Current Status
 
 **Version**: 1.0.0 (MVP)  
-**Status**: ✅ MVP Complete - Testing Phase Complete - Ready for Bug Fixes  
-**Last Updated**: November 10, 2025
+**Status**: ✅ MVP Complete - Direct Google Ads API Integration Complete - Campaign CRUD Operations Fully Functional  
+**Last Updated**: November 12, 2025
 
 ### Testing Summary
 - ✅ **Test Scenarios Completed**: 4 scenarios (2 Pass, 2 Partial Pass)
@@ -565,7 +578,81 @@ For detailed progress, see:
 - ✅ Inline editing utilities for seamless editing experience
 - ✅ Enhanced components with filtering, sorting, and validation
 
-### November 11, 2025
+### November 11-12, 2025 - Direct Google Ads API Integration Complete
+
+#### Campaign CRUD Operations - Fully Functional
+- ✅ **Campaign Creation**: Complete implementation with Direct Google Ads API
+  - Budget creation with proper resource references
+  - Campaign creation with all required fields (bidding strategy, network settings, dates)
+  - Ad group creation with CPC bids
+  - Keyword creation with match types
+  - All operations verified working in Google Ads Console
+
+- ✅ **Campaign Sync**: Implemented and tested
+  - Syncs all active campaigns from Google Ads
+  - Maps Google Ads data to internal campaign format
+  - Handles mock data flagging
+
+- ✅ **Campaign Update**: Fully implemented
+  - Backend endpoint updated to use GoogleAdsService
+  - Supports updating: name, budget, start/end dates, bidding strategy
+  - Properly routes based on API mode (direct/zilkr)
+
+- ✅ **Campaign Pause/Resume**: Fixed and verified
+  - Pause campaign functionality working
+  - Resume campaign functionality working
+  - Status changes reflected in Google Ads Console
+
+- ✅ **Campaign Delete**: Fixed and verified
+  - Correctly uses `operation: 'remove'` with resource name string
+  - Deletes campaigns from Google Ads successfully
+  - Handles local-only campaigns appropriately
+
+#### Campaign Details Screen - Comprehensive Implementation
+- ✅ **Backend Implementation**:
+  - Created `getCampaignDetails()` method in GoogleAdsService
+  - Fetches comprehensive campaign data including:
+    - Campaign settings (name, status, dates, budget)
+    - Bidding strategy details
+    - Network settings
+    - All ad groups with CPC bids
+    - All keywords with match types and quality scores
+  - Created `GET /api/campaigns/:id/details` endpoint
+  - Handles both direct Google Ads API and Zilkr Dispatcher modes
+
+- ✅ **Frontend Implementation**:
+  - Updated CampaignDetail component to fetch fresh data on load
+  - Displays all available campaign details in organized cards:
+    - Campaign Settings (name, budget, dates, bidding strategy)
+    - Network Settings (Google Search, Search Network, Content Network)
+    - Ad Groups list with status and CPC bids
+    - Keywords list with match types and quality scores
+  - Added "Refresh" button to manually reload details
+  - Shows MOCK badge when using mock/test data
+  - Links to Google Ads Console for campaigns
+
+- ✅ **Edit/Update Functionality**:
+  - Added edit mode with form fields for:
+    - Campaign name
+    - Daily budget
+    - Start date
+    - End date
+    - Enhanced CPC toggle
+  - Save/Cancel buttons for edit mode
+  - Automatically refreshes details after successful update
+  - Toast notifications for success/error states
+
+#### API Mode Toggle - Complete Implementation
+- ✅ Frontend toggle component (ApiModeToggle)
+- ✅ Zustand store for API mode preference with persistence
+- ✅ Backend routing based on X-API-Mode header
+- ✅ All campaign operations respect API mode selection
+- ✅ Toggle visible on Campaign Dashboard, Preview Screen, and Generation Screen
+
+#### Mock Data Badging
+- ✅ Added `isMock` flag to backend types and services
+- ✅ Visual "MOCK" badges on frontend for mock/test data
+- ✅ Clear indication when data is from mock sources
 
 #### Bug Fixes
 - ✅ **BUG-010**: Fixed Performance Dashboard header to remain static while scrolling (applied to all pages)
@@ -574,13 +661,27 @@ For detailed progress, see:
 - ✅ Fixed headers across all pages (Performance Dashboard, Campaign Dashboard, Campaign Detail, Campaign Preview)
 - ✅ Reorganized Campaign Dashboard filter section into compact 2-line layout
 - ✅ Eliminated gap between header and filter section on Campaign Dashboard
-- ✅ Added validation for campaign budget reference in Zilkr Dispatcher service
+- ✅ Fixed pause/resume campaign operations
+- ✅ Fixed delete campaign operation (correct mutateResources structure)
+- ✅ Fixed campaign details fetching and display
+- ✅ Fixed update campaign functionality
 
 #### UI/UX Improvements
 - ✅ Fixed headers now use `fixed` positioning with proper padding to prevent content overlap
 - ✅ Headers positioned at `top-16` (64px) below navigation bar
 - ✅ Content padding adjusted to account for fixed headers
 - ✅ Filter section optimized for compact display with reduced whitespace
+- ✅ Comprehensive campaign details display with organized cards
+- ✅ Edit mode with intuitive form fields
+- ✅ Refresh functionality for real-time data updates
+
+#### Technical Enhancements
+- ✅ Google Ads API integration using `google-ads-api` library
+- ✅ Proper handling of resource names (customers/{id}/campaigns/{id})
+- ✅ Correct use of mutateResources for create/update/remove operations
+- ✅ Comprehensive error handling and logging
+- ✅ API mode routing (Direct Google Ads API vs. Zilkr Dispatcher)
+- ✅ Environment variable configuration for Google Ads credentials
 
 ### November 5, 2025
 

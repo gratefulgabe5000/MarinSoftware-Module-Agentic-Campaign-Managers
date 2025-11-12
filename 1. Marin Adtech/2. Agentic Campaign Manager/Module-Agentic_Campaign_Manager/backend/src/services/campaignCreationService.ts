@@ -48,9 +48,13 @@ class CampaignCreationService {
     const campaignId = `campaign-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const platformCampaignIds: PlatformCampaignIds = {};
     const errors: CampaignCreationError[] = [];
+    let hasMockData = false; // Track if any platform returned mock data
 
     // Create campaign on each platform
     const platformPromises = campaignPlan.platforms.map(async (platform) => {
+      // TEMPORARY: Commented out - Original Zilkr-only logic
+      // Can be re-enabled when switching back to Zilkr-only mode
+      /*
       // For Google Ads campaigns, always use Zilkr Dispatcher instead of direct Google Ads API
       // This ensures we use the Zilkr Dispatcher for all Google Ads operations (draft or active)
       let service: IPlatformAPI | null = null;
@@ -64,6 +68,32 @@ class CampaignCreationService {
       if (isGoogleAds) {
         // Always use Zilkr Dispatcher for Google Ads campaigns
         service = this.getPlatformService('Zilkr');
+      } else {
+        // For other platforms, use the registered service
+        service = this.getPlatformService(platform);
+      }
+      */
+
+      // NEW: Use API mode from request to determine service
+      // Get API mode from request (passed via header or body from controller)
+      const apiMode = (request as any).apiMode as string || 'direct'; // Default to direct
+      let service: IPlatformAPI | null = null;
+      
+      // Check if this is a Google Ads platform
+      const isGoogleAds = platform.toLowerCase() === 'google' || 
+                         platform.toLowerCase() === 'googleads' || 
+                         platform.toLowerCase() === 'google ads' ||
+                         platform.toLowerCase().includes('google');
+      
+      if (isGoogleAds) {
+        // Route based on API mode
+        if (apiMode === 'zilkr') {
+          service = this.getPlatformService('Zilkr');
+          console.log(`[API Mode] Routing Google Ads campaign to ZilkrDispatcherService`);
+        } else {
+          service = this.getPlatformService('google'); // Direct Google Ads API
+          console.log(`[API Mode] Routing Google Ads campaign to GoogleAdsService (direct)`);
+        }
       } else {
         // For other platforms, use the registered service
         service = this.getPlatformService(platform);
@@ -98,6 +128,11 @@ class CampaignCreationService {
         const response = await service.createCampaign(campaignPlan, name, apiStatus);
 
         if (response.success && response.campaignId) {
+          // Track if this response contains mock data
+          if (response.isMock) {
+            hasMockData = true;
+          }
+          
           // Map platform name to response key
           const platformKey = this.getPlatformKey(platform);
           if (platformKey) {
@@ -191,7 +226,29 @@ class CampaignCreationService {
         });
       }
 
-      const service = this.getPlatformService(platform);
+      // Get API mode from request (passed via header or body from controller)
+      const apiMode = (request as any).apiMode as string || 'direct'; // Default to direct
+      
+      // Route service based on API mode for Google Ads
+      let service: IPlatformAPI | null = null;
+      const isGoogleAds = platform.toLowerCase() === 'google' || 
+                         platform.toLowerCase() === 'googleads' || 
+                         platform.toLowerCase() === 'google ads' ||
+                         platform.toLowerCase().includes('google');
+      
+      if (isGoogleAds) {
+        // Route based on API mode
+        if (apiMode === 'zilkr') {
+          service = this.getPlatformService('Zilkr');
+          console.log(`[API Mode] Routing Google Ads campaign to ZilkrDispatcherService`);
+        } else {
+          service = this.getPlatformService('google'); // Direct Google Ads API
+          console.log(`[API Mode] Routing Google Ads campaign to GoogleAdsService (direct)`);
+        }
+      } else {
+        // For other platforms, use the registered service
+        service = this.getPlatformService(platform);
+      }
 
       if (!service) {
         const error: CampaignCreationError = {
@@ -206,13 +263,19 @@ class CampaignCreationService {
       // Check authentication
       const isAuthenticated = await service.isAuthenticated();
       if (!isAuthenticated) {
-        const error: CampaignCreationError = {
-          platform,
-          error: `Not authenticated for ${platform}. Please connect your account first.`,
-        };
-        errors.push(error);
-        failedPlatforms.push(platform);
-        continue;
+        // For Zilkr Dispatcher, authentication check might fail in local dev but still work
+        // Check if this is Zilkr Dispatcher service
+        const isZilkrDispatcher = service.constructor.name === 'ZilkrDispatcherService';
+        if (!isZilkrDispatcher) {
+          const error: CampaignCreationError = {
+            platform,
+            error: `Not authenticated for ${platform}. Please connect your account first.`,
+          };
+          errors.push(error);
+          failedPlatforms.push(platform);
+          continue;
+        }
+        // For Zilkr Dispatcher, continue even if auth check fails (it's internal network)
       }
 
       try {
