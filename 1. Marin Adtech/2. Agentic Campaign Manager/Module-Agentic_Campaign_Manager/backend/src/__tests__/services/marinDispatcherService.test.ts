@@ -1,16 +1,16 @@
 /**
- * Unit tests for MarinDispatcherService Keyword Methods (Phase 2B.3)
+ * Unit tests for ZilkrDispatcherService Keyword Methods (Phase 2B.3)
  *
  * @module marinDispatcherService.test
  */
 
-import { MarinDispatcherService } from '../../services/marinDispatcherService';
+import { ZilkrDispatcherService } from '../../services/zilkrDispatcherService';
 import axios from 'axios';
 import * as AWSXRay from 'aws-xray-sdk-core';
 import {
-  MarinKeywordRequest,
-  MarinKeywordResponse,
-  MarinKeywordUpdateRequest,
+  ZilkrKeywordRequest,
+  ZilkrKeywordResponse,
+  ZilkrKeywordUpdateRequest,
 } from '../../types/marinDispatcher.types';
 
 // Mock dependencies
@@ -18,7 +18,7 @@ jest.mock('axios');
 jest.mock('aws-xray-sdk-core');
 jest.mock('../../config/env', () => {
   const mockConfig = {
-    marinDispatcher: {
+    zilkrDispatcher: {
       baseUrl: 'http://test-dispatcher.example.com',
       accountId: 'test-account-123',
       publisher: 'google',
@@ -34,8 +34,8 @@ jest.mock('../../config/env', () => {
 
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
-describe('MarinDispatcherService - Keyword Methods', () => {
-  let service: MarinDispatcherService;
+describe('ZilkrDispatcherService - Keyword Methods', () => {
+  let service: ZilkrDispatcherService;
   let mockHttpClient: any;
 
   beforeEach(() => {
@@ -60,7 +60,7 @@ describe('MarinDispatcherService - Keyword Methods', () => {
     mockedAxios.create.mockReturnValue(mockHttpClient as any);
 
     // Initialize service
-    service = new MarinDispatcherService('test-account-123', 'google');
+    service = new ZilkrDispatcherService('test-account-123', 'google');
   });
 
   // ========================================================================
@@ -69,7 +69,7 @@ describe('MarinDispatcherService - Keyword Methods', () => {
 
   describe('createKeywords', () => {
     const adGroupId = 'adgroup-123';
-    const mockKeywords: Omit<MarinKeywordRequest, 'accountId' | 'adGroupId'>[] = [
+    const mockKeywords: Omit<ZilkrKeywordRequest, 'accountId' | 'adGroupId'>[] = [
       {
         text: 'running shoes',
         matchType: 'BROAD',
@@ -90,7 +90,7 @@ describe('MarinDispatcherService - Keyword Methods', () => {
     ];
 
     it('should successfully create keywords in bulk', async () => {
-      const mockResponse: { keywords: MarinKeywordResponse[] } = {
+      const mockResponse: { keywords: ZilkrKeywordResponse[] } = {
         keywords: [
           {
             id: 'keyword-1',
@@ -133,7 +133,7 @@ describe('MarinDispatcherService - Keyword Methods', () => {
       expect(result.keywords).toEqual(mockResponse.keywords);
       expect(result.keywords).toHaveLength(3);
       expect(mockHttpClient.post).toHaveBeenCalledWith(
-        '/dispatcher/google/keywords',
+        '/api/v2/dispatcher/google/keywords',
         expect.objectContaining({
           accountId: 'test-account-123',
           adGroupId: 'adgroup-123',
@@ -151,7 +151,7 @@ describe('MarinDispatcherService - Keyword Methods', () => {
 
     it('should validate keyword text length (max 80 characters)', async () => {
       const longText = 'a'.repeat(81);
-      const invalidKeywords: Omit<MarinKeywordRequest, 'accountId' | 'adGroupId'>[] = [
+      const invalidKeywords: Omit<ZilkrKeywordRequest, 'accountId' | 'adGroupId'>[] = [
         {
           text: longText,
           matchType: 'BROAD',
@@ -183,7 +183,7 @@ describe('MarinDispatcherService - Keyword Methods', () => {
     });
 
     it('should validate cpcBid is positive if provided', async () => {
-      const invalidKeywords: Omit<MarinKeywordRequest, 'accountId' | 'adGroupId'>[] = [
+      const invalidKeywords: Omit<ZilkrKeywordRequest, 'accountId' | 'adGroupId'>[] = [
         {
           text: 'test keyword',
           matchType: 'BROAD',
@@ -240,14 +240,14 @@ describe('MarinDispatcherService - Keyword Methods', () => {
     });
 
     it('should create keywords with only required fields', async () => {
-      const minimalKeywords: Omit<MarinKeywordRequest, 'accountId' | 'adGroupId'>[] = [
+      const minimalKeywords: Omit<ZilkrKeywordRequest, 'accountId' | 'adGroupId'>[] = [
         {
           text: 'minimal keyword',
           matchType: 'EXACT',
         },
       ];
 
-      const mockResponse: { keywords: MarinKeywordResponse[] } = {
+      const mockResponse: { keywords: ZilkrKeywordResponse[] } = {
         keywords: [
           {
             id: 'keyword-minimal',
@@ -310,7 +310,7 @@ describe('MarinDispatcherService - Keyword Methods', () => {
       };
 
       // Step 3: Mock Keywords Response
-      const mockKeywordsResponse: { keywords: MarinKeywordResponse[] } = {
+      const mockKeywordsResponse: { keywords: ZilkrKeywordResponse[] } = {
         keywords: [
           {
             id: 'keyword-integration-1',
@@ -395,7 +395,7 @@ describe('MarinDispatcherService - Keyword Methods', () => {
       expect(adGroupResult.adGroupId).toBe('adgroup-keyword-test');
 
       // Finally create keywords in that ad group
-      const testKeywords: Omit<MarinKeywordRequest, 'accountId' | 'adGroupId'>[] = [
+      const testKeywords: Omit<ZilkrKeywordRequest, 'accountId' | 'adGroupId'>[] = [
         {
           text: 'test keyword one',
           matchType: 'BROAD',
@@ -437,14 +437,14 @@ describe('MarinDispatcherService - Keyword Methods', () => {
       // Verify campaign creation call
       expect(mockHttpClient.post).toHaveBeenNthCalledWith(
         1,
-        '/dispatcher/google/campaigns',
+        '/api/v2/dispatcher/google/campaigns',
         expect.any(Object)
       );
 
       // Verify ad group creation call
       expect(mockHttpClient.post).toHaveBeenNthCalledWith(
         2,
-        '/dispatcher/google/campaigns/campaign-keyword-test/adgroups',
+        '/api/v2/dispatcher/google/campaigns/campaign-keyword-test/adgroups',
         expect.objectContaining({
           campaignId: 'campaign-keyword-test',
           name: 'Keyword Test Ad Group',
@@ -454,7 +454,7 @@ describe('MarinDispatcherService - Keyword Methods', () => {
       // Verify keywords creation call
       expect(mockHttpClient.post).toHaveBeenNthCalledWith(
         3,
-        '/dispatcher/google/keywords',
+        '/api/v2/dispatcher/google/keywords',
         expect.objectContaining({
           accountId: 'test-account-123',
           adGroupId: 'adgroup-keyword-test',
@@ -498,7 +498,7 @@ describe('MarinDispatcherService - Keyword Methods', () => {
       expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
       expect(mockHttpClient.post).toHaveBeenCalledWith(
-        '/dispatcher/google/keywords',
+        '/api/v2/dispatcher/google/keywords',
         expect.objectContaining({
           adGroupId: invalidAdGroupId,
         })
@@ -514,11 +514,11 @@ describe('MarinDispatcherService - Keyword Methods', () => {
     const keywordId = 'keyword-123';
 
     it('should successfully update keyword text', async () => {
-      const updates: MarinKeywordUpdateRequest = {
+      const updates: ZilkrKeywordUpdateRequest = {
         text: 'updated keyword text',
       };
 
-      const mockResponse: MarinKeywordResponse = {
+      const mockResponse: ZilkrKeywordResponse = {
         id: keywordId,
         accountId: 'test-account-123',
         adGroupId: 'adgroup-123',
@@ -536,17 +536,17 @@ describe('MarinDispatcherService - Keyword Methods', () => {
       expect(result.keywordId).toBe(keywordId);
       expect(result.details).toEqual(mockResponse);
       expect(mockHttpClient.put).toHaveBeenCalledWith(
-        '/dispatcher/google/keywords/keyword-123',
+        '/api/v2/dispatcher/google/keywords/keyword-123',
         { text: 'updated keyword text' }
       );
     });
 
     it('should successfully update keyword matchType', async () => {
-      const updates: MarinKeywordUpdateRequest = {
+      const updates: ZilkrKeywordUpdateRequest = {
         matchType: 'EXACT',
       };
 
-      const mockResponse: MarinKeywordResponse = {
+      const mockResponse: ZilkrKeywordResponse = {
         id: keywordId,
         accountId: 'test-account-123',
         adGroupId: 'adgroup-123',
@@ -563,17 +563,17 @@ describe('MarinDispatcherService - Keyword Methods', () => {
       expect(result.success).toBe(true);
       expect(result.keywordId).toBe(keywordId);
       expect(mockHttpClient.put).toHaveBeenCalledWith(
-        '/dispatcher/google/keywords/keyword-123',
+        '/api/v2/dispatcher/google/keywords/keyword-123',
         { matchType: 'EXACT' }
       );
     });
 
     it('should successfully update keyword cpcBid', async () => {
-      const updates: MarinKeywordUpdateRequest = {
+      const updates: ZilkrKeywordUpdateRequest = {
         cpcBid: 3.5,
       };
 
-      const mockResponse: MarinKeywordResponse = {
+      const mockResponse: ZilkrKeywordResponse = {
         id: keywordId,
         accountId: 'test-account-123',
         adGroupId: 'adgroup-123',
@@ -591,17 +591,17 @@ describe('MarinDispatcherService - Keyword Methods', () => {
       expect(result.success).toBe(true);
       expect(result.keywordId).toBe(keywordId);
       expect(mockHttpClient.put).toHaveBeenCalledWith(
-        '/dispatcher/google/keywords/keyword-123',
+        '/api/v2/dispatcher/google/keywords/keyword-123',
         { cpcBid: 3.5 }
       );
     });
 
     it('should successfully update keyword status', async () => {
-      const updates: MarinKeywordUpdateRequest = {
+      const updates: ZilkrKeywordUpdateRequest = {
         status: 'PAUSED',
       };
 
-      const mockResponse: MarinKeywordResponse = {
+      const mockResponse: ZilkrKeywordResponse = {
         id: keywordId,
         accountId: 'test-account-123',
         adGroupId: 'adgroup-123',
@@ -618,20 +618,20 @@ describe('MarinDispatcherService - Keyword Methods', () => {
       expect(result.success).toBe(true);
       expect(result.keywordId).toBe(keywordId);
       expect(mockHttpClient.put).toHaveBeenCalledWith(
-        '/dispatcher/google/keywords/keyword-123',
+        '/api/v2/dispatcher/google/keywords/keyword-123',
         { status: 'PAUSED' }
       );
     });
 
     it('should successfully update multiple fields at once', async () => {
-      const updates: MarinKeywordUpdateRequest = {
+      const updates: ZilkrKeywordUpdateRequest = {
         text: 'new keyword text',
         matchType: 'PHRASE',
         cpcBid: 2.75,
         status: 'ENABLED',
       };
 
-      const mockResponse: MarinKeywordResponse = {
+      const mockResponse: ZilkrKeywordResponse = {
         id: keywordId,
         accountId: 'test-account-123',
         adGroupId: 'adgroup-123',
@@ -649,7 +649,7 @@ describe('MarinDispatcherService - Keyword Methods', () => {
       expect(result.success).toBe(true);
       expect(result.keywordId).toBe(keywordId);
       expect(mockHttpClient.put).toHaveBeenCalledWith(
-        '/dispatcher/google/keywords/keyword-123',
+        '/api/v2/dispatcher/google/keywords/keyword-123',
         {
           text: 'new keyword text',
           matchType: 'PHRASE',
@@ -660,14 +660,14 @@ describe('MarinDispatcherService - Keyword Methods', () => {
     });
 
     it('should remove undefined fields from update request', async () => {
-      const updates: MarinKeywordUpdateRequest = {
+      const updates: ZilkrKeywordUpdateRequest = {
         text: 'updated text',
         matchType: undefined,
         cpcBid: undefined,
         status: undefined,
       };
 
-      const mockResponse: MarinKeywordResponse = {
+      const mockResponse: ZilkrKeywordResponse = {
         id: keywordId,
         accountId: 'test-account-123',
         adGroupId: 'adgroup-123',
@@ -683,13 +683,13 @@ describe('MarinDispatcherService - Keyword Methods', () => {
 
       expect(result.success).toBe(true);
       expect(mockHttpClient.put).toHaveBeenCalledWith(
-        '/dispatcher/google/keywords/keyword-123',
+        '/api/v2/dispatcher/google/keywords/keyword-123',
         { text: 'updated text' } // Only defined field should be sent
       );
     });
 
     it('should return error when no valid fields to update', async () => {
-      const updates: MarinKeywordUpdateRequest = {};
+      const updates: ZilkrKeywordUpdateRequest = {};
 
       const result = await service.updateKeywords(keywordId, updates);
 
@@ -699,7 +699,7 @@ describe('MarinDispatcherService - Keyword Methods', () => {
     });
 
     it('should handle API errors gracefully', async () => {
-      const updates: MarinKeywordUpdateRequest = {
+      const updates: ZilkrKeywordUpdateRequest = {
         text: 'updated keyword',
       };
 

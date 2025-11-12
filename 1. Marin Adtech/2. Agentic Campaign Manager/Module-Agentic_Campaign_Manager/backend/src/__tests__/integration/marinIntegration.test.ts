@@ -12,9 +12,9 @@ process.env.NODE_ENV = 'test';
 process.env.MARIN_DISPATCHER_BASE_URL = 'http://localhost:3000';
 process.env.MARIN_DISPATCHER_ACCOUNT_ID = 'test-account-123';
 
-// Mock MarinDispatcherService before importing clients
-jest.mock('../../services/marinDispatcherService', () => ({
-  MarinDispatcherService: jest.fn().mockImplementation(() => ({
+// Mock ZilkrDispatcherService before importing clients
+jest.mock('../../services/zilkrDispatcherService', () => ({
+  ZilkrDispatcherService: jest.fn().mockImplementation(() => ({
     createCampaign: jest.fn().mockResolvedValue({
       success: true,
       campaignId: 'test-123',
@@ -46,8 +46,8 @@ jest.mock('../../services/marinDispatcherService', () => ({
   })),
 }));
 
-import { MarinDispatcherClient } from '../../lib/marinDispatcherClient';
-import { MarinBatchJobClient } from '../../lib/marinBatchJobClient';
+import { ZilkrDispatcherClient } from '../../lib/marinDispatcherClient';
+import { ZilkrBatchJobClient } from '../../lib/marinBatchJobClient';
 import { LambdaEvent, LambdaResponse, SqsEvent } from '../../types/lambda.types';
 
 /**
@@ -63,37 +63,37 @@ import { LambdaEvent, LambdaResponse, SqsEvent } from '../../types/lambda.types'
  * - Error handling in Lambda context
  */
 describe('Marin Integration Tests', () => {
-  let dispatcherClient: MarinDispatcherClient;
-  let batchJobClient: MarinBatchJobClient;
+  let dispatcherClient: ZilkrDispatcherClient;
+  let batchJobClient: ZilkrBatchJobClient;
 
   beforeEach(() => {
-    dispatcherClient = new MarinDispatcherClient();
-    batchJobClient = new MarinBatchJobClient();
+    dispatcherClient = new ZilkrDispatcherClient();
+    batchJobClient = new ZilkrBatchJobClient();
   });
 
   /**
    * Test Lambda client integration structure
    */
   describe('Lambda Client Integration Structure', () => {
-    it('should create MarinDispatcherClient instance', () => {
+    it('should create ZilkrDispatcherClient instance', () => {
       expect(dispatcherClient).toBeDefined();
-      expect(dispatcherClient).toBeInstanceOf(MarinDispatcherClient);
+      expect(dispatcherClient).toBeInstanceOf(ZilkrDispatcherClient);
     });
 
-    it('should create MarinBatchJobClient instance', () => {
+    it('should create ZilkrBatchJobClient instance', () => {
       expect(batchJobClient).toBeDefined();
-      expect(batchJobClient).toBeInstanceOf(MarinBatchJobClient);
+      expect(batchJobClient).toBeInstanceOf(ZilkrBatchJobClient);
     });
 
-    it('should have handleLambdaEvent method in MarinDispatcherClient', () => {
+    it('should have handleLambdaEvent method in ZilkrDispatcherClient', () => {
       expect(typeof dispatcherClient.handleLambdaEvent).toBe('function');
     });
 
-    it('should have handleSqsEvent method in MarinBatchJobClient', () => {
+    it('should have handleSqsEvent method in ZilkrBatchJobClient', () => {
       expect(typeof batchJobClient.handleSqsEvent).toBe('function');
     });
 
-    it('should have handleLambdaEvent method in MarinBatchJobClient', () => {
+    it('should have handleLambdaEvent method in ZilkrBatchJobClient', () => {
       expect(typeof batchJobClient.handleLambdaEvent).toBe('function');
     });
   });

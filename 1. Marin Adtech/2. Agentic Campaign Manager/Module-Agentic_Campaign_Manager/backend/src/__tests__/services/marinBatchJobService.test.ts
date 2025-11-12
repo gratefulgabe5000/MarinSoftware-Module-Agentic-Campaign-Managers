@@ -1,16 +1,16 @@
 /**
- * Unit tests for MarinBatchJobService - Task 4.4.1: Test Batch Job Creation
+ * Unit tests for ZilkrBatchJobService - Task 4.4.1: Test Batch Job Creation
  *
  * @module marinBatchJobService.test
  */
 
-import { MarinBatchJobService } from '../../services/marinBatchJobService';
+import { ZilkrBatchJobService } from '../../services/zilkrBatchJobService';
 import axios from 'axios';
 import * as AWSXRay from 'aws-xray-sdk-core';
 import {
   BatchJobResponse,
   BatchJobStatus,
-  MarinCampaignRequest,
+  ZilkrCampaignRequest,
 } from '../../types/marinDispatcher.types';
 
 // Mock dependencies
@@ -18,7 +18,7 @@ jest.mock('axios');
 jest.mock('aws-xray-sdk-core');
 jest.mock('../../config/env', () => {
   const mockConfig = {
-    marinDispatcher: {
+    zilkrDispatcher: {
       baseUrl: 'http://test-dispatcher.example.com',
       accountId: 'test-account-123',
       publisher: 'google',
@@ -34,8 +34,8 @@ jest.mock('../../config/env', () => {
 
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
-describe('MarinBatchJobService - Task 4.4.1: Test Batch Job Creation', () => {
-  let service: MarinBatchJobService;
+describe('ZilkrBatchJobService - Task 4.4.1: Test Batch Job Creation', () => {
+  let service: ZilkrBatchJobService;
   let mockHttpClient: any;
 
   beforeEach(() => {
@@ -60,7 +60,7 @@ describe('MarinBatchJobService - Task 4.4.1: Test Batch Job Creation', () => {
     mockedAxios.create.mockReturnValue(mockHttpClient as any);
 
     // Initialize service
-    service = new MarinBatchJobService('test-account-123', 'google');
+    service = new ZilkrBatchJobService('test-account-123', 'google');
   });
 
   // ========================================================================
@@ -90,7 +90,7 @@ describe('MarinBatchJobService - Task 4.4.1: Test Batch Job Creation', () => {
       // Assert - Verify batch job is created
       expect(mockHttpClient.post).toHaveBeenCalledTimes(1);
       expect(mockHttpClient.post).toHaveBeenCalledWith(
-        '/dispatcher/google/batch-jobs',
+        '/api/v2/dispatcher/google/batch-jobs',
         {
           accountId: 'test-account-123',
           publisher: 'google',
@@ -151,7 +151,7 @@ describe('MarinBatchJobService - Task 4.4.1: Test Batch Job Creation', () => {
 
       // Assert - Verify correct request payload
       expect(mockHttpClient.post).toHaveBeenCalledWith(
-        '/dispatcher/google/batch-jobs',
+        '/api/v2/dispatcher/google/batch-jobs',
         {
           accountId: 'test-account-123',
           publisher: 'google',
@@ -178,7 +178,7 @@ describe('MarinBatchJobService - Task 4.4.1: Test Batch Job Creation', () => {
       await service.createBatchJob();
 
       // Assert - Verify InfraDocs format: /dispatcher/${publisher}/batch-jobs
-      const expectedPath = '/dispatcher/google/batch-jobs';
+      const expectedPath = '/api/v2/dispatcher/google/batch-jobs';
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         expectedPath,
         expect.any(Object)
@@ -213,7 +213,7 @@ describe('MarinBatchJobService - Task 4.4.1: Test Batch Job Creation', () => {
 
       // Assert - Verify X-Ray subsegment handling
       expect(mockSegment.addNewSubsegment).toHaveBeenCalledWith(
-        'MarinBatchJobService.createBatchJob'
+        'ZilkrBatchJobService.createBatchJob'
       );
       expect(mockSubsegment.close).toHaveBeenCalledTimes(1);
     });
@@ -382,7 +382,7 @@ describe('MarinBatchJobService - Task 4.4.1: Test Batch Job Creation', () => {
     describe('Edge Cases', () => {
       it('should work with custom accountId', async () => {
         // Arrange
-        const customService = new MarinBatchJobService('custom-account-456', 'google');
+        const customService = new ZilkrBatchJobService('custom-account-456', 'google');
         const mockResponse: BatchJobResponse = {
           id: 'batch-job-custom',
           accountId: 'custom-account-456',
@@ -402,7 +402,7 @@ describe('MarinBatchJobService - Task 4.4.1: Test Batch Job Creation', () => {
         // Assert
         expect(result.batchJobId).toBe('batch-job-custom');
         expect(mockHttpClient.post).toHaveBeenCalledWith(
-          '/dispatcher/google/batch-jobs',
+          '/api/v2/dispatcher/google/batch-jobs',
           {
             accountId: 'custom-account-456',
             publisher: 'google',
@@ -412,7 +412,7 @@ describe('MarinBatchJobService - Task 4.4.1: Test Batch Job Creation', () => {
 
       it('should work with different publishers', async () => {
         // Arrange
-        const bingService = new MarinBatchJobService('test-account-123', 'bing');
+        const bingService = new ZilkrBatchJobService('test-account-123', 'bing');
         const mockResponse: BatchJobResponse = {
           id: 'batch-job-bing',
           accountId: 'test-account-123',
@@ -432,7 +432,7 @@ describe('MarinBatchJobService - Task 4.4.1: Test Batch Job Creation', () => {
         // Assert
         expect(result.batchJobId).toBe('batch-job-bing');
         expect(mockHttpClient.post).toHaveBeenCalledWith(
-          '/dispatcher/bing/batch-jobs',
+          '/api/v2/dispatcher/bing/batch-jobs',
           {
             accountId: 'test-account-123',
             publisher: 'bing',
@@ -483,7 +483,7 @@ describe('MarinBatchJobService - Task 4.4.1: Test Batch Job Creation', () => {
             accountId: 'test-account-123',
             name: `Campaign ${i + 1}`,
             status: 'ENABLED',
-            budget: { amount: 1000, deliveryMethod: 'STANDARD' },
+            campaignBudget: 'budget-123',
           },
         }));
 
@@ -501,7 +501,7 @@ describe('MarinBatchJobService - Task 4.4.1: Test Batch Job Creation', () => {
         // Assert
         expect(mockHttpClient.put).toHaveBeenCalledTimes(1);
         expect(mockHttpClient.put).toHaveBeenCalledWith(
-          '/dispatcher/google/batch-jobs/batch-job-12345/operations',
+          '/api/v2/dispatcher/google/batch-jobs/batch-job-12345/operations',
           { operations }
         );
         expect(result.totalOperationsAdded).toBe(10);
@@ -518,7 +518,7 @@ describe('MarinBatchJobService - Task 4.4.1: Test Batch Job Creation', () => {
             accountId: 'test-account-123',
             name: `Campaign ${i + 1}`,
             status: 'ENABLED',
-            budget: { amount: 1000, deliveryMethod: 'STANDARD' },
+            campaignBudget: 'budget-123',
           },
         }));
 
@@ -549,7 +549,7 @@ describe('MarinBatchJobService - Task 4.4.1: Test Batch Job Creation', () => {
             accountId: 'test-account-123',
             name: `Campaign ${i + 1}`,
             status: 'ENABLED',
-            budget: { amount: 1000, deliveryMethod: 'STANDARD' },
+            campaignBudget: 'budget-123',
           },
         }));
 
@@ -572,7 +572,7 @@ describe('MarinBatchJobService - Task 4.4.1: Test Batch Job Creation', () => {
             accountId: 'test-account-123',
             name: `Campaign ${i + 1}`,
             status: 'ENABLED',
-            budget: { amount: 1000, deliveryMethod: 'STANDARD' },
+            campaignBudget: 'budget-123',
           },
         }));
 
@@ -583,7 +583,7 @@ describe('MarinBatchJobService - Task 4.4.1: Test Batch Job Creation', () => {
             accountId: 'test-account-123',
             name: `Campaign ${i + 1001}`,
             status: 'ENABLED',
-            budget: { amount: 1000, deliveryMethod: 'STANDARD' },
+            campaignBudget: 'budget-123',
           },
         }));
 
@@ -628,12 +628,12 @@ describe('MarinBatchJobService - Task 4.4.1: Test Batch Job Creation', () => {
         expect(mockHttpClient.put).toHaveBeenCalledTimes(2);
         expect(mockHttpClient.put).toHaveBeenNthCalledWith(
           1,
-          '/dispatcher/google/batch-jobs/batch-job-seq/operations',
+          '/api/v2/dispatcher/google/batch-jobs/batch-job-seq/operations',
           { operations: firstBatch }
         );
         expect(mockHttpClient.put).toHaveBeenNthCalledWith(
           2,
-          '/dispatcher/google/batch-jobs/batch-job-seq/operations',
+          '/api/v2/dispatcher/google/batch-jobs/batch-job-seq/operations',
           {
             operations: secondBatch,
             sequenceToken: 'seq-token-first',
@@ -652,7 +652,7 @@ describe('MarinBatchJobService - Task 4.4.1: Test Batch Job Creation', () => {
               accountId: 'test-account-123',
               name: 'Test Campaign',
               status: 'ENABLED',
-              budget: { amount: 5000, deliveryMethod: 'STANDARD' },
+              campaignBudget: 'budget-456',
               biddingStrategy: 'MANUAL_CPC',
             },
           },
@@ -671,7 +671,7 @@ describe('MarinBatchJobService - Task 4.4.1: Test Batch Job Creation', () => {
 
         // Assert - Verify structure
         expect(mockHttpClient.put).toHaveBeenCalledWith(
-          '/dispatcher/google/batch-jobs/batch-job-verify/operations',
+          '/api/v2/dispatcher/google/batch-jobs/batch-job-verify/operations',
           {
             operations: expect.arrayContaining([
               expect.objectContaining({
@@ -760,7 +760,7 @@ describe('MarinBatchJobService - Task 4.4.1: Test Batch Job Creation', () => {
         // Assert - Verify run endpoint was called
         expect(mockHttpClient.post).toHaveBeenCalledTimes(1);
         expect(mockHttpClient.post).toHaveBeenCalledWith(
-          '/dispatcher/google/batch-jobs/batch-job-run-12345/run'
+          '/api/v2/dispatcher/google/batch-jobs/batch-job-run-12345/run'
         );
 
         // Verify status by making a status check
@@ -1095,7 +1095,7 @@ describe('MarinBatchJobService - Task 4.4.1: Test Batch Job Creation', () => {
         // Verify API call
         expect(mockHttpClient.get).toHaveBeenCalledTimes(1);
         expect(mockHttpClient.get).toHaveBeenCalledWith(
-          '/dispatcher/google/batch-jobs/batch-job-results-12345/results'
+          '/api/v2/dispatcher/google/batch-jobs/batch-job-results-12345/results'
         );
       });
 
@@ -1280,7 +1280,7 @@ describe('MarinBatchJobService - Task 4.4.1: Test Batch Job Creation', () => {
 
         // Assert
         expect(mockSegment.addNewSubsegment).toHaveBeenCalledWith(
-          'MarinBatchJobService.getBatchJobResults'
+          'ZilkrBatchJobService.getBatchJobResults'
         );
         expect(mockSubsegment.close).toHaveBeenCalledTimes(1);
       });
@@ -1295,17 +1295,14 @@ describe('MarinBatchJobService - Task 4.4.1: Test Batch Job Creation', () => {
     /**
      * Helper function to create sample campaign requests
      */
-    const createCampaigns = (count: number): MarinCampaignRequest[] => {
-      const campaigns: MarinCampaignRequest[] = [];
+    const createCampaigns = (count: number): ZilkrCampaignRequest[] => {
+      const campaigns: ZilkrCampaignRequest[] = [];
       for (let i = 0; i < count; i++) {
         campaigns.push({
           accountId: 'test-account-123',
           name: `Campaign ${i + 1}`,
           status: 'ENABLED',
-          budget: {
-            amount: 1000 + i * 100,
-            deliveryMethod: 'STANDARD',
-          },
+          campaignBudget: `budget-${i + 1}`,
           biddingStrategy: 'MAXIMIZE_CLICKS',
         });
       }
@@ -1956,7 +1953,7 @@ describe('MarinBatchJobService - Task 4.4.1: Test Batch Job Creation', () => {
           accountId: '',
           name: '',
           status: 'INVALID' as any,
-          budget: { amount: -1000, deliveryMethod: 'INVALID' as any },
+          campaignBudget: '', // Invalid: empty budget reference
           biddingStrategy: '',
         });
         const campaigns = [...validCampaigns, ...invalidCampaigns];
@@ -2051,7 +2048,7 @@ describe('MarinBatchJobService - Task 4.4.1: Test Batch Job Creation', () => {
           accountId: '',
           name: '',
           status: 'INVALID' as any,
-          budget: { amount: -1000, deliveryMethod: 'INVALID' as any },
+          campaignBudget: '', // Invalid: empty budget reference
           biddingStrategy: '',
         });
         const campaigns = [...validCampaigns, ...invalidCampaigns];
@@ -2142,7 +2139,7 @@ describe('MarinBatchJobService - Task 4.4.1: Test Batch Job Creation', () => {
           accountId: '',
           name: '',
           status: 'INVALID' as any,
-          budget: { amount: -1000, deliveryMethod: 'INVALID' as any },
+          campaignBudget: '', // Invalid: empty budget reference
           biddingStrategy: '',
         });
         const campaigns = [...validCampaigns, ...invalidCampaigns];
@@ -2241,7 +2238,7 @@ describe('MarinBatchJobService - Task 4.4.1: Test Batch Job Creation', () => {
           accountId: '',
           name: '',
           status: 'INVALID' as any,
-          budget: { amount: -1000, deliveryMethod: 'INVALID' as any },
+          campaignBudget: '', // Invalid: empty budget reference
           biddingStrategy: '',
         });
         const batchJobId = 'batch-job-all-fail';
@@ -2319,7 +2316,7 @@ describe('MarinBatchJobService - Task 4.4.1: Test Batch Job Creation', () => {
           accountId: '',
           name: '',
           status: 'INVALID' as any,
-          budget: { amount: -1000, deliveryMethod: 'INVALID' as any },
+          campaignBudget: '', // Invalid: empty budget reference
           biddingStrategy: '',
         });
         const batchJobId = 'batch-job-all-fail-error';
@@ -2396,7 +2393,7 @@ describe('MarinBatchJobService - Task 4.4.1: Test Batch Job Creation', () => {
           accountId: '',
           name: '',
           status: 'INVALID' as any,
-          budget: { amount: -1000, deliveryMethod: 'INVALID' as any },
+          campaignBudget: '', // Invalid: empty budget reference
           biddingStrategy: '',
         });
         const batchJobId = 'batch-job-all-fail-summary';
@@ -2652,7 +2649,7 @@ describe('MarinBatchJobService - Task 4.4.1: Test Batch Job Creation', () => {
 
         // Assert
         expect(mockSegment.addNewSubsegment).toHaveBeenCalledWith(
-          'MarinBatchJobService.bulkCreateCampaigns'
+          'ZilkrBatchJobService.bulkCreateCampaigns'
         );
         // 6 subsegments created: bulkCreateCampaigns, createBatchJob, addOperationsToBatch, runBatchJob, pollBatchJobStatus, getBatchJobResults
         expect(mockSubsegment.close).toHaveBeenCalledTimes(6);

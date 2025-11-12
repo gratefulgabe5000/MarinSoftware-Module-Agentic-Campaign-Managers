@@ -6,7 +6,8 @@
       "Bash(npm run:*)",
       "Bash(cd:*)",
       "Bash(tsc:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": []

@@ -1,20 +1,20 @@
 /**
- * Unit tests for MarinDispatcherService Ad Structure Methods (Phase 2B.1 & 2B.2)
+ * Unit tests for ZilkrDispatcherService Ad Structure Methods (Phase 2B.1 & 2B.2)
  * Tests Ad Group and Ad methods
  *
  * @module marinDispatcherService.adStructure.test
  */
 
-import { MarinDispatcherService } from '../../services/marinDispatcherService';
+import { ZilkrDispatcherService } from '../../services/zilkrDispatcherService';
 import axios from 'axios';
 import * as AWSXRay from 'aws-xray-sdk-core';
 import {
-  MarinAdGroupRequest,
-  MarinAdGroupResponse,
-  MarinAdGroupUpdateRequest,
-  MarinAdRequest,
-  MarinAdResponse,
-  MarinAdUpdateRequest,
+  ZilkrAdGroupRequest,
+  ZilkrAdGroupResponse,
+  ZilkrAdGroupUpdateRequest,
+  ZilkrAdRequest,
+  ZilkrAdResponse,
+  ZilkrAdUpdateRequest,
   AdAsset,
 } from '../../types/marinDispatcher.types';
 
@@ -23,7 +23,7 @@ jest.mock('axios');
 jest.mock('aws-xray-sdk-core');
 jest.mock('../../config/env', () => {
   const mockConfig = {
-    marinDispatcher: {
+    zilkrDispatcher: {
       baseUrl: 'http://test-dispatcher.example.com',
       accountId: 'test-account-123',
       publisher: 'google',
@@ -39,8 +39,8 @@ jest.mock('../../config/env', () => {
 
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
-describe('MarinDispatcherService - Ad Structure Methods', () => {
-  let service: MarinDispatcherService;
+describe('ZilkrDispatcherService - Ad Structure Methods', () => {
+  let service: ZilkrDispatcherService;
   let mockHttpClient: any;
 
   beforeEach(() => {
@@ -65,7 +65,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
     mockedAxios.create.mockReturnValue(mockHttpClient as any);
 
     // Initialize service
-    service = new MarinDispatcherService('test-account-123', 'google');
+    service = new ZilkrDispatcherService('test-account-123', 'google');
   });
 
   // ========================================================================
@@ -74,14 +74,14 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
 
   describe('createAdGroup', () => {
     const campaignId = 'campaign-123';
-    const mockAdGroupData: Omit<MarinAdGroupRequest, 'accountId' | 'campaignId'> = {
+    const mockAdGroupData: Omit<ZilkrAdGroupRequest, 'accountId' | 'campaignId'> = {
       name: 'Test Ad Group',
       status: 'ENABLED',
       cpcBid: 1.5,
     };
 
     it('should successfully create an ad group', async () => {
-      const mockResponse: MarinAdGroupResponse = {
+      const mockResponse: ZilkrAdGroupResponse = {
         id: 'adgroup-123',
         accountId: 'test-account-123',
         campaignId: 'campaign-123',
@@ -99,7 +99,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
       expect(result.adGroupId).toBe('adgroup-123');
       expect(result.details).toEqual(mockResponse);
       expect(mockHttpClient.post).toHaveBeenCalledWith(
-        '/dispatcher/google/campaigns/campaign-123/adgroups',
+        '/api/v2/dispatcher/google/campaigns/campaign-123/adgroups',
         expect.objectContaining({
           accountId: 'test-account-123',
           campaignId: 'campaign-123',
@@ -111,11 +111,11 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
     });
 
     it('should create an ad group with minimal required fields', async () => {
-      const minimalData: Omit<MarinAdGroupRequest, 'accountId' | 'campaignId'> = {
+      const minimalData: Omit<ZilkrAdGroupRequest, 'accountId' | 'campaignId'> = {
         name: 'Minimal Ad Group',
       };
 
-      const mockResponse: MarinAdGroupResponse = {
+      const mockResponse: ZilkrAdGroupResponse = {
         id: 'adgroup-minimal',
         accountId: 'test-account-123',
         campaignId: 'campaign-123',
@@ -131,7 +131,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
       expect(result.success).toBe(true);
       expect(result.adGroupId).toBe('adgroup-minimal');
       expect(mockHttpClient.post).toHaveBeenCalledWith(
-        '/dispatcher/google/campaigns/campaign-123/adgroups',
+        '/api/v2/dispatcher/google/campaigns/campaign-123/adgroups',
         expect.objectContaining({
           accountId: 'test-account-123',
           campaignId: 'campaign-123',
@@ -155,7 +155,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
     });
 
     it('should validate ad group name is not empty', async () => {
-      const invalidData: Omit<MarinAdGroupRequest, 'accountId' | 'campaignId'> = {
+      const invalidData: Omit<ZilkrAdGroupRequest, 'accountId' | 'campaignId'> = {
         name: '',
         status: 'ENABLED',
       };
@@ -183,7 +183,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
     });
 
     it('should validate cpcBid is positive if provided', async () => {
-      const invalidData: Omit<MarinAdGroupRequest, 'accountId' | 'campaignId'> = {
+      const invalidData: Omit<ZilkrAdGroupRequest, 'accountId' | 'campaignId'> = {
         name: 'Test Ad Group',
         cpcBid: -1.5,
       };
@@ -197,7 +197,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
     });
 
     it('should validate cpmBid is positive if provided', async () => {
-      const invalidData: Omit<MarinAdGroupRequest, 'accountId' | 'campaignId'> = {
+      const invalidData: Omit<ZilkrAdGroupRequest, 'accountId' | 'campaignId'> = {
         name: 'Test Ad Group',
         cpmBid: -5.0,
       };
@@ -252,7 +252,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
         biddingStrategy: 'MANUAL_CPC',
       };
 
-      const mockAdGroupResponse: MarinAdGroupResponse = {
+      const mockAdGroupResponse: ZilkrAdGroupResponse = {
         id: 'adgroup-new-123',
         accountId: 'test-account-123',
         campaignId: 'campaign-new-123',
@@ -316,12 +316,12 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
       expect(mockHttpClient.post).toHaveBeenCalledTimes(2);
       expect(mockHttpClient.post).toHaveBeenNthCalledWith(
         1,
-        '/dispatcher/google/campaigns',
+        '/api/v2/dispatcher/google/campaigns',
         expect.any(Object)
       );
       expect(mockHttpClient.post).toHaveBeenNthCalledWith(
         2,
-        '/dispatcher/google/campaigns/campaign-new-123/adgroups',
+        '/api/v2/dispatcher/google/campaigns/campaign-new-123/adgroups',
         expect.objectContaining({
           campaignId: 'campaign-new-123',
           name: 'Test Ad Group in New Campaign',
@@ -400,11 +400,11 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
     const adGroupId = 'adgroup-123';
 
     it('should successfully update ad group name', async () => {
-      const updates: MarinAdGroupUpdateRequest = {
+      const updates: ZilkrAdGroupUpdateRequest = {
         name: 'Updated Ad Group Name',
       };
 
-      const mockResponse: MarinAdGroupResponse = {
+      const mockResponse: ZilkrAdGroupResponse = {
         id: adGroupId,
         accountId: 'test-account-123',
         campaignId: 'campaign-123',
@@ -421,17 +421,17 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
       expect(result.adGroupId).toBe(adGroupId);
       expect(result.details).toEqual(mockResponse);
       expect(mockHttpClient.put).toHaveBeenCalledWith(
-        '/dispatcher/google/adgroups/adgroup-123',
+        '/api/v2/dispatcher/google/adgroups/adgroup-123',
         { name: 'Updated Ad Group Name' }
       );
     });
 
     it('should successfully update ad group status', async () => {
-      const updates: MarinAdGroupUpdateRequest = {
+      const updates: ZilkrAdGroupUpdateRequest = {
         status: 'PAUSED',
       };
 
-      const mockResponse: MarinAdGroupResponse = {
+      const mockResponse: ZilkrAdGroupResponse = {
         id: adGroupId,
         accountId: 'test-account-123',
         campaignId: 'campaign-123',
@@ -447,17 +447,17 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
       expect(result.success).toBe(true);
       expect(result.adGroupId).toBe(adGroupId);
       expect(mockHttpClient.put).toHaveBeenCalledWith(
-        '/dispatcher/google/adgroups/adgroup-123',
+        '/api/v2/dispatcher/google/adgroups/adgroup-123',
         { status: 'PAUSED' }
       );
     });
 
     it('should successfully update ad group cpcBid', async () => {
-      const updates: MarinAdGroupUpdateRequest = {
+      const updates: ZilkrAdGroupUpdateRequest = {
         cpcBid: 2.5,
       };
 
-      const mockResponse: MarinAdGroupResponse = {
+      const mockResponse: ZilkrAdGroupResponse = {
         id: adGroupId,
         accountId: 'test-account-123',
         campaignId: 'campaign-123',
@@ -474,20 +474,20 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
       expect(result.success).toBe(true);
       expect(result.adGroupId).toBe(adGroupId);
       expect(mockHttpClient.put).toHaveBeenCalledWith(
-        '/dispatcher/google/adgroups/adgroup-123',
+        '/api/v2/dispatcher/google/adgroups/adgroup-123',
         { cpcBid: 2.5 }
       );
     });
 
     it('should successfully update multiple fields at once', async () => {
-      const updates: MarinAdGroupUpdateRequest = {
+      const updates: ZilkrAdGroupUpdateRequest = {
         name: 'New Name',
         status: 'ENABLED',
         cpcBid: 3.0,
         cpmBid: 5.0,
       };
 
-      const mockResponse: MarinAdGroupResponse = {
+      const mockResponse: ZilkrAdGroupResponse = {
         id: adGroupId,
         accountId: 'test-account-123',
         campaignId: 'campaign-123',
@@ -505,7 +505,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
       expect(result.success).toBe(true);
       expect(result.adGroupId).toBe(adGroupId);
       expect(mockHttpClient.put).toHaveBeenCalledWith(
-        '/dispatcher/google/adgroups/adgroup-123',
+        '/api/v2/dispatcher/google/adgroups/adgroup-123',
         {
           name: 'New Name',
           status: 'ENABLED',
@@ -516,14 +516,14 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
     });
 
     it('should remove undefined fields from update request', async () => {
-      const updates: MarinAdGroupUpdateRequest = {
+      const updates: ZilkrAdGroupUpdateRequest = {
         name: 'Updated Name',
         status: undefined,
         cpcBid: undefined,
         cpmBid: undefined,
       };
 
-      const mockResponse: MarinAdGroupResponse = {
+      const mockResponse: ZilkrAdGroupResponse = {
         id: adGroupId,
         accountId: 'test-account-123',
         campaignId: 'campaign-123',
@@ -538,13 +538,13 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
 
       expect(result.success).toBe(true);
       expect(mockHttpClient.put).toHaveBeenCalledWith(
-        '/dispatcher/google/adgroups/adgroup-123',
+        '/api/v2/dispatcher/google/adgroups/adgroup-123',
         { name: 'Updated Name' } // Only defined field should be sent
       );
     });
 
     it('should handle API errors gracefully', async () => {
-      const updates: MarinAdGroupUpdateRequest = {
+      const updates: ZilkrAdGroupUpdateRequest = {
         name: 'Updated Name',
       };
 
@@ -580,7 +580,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
       { text: 'Description 2' },
     ];
 
-    const mockAdData: Omit<MarinAdRequest, 'accountId' | 'adGroupId'> = {
+    const mockAdData: Omit<ZilkrAdRequest, 'accountId' | 'adGroupId'> = {
       type: 'RESPONSIVE_SEARCH_AD',
       headlines: validHeadlines,
       descriptions: validDescriptions,
@@ -588,7 +588,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
     };
 
     it('should successfully create a responsive search ad', async () => {
-      const mockResponse: MarinAdResponse = {
+      const mockResponse: ZilkrAdResponse = {
         id: 'ad-123',
         accountId: 'test-account-123',
         adGroupId: 'adgroup-123',
@@ -607,7 +607,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
       expect(result.adId).toBe('ad-123');
       expect(result.details).toEqual(mockResponse);
       expect(mockHttpClient.post).toHaveBeenCalledWith(
-        '/dispatcher/google/adgroups/adgroup-123/ads',
+        '/api/v2/dispatcher/google/adgroups/adgroup-123/ads',
         expect.objectContaining({
           accountId: 'test-account-123',
           adGroupId: 'adgroup-123',
@@ -626,7 +626,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
         finalUrl: 'https://www.example.com',
       };
 
-      const mockResponse: MarinAdResponse = {
+      const mockResponse: ZilkrAdResponse = {
         id: 'ad-default',
         accountId: 'test-account-123',
         adGroupId: 'adgroup-123',
@@ -643,7 +643,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
 
       expect(result.success).toBe(true);
       expect(mockHttpClient.post).toHaveBeenCalledWith(
-        '/dispatcher/google/adgroups/adgroup-123/ads',
+        '/api/v2/dispatcher/google/adgroups/adgroup-123/ads',
         expect.objectContaining({
           type: 'RESPONSIVE_SEARCH_AD',
         })
@@ -651,7 +651,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
     });
 
     it('should validate minimum number of headlines (3 required)', async () => {
-      const invalidAdData: Omit<MarinAdRequest, 'accountId' | 'adGroupId'> = {
+      const invalidAdData: Omit<ZilkrAdRequest, 'accountId' | 'adGroupId'> = {
         type: 'RESPONSIVE_SEARCH_AD',
         headlines: [
           { text: 'Headline 1' },
@@ -674,7 +674,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
         .fill(null)
         .map((_, i) => ({ text: `Headline ${i + 1}` }));
 
-      const invalidAdData: Omit<MarinAdRequest, 'accountId' | 'adGroupId'> = {
+      const invalidAdData: Omit<ZilkrAdRequest, 'accountId' | 'adGroupId'> = {
         type: 'RESPONSIVE_SEARCH_AD',
         headlines: tooManyHeadlines,
         descriptions: validDescriptions,
@@ -690,7 +690,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
     });
 
     it('should validate headline text length (30 chars max)', async () => {
-      const invalidAdData: Omit<MarinAdRequest, 'accountId' | 'adGroupId'> = {
+      const invalidAdData: Omit<ZilkrAdRequest, 'accountId' | 'adGroupId'> = {
         type: 'RESPONSIVE_SEARCH_AD',
         headlines: [
           { text: 'Valid Headline 1' },
@@ -710,7 +710,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
     });
 
     it('should validate minimum number of descriptions (2 required)', async () => {
-      const invalidAdData: Omit<MarinAdRequest, 'accountId' | 'adGroupId'> = {
+      const invalidAdData: Omit<ZilkrAdRequest, 'accountId' | 'adGroupId'> = {
         type: 'RESPONSIVE_SEARCH_AD',
         headlines: validHeadlines,
         descriptions: [
@@ -732,7 +732,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
         .fill(null)
         .map((_, i) => ({ text: `Description ${i + 1}` }));
 
-      const invalidAdData: Omit<MarinAdRequest, 'accountId' | 'adGroupId'> = {
+      const invalidAdData: Omit<ZilkrAdRequest, 'accountId' | 'adGroupId'> = {
         type: 'RESPONSIVE_SEARCH_AD',
         headlines: validHeadlines,
         descriptions: tooManyDescriptions,
@@ -748,7 +748,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
     });
 
     it('should validate description text length (90 chars max)', async () => {
-      const invalidAdData: Omit<MarinAdRequest, 'accountId' | 'adGroupId'> = {
+      const invalidAdData: Omit<ZilkrAdRequest, 'accountId' | 'adGroupId'> = {
         type: 'RESPONSIVE_SEARCH_AD',
         headlines: validHeadlines,
         descriptions: [
@@ -782,7 +782,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
     });
 
     it('should validate finalUrl format', async () => {
-      const invalidAdData: Omit<MarinAdRequest, 'accountId' | 'adGroupId'> = {
+      const invalidAdData: Omit<ZilkrAdRequest, 'accountId' | 'adGroupId'> = {
         type: 'RESPONSIVE_SEARCH_AD',
         headlines: validHeadlines,
         descriptions: validDescriptions,
@@ -798,7 +798,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
     });
 
     it('should create ad with optional display URL and paths', async () => {
-      const adDataWithOptionals: Omit<MarinAdRequest, 'accountId' | 'adGroupId'> = {
+      const adDataWithOptionals: Omit<ZilkrAdRequest, 'accountId' | 'adGroupId'> = {
         type: 'RESPONSIVE_SEARCH_AD',
         headlines: validHeadlines,
         descriptions: validDescriptions,
@@ -807,7 +807,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
         paths: ['path1', 'path2'],
       };
 
-      const mockResponse: MarinAdResponse = {
+      const mockResponse: ZilkrAdResponse = {
         id: 'ad-with-optionals',
         accountId: 'test-account-123',
         adGroupId: 'adgroup-123',
@@ -827,7 +827,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
       expect(result.success).toBe(true);
       expect(result.adId).toBe('ad-with-optionals');
       expect(mockHttpClient.post).toHaveBeenCalledWith(
-        '/dispatcher/google/adgroups/adgroup-123/ads',
+        '/api/v2/dispatcher/google/adgroups/adgroup-123/ads',
         expect.objectContaining({
           displayUrl: 'www.example.com',
           paths: ['path1', 'path2'],
@@ -842,14 +842,14 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
         { text: 'Regular Headline 2' },
       ];
 
-      const adDataWithPinned: Omit<MarinAdRequest, 'accountId' | 'adGroupId'> = {
+      const adDataWithPinned: Omit<ZilkrAdRequest, 'accountId' | 'adGroupId'> = {
         type: 'RESPONSIVE_SEARCH_AD',
         headlines: pinnedHeadlines,
         descriptions: validDescriptions,
         finalUrl: 'https://www.example.com',
       };
 
-      const mockResponse: MarinAdResponse = {
+      const mockResponse: ZilkrAdResponse = {
         id: 'ad-pinned',
         accountId: 'test-account-123',
         adGroupId: 'adgroup-123',
@@ -866,7 +866,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
 
       expect(result.success).toBe(true);
       expect(mockHttpClient.post).toHaveBeenCalledWith(
-        '/dispatcher/google/adgroups/adgroup-123/ads',
+        '/api/v2/dispatcher/google/adgroups/adgroup-123/ads',
         expect.objectContaining({
           headlines: expect.arrayContaining([
             expect.objectContaining({ text: 'Pinned Headline', pinned: true }),
@@ -918,7 +918,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
       };
 
       // Step 2: Mock Ad Group Response
-      const mockAdGroupResponse: MarinAdGroupResponse = {
+      const mockAdGroupResponse: ZilkrAdGroupResponse = {
         id: 'adgroup-integration-123',
         accountId: 'test-account-123',
         campaignId: 'campaign-integration-123',
@@ -929,7 +929,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
       };
 
       // Step 3: Mock Ad Response
-      const mockAdResponse: MarinAdResponse = {
+      const mockAdResponse: ZilkrAdResponse = {
         id: 'ad-integration-123',
         accountId: 'test-account-123',
         adGroupId: 'adgroup-integration-123',
@@ -1022,14 +1022,14 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
       // Verify campaign creation call
       expect(mockHttpClient.post).toHaveBeenNthCalledWith(
         1,
-        '/dispatcher/google/campaigns',
+        '/api/v2/dispatcher/google/campaigns',
         expect.any(Object)
       );
 
       // Verify ad group creation call
       expect(mockHttpClient.post).toHaveBeenNthCalledWith(
         2,
-        '/dispatcher/google/campaigns/campaign-integration-123/adgroups',
+        '/api/v2/dispatcher/google/campaigns/campaign-integration-123/adgroups',
         expect.objectContaining({
           campaignId: 'campaign-integration-123',
           name: 'Integration Test Ad Group',
@@ -1039,7 +1039,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
       // Verify ad creation call with all validations
       expect(mockHttpClient.post).toHaveBeenNthCalledWith(
         3,
-        '/dispatcher/google/adgroups/adgroup-integration-123/ads',
+        '/api/v2/dispatcher/google/adgroups/adgroup-integration-123/ads',
         expect.objectContaining({
           accountId: 'test-account-123',
           adGroupId: 'adgroup-integration-123',
@@ -1092,11 +1092,11 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
         { text: 'New Headline 3' },
       ];
 
-      const updates: MarinAdUpdateRequest = {
+      const updates: ZilkrAdUpdateRequest = {
         headlines: newHeadlines,
       };
 
-      const mockResponse: MarinAdResponse = {
+      const mockResponse: ZilkrAdResponse = {
         id: adId,
         accountId: 'test-account-123',
         adGroupId: 'adgroup-123',
@@ -1118,7 +1118,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
       expect(result.adId).toBe(adId);
       expect(result.details).toEqual(mockResponse);
       expect(mockHttpClient.put).toHaveBeenCalledWith(
-        '/dispatcher/google/ads/ad-123',
+        '/api/v2/dispatcher/google/ads/ad-123',
         { headlines: newHeadlines }
       );
     });
@@ -1129,11 +1129,11 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
         { text: 'New Description 2' },
       ];
 
-      const updates: MarinAdUpdateRequest = {
+      const updates: ZilkrAdUpdateRequest = {
         descriptions: newDescriptions,
       };
 
-      const mockResponse: MarinAdResponse = {
+      const mockResponse: ZilkrAdResponse = {
         id: adId,
         accountId: 'test-account-123',
         adGroupId: 'adgroup-123',
@@ -1155,17 +1155,17 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
       expect(result.success).toBe(true);
       expect(result.adId).toBe(adId);
       expect(mockHttpClient.put).toHaveBeenCalledWith(
-        '/dispatcher/google/ads/ad-123',
+        '/api/v2/dispatcher/google/ads/ad-123',
         { descriptions: newDescriptions }
       );
     });
 
     it('should successfully update ad finalUrl', async () => {
-      const updates: MarinAdUpdateRequest = {
+      const updates: ZilkrAdUpdateRequest = {
         finalUrl: 'https://www.newexample.com',
       };
 
-      const mockResponse: MarinAdResponse = {
+      const mockResponse: ZilkrAdResponse = {
         id: adId,
         accountId: 'test-account-123',
         adGroupId: 'adgroup-123',
@@ -1190,13 +1190,13 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
       expect(result.success).toBe(true);
       expect(result.adId).toBe(adId);
       expect(mockHttpClient.put).toHaveBeenCalledWith(
-        '/dispatcher/google/ads/ad-123',
+        '/api/v2/dispatcher/google/ads/ad-123',
         { finalUrl: 'https://www.newexample.com' }
       );
     });
 
     it('should successfully update multiple fields at once', async () => {
-      const updates: MarinAdUpdateRequest = {
+      const updates: ZilkrAdUpdateRequest = {
         headlines: [
           { text: 'Updated Headline 1' },
           { text: 'Updated Headline 2' },
@@ -1211,7 +1211,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
         paths: ['new', 'path'],
       };
 
-      const mockResponse: MarinAdResponse = {
+      const mockResponse: ZilkrAdResponse = {
         id: adId,
         accountId: 'test-account-123',
         adGroupId: 'adgroup-123',
@@ -1231,13 +1231,13 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
       expect(result.success).toBe(true);
       expect(result.adId).toBe(adId);
       expect(mockHttpClient.put).toHaveBeenCalledWith(
-        '/dispatcher/google/ads/ad-123',
+        '/api/v2/dispatcher/google/ads/ad-123',
         updates
       );
     });
 
     it('should remove undefined fields from update request', async () => {
-      const updates: MarinAdUpdateRequest = {
+      const updates: ZilkrAdUpdateRequest = {
         finalUrl: 'https://www.example.com',
         headlines: undefined,
         descriptions: undefined,
@@ -1245,7 +1245,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
         paths: undefined,
       };
 
-      const mockResponse: MarinAdResponse = {
+      const mockResponse: ZilkrAdResponse = {
         id: adId,
         accountId: 'test-account-123',
         adGroupId: 'adgroup-123',
@@ -1269,13 +1269,13 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
 
       expect(result.success).toBe(true);
       expect(mockHttpClient.put).toHaveBeenCalledWith(
-        '/dispatcher/google/ads/ad-123',
+        '/api/v2/dispatcher/google/ads/ad-123',
         { finalUrl: 'https://www.example.com' } // Only defined field should be sent
       );
     });
 
     it('should return error when no valid fields to update', async () => {
-      const updates: MarinAdUpdateRequest = {};
+      const updates: ZilkrAdUpdateRequest = {};
 
       const result = await service.updateAd(adId, updates);
 
@@ -1285,7 +1285,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
     });
 
     it('should handle API errors gracefully', async () => {
-      const updates: MarinAdUpdateRequest = {
+      const updates: ZilkrAdUpdateRequest = {
         finalUrl: 'https://www.example.com',
       };
 
@@ -1303,7 +1303,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
     });
 
     it('should handle network errors gracefully', async () => {
-      const updates: MarinAdUpdateRequest = {
+      const updates: ZilkrAdUpdateRequest = {
         finalUrl: 'https://www.example.com',
       };
 
@@ -1330,7 +1330,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
       };
       (AWSXRay.getSegment as jest.Mock).mockReturnValue(mockSegment);
 
-      const mockResponse: MarinAdGroupResponse = {
+      const mockResponse: ZilkrAdGroupResponse = {
         id: 'adgroup-123',
         accountId: 'test-account-123',
         campaignId: 'campaign-123',
@@ -1343,7 +1343,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
 
       await service.createAdGroup('campaign-123', { name: 'Test Ad Group' });
 
-      expect(mockSegment.addNewSubsegment).toHaveBeenCalledWith('MarinDispatcher.createAdGroup');
+      expect(mockSegment.addNewSubsegment).toHaveBeenCalledWith('ZilkrDispatcher.createAdGroup');
       expect(mockSubsegment.close).toHaveBeenCalled();
     });
 
@@ -1356,7 +1356,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
       };
       (AWSXRay.getSegment as jest.Mock).mockReturnValue(mockSegment);
 
-      const mockResponse: MarinAdGroupResponse = {
+      const mockResponse: ZilkrAdGroupResponse = {
         id: 'adgroup-123',
         accountId: 'test-account-123',
         campaignId: 'campaign-123',
@@ -1369,7 +1369,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
 
       await service.updateAdGroup('adgroup-123', { name: 'Updated Ad Group' });
 
-      expect(mockSegment.addNewSubsegment).toHaveBeenCalledWith('MarinDispatcher.updateAdGroup');
+      expect(mockSegment.addNewSubsegment).toHaveBeenCalledWith('ZilkrDispatcher.updateAdGroup');
       expect(mockSubsegment.close).toHaveBeenCalled();
     });
 
@@ -1382,7 +1382,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
       };
       (AWSXRay.getSegment as jest.Mock).mockReturnValue(mockSegment);
 
-      const mockResponse: MarinAdResponse = {
+      const mockResponse: ZilkrAdResponse = {
         id: 'ad-123',
         accountId: 'test-account-123',
         adGroupId: 'adgroup-123',
@@ -1416,7 +1416,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
         finalUrl: 'https://www.example.com',
       });
 
-      expect(mockSegment.addNewSubsegment).toHaveBeenCalledWith('MarinDispatcher.createAd');
+      expect(mockSegment.addNewSubsegment).toHaveBeenCalledWith('ZilkrDispatcher.createAd');
       expect(mockSubsegment.close).toHaveBeenCalled();
     });
 
@@ -1429,7 +1429,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
       };
       (AWSXRay.getSegment as jest.Mock).mockReturnValue(mockSegment);
 
-      const mockResponse: MarinAdResponse = {
+      const mockResponse: ZilkrAdResponse = {
         id: 'ad-123',
         accountId: 'test-account-123',
         adGroupId: 'adgroup-123',
@@ -1451,7 +1451,7 @@ describe('MarinDispatcherService - Ad Structure Methods', () => {
 
       await service.updateAd('ad-123', { finalUrl: 'https://www.updated.com' });
 
-      expect(mockSegment.addNewSubsegment).toHaveBeenCalledWith('MarinDispatcher.updateAd');
+      expect(mockSegment.addNewSubsegment).toHaveBeenCalledWith('ZilkrDispatcher.updateAd');
       expect(mockSubsegment.close).toHaveBeenCalled();
     });
   });

@@ -10,32 +10,32 @@
 
 import {
   // Base Types
-  MarinBaseRequest,
-  MarinBaseResponse,
+  ZilkrBaseRequest,
+  ZilkrBaseResponse,
 
   // Campaign Types
-  MarinCampaignRequest,
-  MarinCampaignResponse,
-  MarinCampaignUpdateRequest,
-  MarinCampaignListRequest,
-  MarinCampaignListResponse,
+  ZilkrCampaignRequest,
+  ZilkrCampaignResponse,
+  ZilkrCampaignUpdateRequest,
+  ZilkrCampaignListRequest,
+  ZilkrCampaignListResponse,
 
   // Ad Group Types
-  MarinAdGroupRequest,
-  MarinAdGroupResponse,
-  MarinAdGroupUpdateRequest,
+  ZilkrAdGroupRequest,
+  ZilkrAdGroupResponse,
+  ZilkrAdGroupUpdateRequest,
 
   // Ad Types
   AdAsset,
-  MarinAdRequest,
-  MarinAdResponse,
-  MarinAdUpdateRequest,
+  ZilkrAdRequest,
+  ZilkrAdResponse,
+  ZilkrAdUpdateRequest,
 
   // Keyword Types
-  MarinKeywordRequest,
-  MarinKeywordResponse,
-  MarinKeywordUpdateRequest,
-  MarinBulkKeywordRequest,
+  ZilkrKeywordRequest,
+  ZilkrKeywordResponse,
+  ZilkrKeywordUpdateRequest,
+  ZilkrBulkKeywordRequest,
 
   // Batch Job Types
   BatchOperation,
@@ -72,21 +72,21 @@ describe('marinDispatcher.types', () => {
   // ==========================================================================
 
   describe('Base Types', () => {
-    it('should define MarinBaseRequest with required accountId', () => {
-      const request: MarinBaseRequest = {
+    it('should define ZilkrBaseRequest with required accountId', () => {
+      const request: ZilkrBaseRequest = {
         accountId: '5533110357',
       };
 
       expect(request.accountId).toBe('5533110357');
     });
 
-    it('should define MarinBaseResponse with status and optional fields', () => {
-      const successResponse: MarinBaseResponse = {
+    it('should define ZilkrBaseResponse with status and optional fields', () => {
+      const successResponse: ZilkrBaseResponse = {
         status: 'SUCCESS',
         resourceId: 'campaign-123',
       };
 
-      const failureResponse: MarinBaseResponse = {
+      const failureResponse: ZilkrBaseResponse = {
         status: 'FAILURE',
         errors: ['Invalid budget amount'],
         warnings: ['Budget may exceed daily limit'],
@@ -105,15 +105,12 @@ describe('marinDispatcher.types', () => {
   // ==========================================================================
 
   describe('Campaign Types', () => {
-    it('should define MarinCampaignRequest with all required fields', () => {
-      const request: MarinCampaignRequest = {
+    it('should define ZilkrCampaignRequest with all required fields', () => {
+      const request: ZilkrCampaignRequest = {
         accountId: '5533110357',
         name: 'Test Campaign',
         status: 'ENABLED',
-        budget: {
-          amount: 1000,
-          deliveryMethod: 'STANDARD',
-        },
+        campaignBudget: 'budget-123',
         biddingStrategy: 'TARGET_CPA',
         objective: 'CONVERSIONS',
       };
@@ -121,14 +118,13 @@ describe('marinDispatcher.types', () => {
       expect(request.accountId).toBe('5533110357');
       expect(request.name).toBe('Test Campaign');
       expect(request.status).toBe('ENABLED');
-      expect(request.budget.amount).toBe(1000);
-      expect(request.budget.deliveryMethod).toBe('STANDARD');
+      expect(request.campaignBudget).toBe('budget-123');
       expect(request.biddingStrategy).toBe('TARGET_CPA');
       expect(request.objective).toBe('CONVERSIONS');
     });
 
-    it('should define MarinCampaignResponse extending MarinBaseResponse', () => {
-      const response: MarinCampaignResponse = {
+    it('should define ZilkrCampaignResponse extending MarinBaseResponse', () => {
+      const response: ZilkrCampaignResponse = {
         status: 'SUCCESS',
         id: 'campaign-123',
         accountId: '5533110357',
@@ -152,8 +148,8 @@ describe('marinDispatcher.types', () => {
       expect(response.updatedAt).toBe('2025-11-10T12:30:00Z');
     });
 
-    it('should define MarinCampaignUpdateRequest with optional fields', () => {
-      const updateRequest: MarinCampaignUpdateRequest = {
+    it('should define ZilkrCampaignUpdateRequest with optional fields', () => {
+      const updateRequest: ZilkrCampaignUpdateRequest = {
         name: 'Updated Campaign',
         status: 'PAUSED',
       };
@@ -164,8 +160,8 @@ describe('marinDispatcher.types', () => {
       expect(updateRequest.biddingStrategy).toBeUndefined();
     });
 
-    it('should define MarinCampaignListRequest with pagination', () => {
-      const listRequest: MarinCampaignListRequest = {
+    it('should define ZilkrCampaignListRequest with pagination', () => {
+      const listRequest: ZilkrCampaignListRequest = {
         accountId: '5533110357',
         limit: 50,
         offset: 0,
@@ -176,8 +172,8 @@ describe('marinDispatcher.types', () => {
       expect(listRequest.offset).toBe(0);
     });
 
-    it('should define MarinCampaignListResponse with campaigns array', () => {
-      const listResponse: MarinCampaignListResponse = {
+    it('should define ZilkrCampaignListResponse with campaigns array', () => {
+      const listResponse: ZilkrCampaignListResponse = {
         campaigns: [
           {
             status: 'SUCCESS',
@@ -215,8 +211,8 @@ describe('marinDispatcher.types', () => {
   // ==========================================================================
 
   describe('Ad Group Types', () => {
-    it('should define MarinAdGroupRequest with required and optional fields', () => {
-      const request: MarinAdGroupRequest = {
+    it('should define ZilkrAdGroupRequest with required and optional fields', () => {
+      const request: ZilkrAdGroupRequest = {
         accountId: '5533110357',
         campaignId: 'campaign-123',
         name: 'Test Ad Group',
@@ -232,8 +228,8 @@ describe('marinDispatcher.types', () => {
       expect(request.cpmBid).toBeUndefined();
     });
 
-    it('should define MarinAdGroupResponse extending MarinBaseResponse', () => {
-      const response: MarinAdGroupResponse = {
+    it('should define ZilkrAdGroupResponse extending MarinBaseResponse', () => {
+      const response: ZilkrAdGroupResponse = {
         status: 'SUCCESS',
         id: 'adgroup-456',
         accountId: '5533110357',
@@ -252,8 +248,8 @@ describe('marinDispatcher.types', () => {
       expect(response.cpmBid).toBe(10.00);
     });
 
-    it('should define MarinAdGroupUpdateRequest with all optional fields', () => {
-      const updateRequest: MarinAdGroupUpdateRequest = {
+    it('should define ZilkrAdGroupUpdateRequest with all optional fields', () => {
+      const updateRequest: ZilkrAdGroupUpdateRequest = {
         name: 'Updated Ad Group',
         cpcBid: 3.00,
       };
@@ -280,8 +276,8 @@ describe('marinDispatcher.types', () => {
       expect(asset.pinned).toBe(true);
     });
 
-    it('should define MarinAdRequest with headlines and descriptions', () => {
-      const request: MarinAdRequest = {
+    it('should define ZilkrAdRequest with headlines and descriptions', () => {
+      const request: ZilkrAdRequest = {
         accountId: '5533110357',
         adGroupId: 'adgroup-456',
         type: 'RESPONSIVE_SEARCH_AD',
@@ -309,8 +305,8 @@ describe('marinDispatcher.types', () => {
       expect(request.paths).toEqual(['shoes', 'sale']);
     });
 
-    it('should define MarinAdResponse extending MarinBaseResponse', () => {
-      const response: MarinAdResponse = {
+    it('should define ZilkrAdResponse extending MarinBaseResponse', () => {
+      const response: ZilkrAdResponse = {
         status: 'SUCCESS',
         id: 'ad-789',
         accountId: '5533110357',
@@ -336,8 +332,8 @@ describe('marinDispatcher.types', () => {
       expect(response.descriptions).toHaveLength(2);
     });
 
-    it('should define MarinAdUpdateRequest with all optional fields', () => {
-      const updateRequest: MarinAdUpdateRequest = {
+    it('should define ZilkrAdUpdateRequest with all optional fields', () => {
+      const updateRequest: ZilkrAdUpdateRequest = {
         finalUrl: 'https://example.com/updated',
       };
 
@@ -352,8 +348,8 @@ describe('marinDispatcher.types', () => {
   // ==========================================================================
 
   describe('Keyword Types', () => {
-    it('should define MarinKeywordRequest with all fields', () => {
-      const request: MarinKeywordRequest = {
+    it('should define ZilkrKeywordRequest with all fields', () => {
+      const request: ZilkrKeywordRequest = {
         accountId: '5533110357',
         adGroupId: 'adgroup-456',
         text: 'running shoes',
@@ -370,8 +366,8 @@ describe('marinDispatcher.types', () => {
       expect(request.status).toBe('ENABLED');
     });
 
-    it('should define MarinKeywordResponse extending MarinBaseResponse', () => {
-      const response: MarinKeywordResponse = {
+    it('should define ZilkrKeywordResponse extending MarinBaseResponse', () => {
+      const response: ZilkrKeywordResponse = {
         status: 'SUCCESS',
         id: 'keyword-999',
         accountId: '5533110357',
@@ -389,8 +385,8 @@ describe('marinDispatcher.types', () => {
       expect(response.keywordStatus).toBe('ENABLED');
     });
 
-    it('should define MarinKeywordUpdateRequest with all optional fields', () => {
-      const updateRequest: MarinKeywordUpdateRequest = {
+    it('should define ZilkrKeywordUpdateRequest with all optional fields', () => {
+      const updateRequest: ZilkrKeywordUpdateRequest = {
         text: 'updated keyword',
         matchType: 'EXACT',
       };
@@ -401,8 +397,8 @@ describe('marinDispatcher.types', () => {
       expect(updateRequest.status).toBeUndefined();
     });
 
-    it('should define MarinBulkKeywordRequest with keywords array', () => {
-      const bulkRequest: MarinBulkKeywordRequest = {
+    it('should define ZilkrBulkKeywordRequest with keywords array', () => {
+      const bulkRequest: ZilkrBulkKeywordRequest = {
         accountId: '5533110357',
         adGroupId: 'adgroup-456',
         keywords: [
@@ -442,7 +438,7 @@ describe('marinDispatcher.types', () => {
           accountId: '5533110357',
           name: 'Batch Campaign',
           status: 'ENABLED',
-          budget: { amount: 5000, deliveryMethod: 'STANDARD' },
+          campaignBudget: 'budget-5000',
           biddingStrategy: 'MAXIMIZE_CONVERSIONS',
         },
         operationId: 'op-1',
@@ -451,7 +447,7 @@ describe('marinDispatcher.types', () => {
       expect(operation.operationType).toBe('CREATE');
       expect(operation.resourceType).toBe('CAMPAIGN');
       expect(operation.resource).toBeDefined();
-      expect((operation.resource as MarinCampaignRequest).name).toBe('Batch Campaign');
+      expect((operation.resource as ZilkrCampaignRequest).name).toBe('Batch Campaign');
       expect(operation.operationId).toBe('op-1');
     });
 
@@ -467,7 +463,7 @@ describe('marinDispatcher.types', () => {
               accountId: '5533110357',
               name: 'Campaign 1',
               status: 'ENABLED',
-              budget: { amount: 1000, deliveryMethod: 'STANDARD' },
+              campaignBudget: 'budget-1000',
               biddingStrategy: 'TARGET_CPA',
             },
           },
@@ -511,7 +507,7 @@ describe('marinDispatcher.types', () => {
               accountId: '5533110357',
               name: 'Updated Campaign',
               status: 'PAUSED',
-              budget: { amount: 2000, deliveryMethod: 'ACCELERATED' },
+              campaignBudget: 'budget-2000',
               biddingStrategy: 'MAXIMIZE_CLICKS',
             },
           },

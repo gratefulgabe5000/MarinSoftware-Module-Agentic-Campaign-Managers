@@ -1,5 +1,5 @@
 /**
- * API Connectivity Tests for MarinDispatcherService (Task 4.1.1)
+ * API Connectivity Tests for ZilkrDispatcherService (Task 4.1.1)
  *
  * Tests the isAuthenticated() method and verifies API endpoint connectivity
  * Includes tests for valid and invalid configurations
@@ -7,17 +7,32 @@
  * @module marinDispatcherService.connectivity.test
  */
 
-import { MarinDispatcherService } from '../../services/marinDispatcherService';
+import { ZilkrDispatcherService } from '../../services/zilkrDispatcherService';
 import axios from 'axios';
 import * as AWSXRay from 'aws-xray-sdk-core';
 
 // Mock dependencies
 jest.mock('axios');
 jest.mock('aws-xray-sdk-core');
+jest.mock('../../config/env', () => {
+  const mockConfig = {
+    zilkrDispatcher: {
+      baseUrl: 'http://test-dispatcher.example.com',
+      accountId: 'test-account-123',
+      publisher: 'google',
+      timeout: 30000,
+    },
+  };
+  return {
+    __esModule: true,
+    default: mockConfig,
+    config: mockConfig,
+  };
+});
 
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
-describe('MarinDispatcherService - API Connectivity Tests (Task 4.1.1)', () => {
+describe('ZilkrDispatcherService - API Connectivity Tests (Task 4.1.1)', () => {
   let mockHttpClient: any;
   let mockSegment: any;
   let mockSubsegment: any;
@@ -56,7 +71,7 @@ describe('MarinDispatcherService - API Connectivity Tests (Task 4.1.1)', () => {
       jest.mock('../../config/env', () => ({
         __esModule: true,
         default: {
-          marinDispatcher: {
+          zilkrDispatcher: {
             baseUrl: 'http://test-dispatcher.example.com',
             accountId: 'test-account-123',
             publisher: 'google',
@@ -65,7 +80,7 @@ describe('MarinDispatcherService - API Connectivity Tests (Task 4.1.1)', () => {
         },
       }));
 
-      const service = new MarinDispatcherService('test-account-123', 'google');
+      const service = new ZilkrDispatcherService('test-account-123', 'google');
 
       // Mock successful API response
       mockHttpClient.get.mockResolvedValue({
@@ -82,7 +97,7 @@ describe('MarinDispatcherService - API Connectivity Tests (Task 4.1.1)', () => {
 
       expect(result).toBe(true);
       expect(mockHttpClient.get).toHaveBeenCalledWith(
-        '/dispatcher/google/campaigns',
+        '/api/v2/dispatcher/google/campaigns',
         {
           params: {
             accountId: 'test-account-123',
@@ -94,7 +109,7 @@ describe('MarinDispatcherService - API Connectivity Tests (Task 4.1.1)', () => {
     });
 
     it('should return true when API returns 200 status for Meta publisher', async () => {
-      const service = new MarinDispatcherService('test-account-456', 'meta');
+      const service = new ZilkrDispatcherService('test-account-456', 'meta');
 
       mockHttpClient.get.mockResolvedValue({
         status: 200,
@@ -118,7 +133,7 @@ describe('MarinDispatcherService - API Connectivity Tests (Task 4.1.1)', () => {
     });
 
     it('should return true when API returns 200 status for Microsoft publisher', async () => {
-      const service = new MarinDispatcherService('test-account-789', 'microsoft');
+      const service = new ZilkrDispatcherService('test-account-789', 'microsoft');
 
       mockHttpClient.get.mockResolvedValue({
         status: 200,
@@ -148,7 +163,7 @@ describe('MarinDispatcherService - API Connectivity Tests (Task 4.1.1)', () => {
 
   describe('API Endpoint Reachability', () => {
     it('should verify API endpoint is reachable', async () => {
-      const service = new MarinDispatcherService('test-account-123', 'google');
+      const service = new ZilkrDispatcherService('test-account-123', 'google');
 
       mockHttpClient.get.mockResolvedValue({
         status: 200,
@@ -166,7 +181,7 @@ describe('MarinDispatcherService - API Connectivity Tests (Task 4.1.1)', () => {
     });
 
     it('should handle network timeout errors', async () => {
-      const service = new MarinDispatcherService('test-account-123', 'google');
+      const service = new ZilkrDispatcherService('test-account-123', 'google');
 
       mockHttpClient.get.mockRejectedValue({
         code: 'ECONNABORTED',
@@ -180,7 +195,7 @@ describe('MarinDispatcherService - API Connectivity Tests (Task 4.1.1)', () => {
     });
 
     it('should handle connection refused errors', async () => {
-      const service = new MarinDispatcherService('test-account-123', 'google');
+      const service = new ZilkrDispatcherService('test-account-123', 'google');
 
       mockHttpClient.get.mockRejectedValue({
         code: 'ECONNREFUSED',
@@ -193,7 +208,7 @@ describe('MarinDispatcherService - API Connectivity Tests (Task 4.1.1)', () => {
     });
 
     it('should handle DNS resolution errors', async () => {
-      const service = new MarinDispatcherService('test-account-123', 'google');
+      const service = new ZilkrDispatcherService('test-account-123', 'google');
 
       mockHttpClient.get.mockRejectedValue({
         code: 'ENOTFOUND',
@@ -212,7 +227,7 @@ describe('MarinDispatcherService - API Connectivity Tests (Task 4.1.1)', () => {
 
   describe('Invalid Account ID', () => {
     it('should return false when API returns 401 for invalid account', async () => {
-      const service = new MarinDispatcherService('invalid-account-id', 'google');
+      const service = new ZilkrDispatcherService('invalid-account-id', 'google');
 
       mockHttpClient.get.mockRejectedValue({
         response: {
@@ -225,7 +240,7 @@ describe('MarinDispatcherService - API Connectivity Tests (Task 4.1.1)', () => {
 
       expect(result).toBe(false);
       expect(mockHttpClient.get).toHaveBeenCalledWith(
-        '/dispatcher/google/campaigns',
+        '/api/v2/dispatcher/google/campaigns',
         expect.objectContaining({
           params: expect.objectContaining({
             accountId: 'invalid-account-id',
@@ -235,7 +250,7 @@ describe('MarinDispatcherService - API Connectivity Tests (Task 4.1.1)', () => {
     });
 
     it('should return false when API returns 403 for forbidden account', async () => {
-      const service = new MarinDispatcherService('forbidden-account', 'google');
+      const service = new ZilkrDispatcherService('forbidden-account', 'google');
 
       mockHttpClient.get.mockRejectedValue({
         response: {
@@ -250,7 +265,7 @@ describe('MarinDispatcherService - API Connectivity Tests (Task 4.1.1)', () => {
     });
 
     it('should return false when API returns 404 for non-existent account', async () => {
-      const service = new MarinDispatcherService('non-existent-account', 'google');
+      const service = new ZilkrDispatcherService('non-existent-account', 'google');
 
       mockHttpClient.get.mockRejectedValue({
         response: {
@@ -265,7 +280,7 @@ describe('MarinDispatcherService - API Connectivity Tests (Task 4.1.1)', () => {
     });
 
     it('should handle empty account ID', async () => {
-      const service = new MarinDispatcherService('', 'google');
+      const service = new ZilkrDispatcherService('', 'google');
 
       mockHttpClient.get.mockRejectedValue({
         response: {
@@ -286,7 +301,7 @@ describe('MarinDispatcherService - API Connectivity Tests (Task 4.1.1)', () => {
 
   describe('Invalid Publisher', () => {
     it('should return false when API returns 400 for invalid publisher', async () => {
-      const service = new MarinDispatcherService('test-account-123', 'invalid-publisher');
+      const service = new ZilkrDispatcherService('test-account-123', 'invalid-publisher');
 
       mockHttpClient.get.mockRejectedValue({
         response: {
@@ -305,7 +320,7 @@ describe('MarinDispatcherService - API Connectivity Tests (Task 4.1.1)', () => {
     });
 
     it('should return false when API returns 404 for unsupported publisher', async () => {
-      const service = new MarinDispatcherService('test-account-123', 'unsupported-publisher');
+      const service = new ZilkrDispatcherService('test-account-123', 'unsupported-publisher');
 
       mockHttpClient.get.mockRejectedValue({
         response: {
@@ -320,7 +335,7 @@ describe('MarinDispatcherService - API Connectivity Tests (Task 4.1.1)', () => {
     });
 
     it('should handle publisher with special characters', async () => {
-      const service = new MarinDispatcherService('test-account-123', 'pub@lisher!');
+      const service = new ZilkrDispatcherService('test-account-123', 'pub@lisher!');
 
       mockHttpClient.get.mockRejectedValue({
         response: {
@@ -335,7 +350,7 @@ describe('MarinDispatcherService - API Connectivity Tests (Task 4.1.1)', () => {
     });
 
     it('should handle empty publisher', async () => {
-      const service = new MarinDispatcherService('test-account-123', '');
+      const service = new ZilkrDispatcherService('test-account-123', '');
 
       mockHttpClient.get.mockRejectedValue({
         response: {
@@ -356,7 +371,7 @@ describe('MarinDispatcherService - API Connectivity Tests (Task 4.1.1)', () => {
 
   describe('HTTP Error Responses', () => {
     it('should return false on 500 Internal Server Error', async () => {
-      const service = new MarinDispatcherService('test-account-123', 'google');
+      const service = new ZilkrDispatcherService('test-account-123', 'google');
 
       mockHttpClient.get.mockRejectedValue({
         response: {
@@ -371,7 +386,7 @@ describe('MarinDispatcherService - API Connectivity Tests (Task 4.1.1)', () => {
     });
 
     it('should return false on 502 Bad Gateway', async () => {
-      const service = new MarinDispatcherService('test-account-123', 'google');
+      const service = new ZilkrDispatcherService('test-account-123', 'google');
 
       mockHttpClient.get.mockRejectedValue({
         response: {
@@ -386,7 +401,7 @@ describe('MarinDispatcherService - API Connectivity Tests (Task 4.1.1)', () => {
     });
 
     it('should return false on 503 Service Unavailable', async () => {
-      const service = new MarinDispatcherService('test-account-123', 'google');
+      const service = new ZilkrDispatcherService('test-account-123', 'google');
 
       mockHttpClient.get.mockRejectedValue({
         response: {
@@ -401,7 +416,7 @@ describe('MarinDispatcherService - API Connectivity Tests (Task 4.1.1)', () => {
     });
 
     it('should return false on 429 Too Many Requests', async () => {
-      const service = new MarinDispatcherService('test-account-123', 'google');
+      const service = new ZilkrDispatcherService('test-account-123', 'google');
 
       mockHttpClient.get.mockRejectedValue({
         response: {
@@ -432,7 +447,7 @@ describe('MarinDispatcherService - API Connectivity Tests (Task 4.1.1)', () => {
     });
 
     it('should log errors when authentication fails', async () => {
-      const service = new MarinDispatcherService('test-account-123', 'google');
+      const service = new ZilkrDispatcherService('test-account-123', 'google');
 
       const testError = new Error('Connection failed');
       mockHttpClient.get.mockRejectedValue(testError);
@@ -446,7 +461,7 @@ describe('MarinDispatcherService - API Connectivity Tests (Task 4.1.1)', () => {
     });
 
     it('should create X-Ray subsegment for authentication check', async () => {
-      const service = new MarinDispatcherService('test-account-123', 'google');
+      const service = new ZilkrDispatcherService('test-account-123', 'google');
 
       mockHttpClient.get.mockResolvedValue({ status: 200, data: {} });
 
@@ -454,13 +469,13 @@ describe('MarinDispatcherService - API Connectivity Tests (Task 4.1.1)', () => {
 
       expect(AWSXRay.getSegment).toHaveBeenCalled();
       expect(mockSegment.addNewSubsegment).toHaveBeenCalledWith(
-        'MarinDispatcher.isAuthenticated'
+        'ZilkrDispatcher.isAuthenticated'
       );
       expect(mockSubsegment.close).toHaveBeenCalled();
     });
 
     it('should close X-Ray subsegment even when error occurs', async () => {
-      const service = new MarinDispatcherService('test-account-123', 'google');
+      const service = new ZilkrDispatcherService('test-account-123', 'google');
 
       mockHttpClient.get.mockRejectedValue(new Error('Test error'));
 
