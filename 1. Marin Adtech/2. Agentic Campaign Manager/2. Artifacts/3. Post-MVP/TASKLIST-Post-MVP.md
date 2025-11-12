@@ -254,30 +254,32 @@ Create frontend TypeScript type definitions matching backend Container types.
 ---
 
 #### Task 1.1.9: Update Campaign Types to Include Profile References
-**Assigned to**: GABE  
-**Dependencies**: Task 1.1.7  
-**Status**: 🔴 Open  
+**Assigned to**: GABE
+**Dependencies**: Task 1.1.7
+**Status**: ✅ Completed
 **Priority**: 🔴 Critical
 
 **Description**:
 Update existing campaign types to include references to Customer Profile objects, allowing campaigns to use default or custom profiles.
 
 **Tasks**:
-- [ ] Read `src/types/campaign.types.ts` to understand current structure
-- [ ] Read `src/types/ai.types.ts` to understand `CampaignPlan` structure
-- [ ] Update `Campaign` interface in `campaign.types.ts`
-- [ ] Define `ProfileVersionUsed` interface
-- [ ] Update `CampaignPlan` interface in `ai.types.ts`
-- [ ] Add helper functions for campaign profile resolution
-- [ ] Define `ResolvedProfile` interface
-- [ ] Export updated types
-- [ ] Update JSDoc comments to reflect new fields
-- [ ] Add migration notes for existing campaigns (backward compatibility)
-- [ ] Verify all types compile without errors
+- [x] Read `src/types/campaign.types.ts` to understand current structure
+- [x] Read `src/types/ai.types.ts` to understand `CampaignPlan` structure
+- [x] Update `Campaign` interface in `campaign.types.ts` (frontend & backend)
+- [x] Define `ProfileVersionUsed` interface (frontend & backend)
+- [x] Update `CampaignPlan` interface in `ai.types.ts` (frontend & backend)
+- [x] Add helper functions for campaign profile resolution (frontend & backend)
+- [x] Define `ResolvedProfile` interface (frontend & backend)
+- [x] Export updated types
+- [x] Update JSDoc comments to reflect new fields
+- [x] Add migration notes for existing campaigns (backward compatibility)
+- [x] Verify all types compile without errors
 
 **Related Files**:
-- `src/types/campaign.types.ts` - Update existing
-- `src/types/ai.types.ts` - Update existing
+- `src/types/campaign.types.ts` - Updated with ProfileVersionUsed, ResolvedProfile, and helper functions
+- `src/types/ai.types.ts` - Updated with profileContainerId and useDefaultProfile fields
+- `backend/src/types/campaign.types.ts` - Updated with ProfileVersionUsed, ResolvedProfile, and helper functions
+- `backend/src/types/ai.types.ts` - Updated with profileContainerId and useDefaultProfile fields
 
 ---
 

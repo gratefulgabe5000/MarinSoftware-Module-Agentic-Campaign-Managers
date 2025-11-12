@@ -27,6 +27,7 @@ export interface PlatformCampaignType {
 /**
  * Campaign Plan Interface
  * Structured plan extracted from user's goal
+ * Now includes optional Customer Profile Container reference for default or custom profiles
  */
 export interface CampaignPlan {
   objective: string;
@@ -60,6 +61,28 @@ export interface CampaignPlan {
     secondary?: string[];
   };
   adGroups?: AdGroupPlan[];
+
+  /**
+   * Customer Profile Container ID reference (optional)
+   * If provided, links this campaign plan to a specific Customer Profile Container.
+   * This allows the campaign to inherit Target Customer Profile, Brand Guidelines, and Budget
+   * from the container instead of using standalone values.
+   *
+   * When present:
+   * - The container's Target Customer Profile may supplement or override targetAudience
+   * - The container's Brand Guidelines guide ad creative and messaging
+   * - The container's Budget may be used instead of the budget field above
+   *
+   * @migration For existing campaign plans, this field will be undefined.
+   */
+  profileContainerId?: string;
+
+  /**
+   * Whether to use the account's default profile if no specific profile is provided
+   * If true and profileContainerId is undefined, the system should use the default container
+   * If false or undefined, the campaign plan uses only its own defined values
+   */
+  useDefaultProfile?: boolean;
 }
 
 /**
